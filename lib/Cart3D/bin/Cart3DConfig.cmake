@@ -11,34 +11,41 @@ cmake_minimum_required(VERSION 3.5)
 set(CART3D_PATHS 
     "${CMAKE_SOURCE_DIR}/3rdlib/Cart3D"
     "${CMAKE_SOURCE_DIR}/../Cart3D"
-    "${CMAKE_SOURCE_DIR}"
     "${CMAKE_SOURCE_DIR}/lib/Cart3D"
+    "${CMAKE_SOURCE_DIR}/lib/Cart3D/include"    
 )
 
-#message("project: ${CART3D_PATHS}")
+message("project: ${CART3D_PATHS}")
 
 # 查找头文件路径
-find_path(CART3D_CORE_INCLUDE_DIR include/Cart3DCore PATHS ${CART3D_PATHS}/include)
-
+find_path(CART3D_CORE_INCLUDE_DIR include/Cart3DCore PATHS ${CART3D_PATHS})
+message("CART3D_CORE_INCLUDE_DIR: ${CART3D_CORE_INCLUDE_DIR}")
 # 搜索动态库文件
 find_library(CART3D_CORE_LIB NAMES common.lib PATHS ${CART3D_CORE_INCLUDE_DIR} PATH_SUFFIXES lib)
+message("CART3D_CORE_LIB: ${CART3D_CORE_LIB}")
 # 获取这个动态库的父目录路径
 get_filename_component(_CART3D_LIB_PATH_ ${CART3D_CORE_LIB} PATH)
+message("_CART3D_LIB_PATH_ :${_CART3D_LIB_PATH_}")
+
 
 # 导出该路径 Cart3D/lib
-set(CART3D_LIB_PATH  ${_CART3D_LIB_PATH_} CACHE PATH "This is the Cart3D library path")
-#message(${CART3D_LIB_PATH})
+#set(CART3D_LIB_PATH  ${_CART3D_LIB_PATH_} CACHE PATH "This is the Cart3D library path")
+#message("CART3D_LIB_PATH: ${CART3D_LIB_PATH}")
+
 # 获取静态库
-file(GLOB MODEL_LIST "${CART3D_LIB_PATH}/*.lib")
+file(GLOB MODEL_LIST "${_CART3D_LIB_PATH_}/*.lib")
+message("MODEL_LIST: ${MODEL_LIST}")
 set(CART3D_MODELS_LIB)
 foreach(module_file ${MODEL_LIST})
     get_filename_component(module_name ${module_file} NAME_WE)
     list(APPEND CART3D_MODELS_LIB ${module_name})
 endforeach(module_file ${MODEL_LIST})
 
+
+
 # 导出静态库模块列表
-#set(CART3D_MODELS_LIB ${CART3D_MODELS_LIB} CACHE PATH "This is th Cart3d library list")
-link_directories(${CART3D_LIB_PATH})
+set(CART3D_MODELS_LIB ${CART3D_MODELS_LIB} CACHE PATH "This is th Cart3d library list")
+link_directories(${_CART3D_LIB_PATH_})
 get_filename_component(CMAKE_CURRENT_LIST_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 get_filename_component(CART3D_CONFIG_PATH "${CMAKE_CURRENT_LIST_DIR}" REALPATH)
 get_filename_component(CART3D_INSTALL_PATH "${CART3D_CONFIG_PATH}/../" REALPATH)
