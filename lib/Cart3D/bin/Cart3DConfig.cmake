@@ -11,7 +11,11 @@ cmake_minimum_required(VERSION 3.5)
 set(CART3D_PATHS 
     "${CMAKE_SOURCE_DIR}/3rdlib/Cart3D"
     "${CMAKE_SOURCE_DIR}/../Cart3D"
+    "${CMAKE_SOURCE_DIR}"
+    "${CMAKE_SOURCE_DIR}/lib/Cart3D"
 )
+
+#message("project: ${CART3D_PATHS}")
 
 # 查找头文件路径
 find_path(CART3D_CORE_INCLUDE_DIR include/Cart3DCore PATHS ${CART3D_PATHS}/include)
