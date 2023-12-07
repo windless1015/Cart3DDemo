@@ -1,0 +1,11 @@
+prefix=E:/Librarys/OpenMesh/OpenMeshInstall
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: libOpenMesh
+Description: OpenMesh library
+Version: 10.0
+
+Libs: -L${libdir} -lOpenMeshCore -lOpenMeshTools
+Cflags: -I${includedir}

@@ -1,0 +1,322 @@
+#ifndef CART3D_UTIL_FILE_SYSTEM_H
+#define CART3D_UTIL_FILE_SYSTEM_H
+
+#include <string>
+#include <vector>
+#include <fstream>
+#include <Cart3DCommonDefine.h>
+
+namespace Cart3D {
+
+    /**
+     * \brief A very basic filesystem implementation.
+     * \namespace easy3d::file_system
+     * @attention Functions are not sufficiently tested.
+     * @todo [Liangliang] Comprehensive tests.
+     *
+     * @sa ghc::filesystem - A C++17-like filesystem implementation for C++11/C++147/C++17
+     *          https://github.com/gulrak/filesystem/blob/master/include/ghc/filesystem.hpp
+     */
+    namespace file_system {
+
+        /**
+         * @brief Tests if 'path' is an existing file.
+         * @param path The full path of a file (including file extension).
+         * @return ture If the file 'path' exists.
+         */
+		CART3D_COMMON_API bool    is_file(const std::string& path);
+
+        /**
+         * @brief Tests if 'path' is an existing directory.
+         * @param path The full path of a directory.
+         * @return ture If the directory 'path' exists.
+         */
+		CART3D_COMMON_API  bool	is_directory(const std::string& path);
+
+        /**
+         * @brief Creates a directory entitled 'path'.
+         * @param path The full path of the directory to be created.
+         * @return ture If the directory has been successfully created or already exists.
+         */
+		CART3D_COMMON_API  bool    create_directory(const std::string& path);
+
+        /**
+         * @brief Deletes the file 'path'.
+         * @param path The full path of a file.
+         * @return ture If the file has been successfully deleted or doesn't exist.
+         * @todo [Liangliang] Test if path should be absolute.
+         */
+		CART3D_COMMON_API bool	delete_file(const std::string& path);
+
+        /**
+         * @brief Deletes the directory 'path' (and its contents will be deleted recursively).
+         * @param path The full path of a directory.
+         * @return ture If the directory has been successfully deleted or doesn't exist.
+         * @todo [Liangliang] Test if path should be absolute.
+         */
+		CART3D_COMMON_API bool	delete_directory(const std::string& path);
+
+        /**
+         * @brief Deletes the contents of the directory 'path' (the directory will not be deleted).
+         * @param path The full path of a directory.
+         * @return ture If the contents of directory have been successfully deleted or don't exist.
+         * @todo [Liangliang] Test if path should be absolute.
+         */
+		CART3D_COMMON_API  bool	delete_contents(const std::string& path);
+
+        /**
+         * @brief Queries the entries of a directory (including subdirectories and files).
+         * @param path The full path of a directory.
+         * @param entries Return the entries of the directory. Result strings are simple names (i.e.,
+         *        without the \p path part, e.g., cat.png).
+         * @param recursive Performs the query recursively if true.
+         * @sa get_files(), get_sub_directories().
+         */
+		CART3D_COMMON_API void	get_directory_entries(const std::string& path, std::vector<std::string>& entries, bool recursive);
+
+        /**
+         * @brief Queries file entries of a directory 'path'.
+         * @param path The full path of a directory.
+         * @param files Return the file entries of 'path'. Result strings are simple names (i.e.,
+         *        without the 'path' part, e.g., cat.png).
+         * @param recursive Perform the query recursively if true.
+         * @sa get_directory_entries(), get_sub_directories().
+         */
+		CART3D_COMMON_API void	get_files(const std::string& path, std::vector<std::string>& files, bool recursive);
+
+        /**
+         * @brief Query subdirectory entries of a directory 'path'.
+         * @param path The full path of a directory.
+         * @param subs Return the subdirectory entries of 'path'. Result strings are only the
+         *        names of the subdirectories (i.e., without the 'path' part).
+         * @param recursive Perform the query recursively if true.
+         * @sa get_directory_entries(), get_files().
+         */
+		CART3D_COMMON_API void	get_sub_directories(const std::string& path, std::vector<std::string>& subs, bool recursive);
+
+        /**
+         * @brief Query the current working directory.
+         * @return The string representing the current working directory.
+         */
+		CART3D_COMMON_API std::string current_working_directory() ;
+
+        /**
+         * @brief Set the current working directory.
+         * @param path The string representing the new current working directory.
+         * @return true on success.
+         */
+		CART3D_COMMON_API bool    set_current_working_directory(const std::string& path);
+
+        /**
+         * @brief Query the home path for the current user.
+         * @return The string representing the home directory of the current user.
+         */
+		CART3D_COMMON_API std::string home_directory();
+
+        /**
+         * @brief Query the name of *this* executable.
+         * @return The string representing the full path of this executable, e.g., C:/a/b/c.exe
+         */
+		CART3D_COMMON_API std::string executable();
+
+        /**
+         * @brief Query the directory where the executable file is located.
+         * @return The string representing the directory in which the executable resides.
+         */
+		CART3D_COMMON_API std::string executable_directory();
+
+        /**
+         * @brief Rename the file from 'old_name' to 'new_name'.
+         * @param old_name The full path of the file to be renamed.
+         * @param new_name The full path of the file's new name.
+         * @return true on success.
+         */
+		CART3D_COMMON_API bool    rename_file(const std::string& old_name, const std::string& new_name);
+
+        /**
+         * @brief Query the time stamp of a file or directory.
+         * @param path The full path of the file or directory.
+         * @return The time stamp.
+         */
+		CART3D_COMMON_API time_t	time_stamp(const std::string& path);
+
+        /**
+         * @brief Query the time stamp of a file or directory as a string.
+         * @param path The full path of the file or directory.
+         * @return The string of the time stamp.
+         */
+		CART3D_COMMON_API std::string time_string(const std::string& path);
+
+        /**
+         * @brief Query the size of the file.
+         * @param path The full path of the file.
+         * @return The size of the file (in bytes).
+         */
+		CART3D_COMMON_API std::ifstream::pos_type file_size(const std::string& path);
+
+        /**
+         * @brief Query the parent path from full name of a file or directory
+         *        (e.g., /a/b/c.Ext => /a/b)
+         * @param path The full path of the file or directory.
+         * @return The string of the parent path.
+         */
+		CART3D_COMMON_API std::string parent_directory(const std::string& path) ;
+
+        /**
+         * @brief Query the file extension without dot (e.g., /a/b/c.Ext => Ext).
+         * @param path The full path of a file.
+         * @param lower Converts the string to lower case if true.
+         * @return The string of the file extension.
+         */
+		CART3D_COMMON_API std::string extension(const std::string& path, bool lower = true) ;
+
+        /**
+         * @brief Gets file name without path but with extension (e.g, /a/b/c.Ext => c.Ext)
+         * @param path The full path of a file.
+         * @return The string of the file name without path but with extension.
+         */
+		CART3D_COMMON_API std::string simple_name(const std::string& path) ;
+
+        /**
+         * @brief Gets file name without path and last extension
+         *        (e.g., c:/file.ext1.ext2 => file.ext1; /a/b/c.Ext => c).
+         * @param path The full path of a file.
+         * @return The string of the file name without path and last extension
+         */
+		CART3D_COMMON_API std::string base_name(const std::string& path) ;
+
+        /**
+         * @brief Gets file path without last extension
+         *        (e.g., /a/b/c.Ext => /a/b/c; file.ext1.ext2 => file.ext1).
+         * @param path The full path of a file.
+         * @return The string of the file path without last extension.
+         */
+		CART3D_COMMON_API std::string name_less_extension(const std::string& path);
+
+        /**
+         * @brief Gets file path without all extensions
+         *        (e.g., /a/b/c.Ext => /a/b/c; file.ext1.ext2 => file).
+         * @param path The full path of a file.
+         * @return The string of the file path without all extensions.
+         */
+		CART3D_COMMON_API std::string name_less_all_extensions(const std::string& path);
+
+        /**
+        * @brief Replaces the extension of the given file with 'ext'. If the file name does not
+        *        have an extension, the expected new extension is appended.
+        * @param path The file name.
+        * @param ext The expected new extension.
+        * @return The string of the new file name/
+        */
+		CART3D_COMMON_API std::string replace_extension(std::string const& path, const std::string& ext);
+
+        /**
+        * @brief Gets root part of a path ("/" or "C:"), or an empty string if none found.
+        * @param path The path.
+        * @return The string representing the root part of the path.
+        */
+		CART3D_COMMON_API std::string path_root(const std::string& path);
+
+        /**
+        * @brief Tests if path is absolute, as !get_path_root(path).empty(). .
+        * @param path The path.
+        * @return true if the path is absolute.
+        */
+        /** Tests if path is absolute, as !get_path_root(path).empty(). */
+		CART3D_COMMON_API bool    is_absolute_path(const std::string& path);
+
+        /**
+         * @brief Compute the relative path from 'from' to 'to'.
+         * @param from The 'from' directory.
+         * @param to The 'to' directory.
+         * @return If 'to' is in a subdirectory of 'from' then this function returns the subpath,
+         *         otherwise it just returns the file name.
+         * @attention The function does \b not automatically resolve paths as the system does, so
+         *            be careful to give canonical paths. However, the function interprets slashes
+         *            ('/') and backslashes ('\') as they were equal.
+         */
+		CART3D_COMMON_API std::string relative_path(const std::string& from, const std::string& to);
+
+        /**
+         * @brief Converts to absolute path (i.e., removes .. and . from a path string).
+         * @param path The path string.
+         * @return The absolute path.
+         */
+		CART3D_COMMON_API std::string absolute_path(const std::string& path);
+
+        /**
+         * @brief Converts the path to Windows style, i.e., forward slashes (/) to back slashes (\\).
+         * @param path The path string.
+         * @return The path in Windows style.
+         * @sa convert_to_unix_style(), convert_to_native_style().
+         */
+		CART3D_COMMON_API std::string convert_to_windows_style(const std::string& path);
+
+        /**
+         * @brief Converts the path to Unix style, i.e., back slashes (\\) to forward slashes (/).
+         * @param path The path string.
+         * @return The path in Unix style.
+         * @sa convert_to_windows_style(), convert_to_native_style().
+         */
+		CART3D_COMMON_API std::string convert_to_unix_style(const std::string& path);
+
+        /**
+         * @brief Convert a path string such that it uses the current platform's path separators.
+         * @param path The path string.
+         * @return The path in native style.
+         * @sa convert_to_windows_style(), convert_to_unix_style().
+         */
+		CART3D_COMMON_API std::string convert_to_native_style(const std::string& path);
+
+        /**
+         * @brief Gets the path separator of the current platform.
+         * @return The path separator in native style.
+         */
+		CART3D_COMMON_API char native_path_separator();
+
+        /**
+         * @brief Checks sif the path contains only the current platform's path separators.
+         * @return true if the path contains only the current platform's path separators.
+         */
+		CART3D_COMMON_API bool is_native_style(const std::string& path);
+
+        /**
+         * @brief Makes a copy of an existing file.
+         * @param original The file name of the original file.
+         * @param copy The file name of the copy
+         * @return true on success.
+         */
+		CART3D_COMMON_API bool copy_file(const std::string& original, const std::string& copy);
+
+        /**
+         * @brief Checks if a file contains string 'str'.
+         * @param filename The string of the file name.
+         * @param str The string to be checked.
+         * @return true if the file contains the string.
+         */
+		CART3D_COMMON_API bool file_contains_string(const std::string& filename, const std::string& str);
+
+        /**
+         * @brief Reads the contents of a file into a string.
+         * @param filename The string of the file name.
+         * @param str The destination string.
+         */
+		CART3D_COMMON_API void read_file_to_string(const std::string& filename, std::string& str);
+
+        /**
+         * @brief Writes the string into a file.
+         * @param str The string.
+         * @param filename The string of the file name.
+         */
+		CART3D_COMMON_API void write_string_to_file(const std::string& str, const std::string& filename);
+
+
+
+
+    }
+
+
+} // namespace Cart3D
+
+
+#endif	
