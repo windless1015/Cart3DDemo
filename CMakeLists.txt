@@ -50,5 +50,13 @@ target_link_libraries(Cart3DDemo PRIVATE Qt5::OpenGL)
 target_link_libraries(Cart3DDemo PRIVATE OpenMeshCore OpenMeshTools)
 
 
-
+if(MSVC)
+    file(GLOB CART3D_DLL "${CMAKE_CURRENT_SOURCE_DIR}/lib/Cart3D/bin/*.dll")
+    #message(${CART3D_DLL})
+    add_custom_command(
+    TARGET Cart3DDemo POST_BUILD  
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different 
+	${CART3D_DLL}  $<TARGET_FILE_DIR:Cart3DDemo>  
+)
+endif()
 
