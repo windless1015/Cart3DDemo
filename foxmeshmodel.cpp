@@ -2,11 +2,16 @@
 
 // C++
 #include <string>
+#include <cmath>
 
 //qt
 #include <qdebug.h>
 
 #include "MeshCurve/MeshSmoothCurve.h"
+
+#include <qmath.h>
+
+//Cart3d
 #include <Profile/ShowData.h>
 #include <Profile/DebugUtil.hpp>
 #include <Sys/CPUTimer.h>
@@ -14,6 +19,8 @@
 #include <MeshCurve/MeshCircleCurve.h>
 #include <MeshCSG/CountourCutMesh.h>
 #include <Sys/Logger.h>
+
+
 using namespace OpenMesh;
 using namespace Cart3D;
 FoxMeshModel::FoxMeshModel()
@@ -24,9 +31,10 @@ FoxMeshModel::~FoxMeshModel()
 {
 }
 
-void FoxMeshModel::setMesh(std::string_view meshFilePath)
+void FoxMeshModel::setMeshFilePath(const std::string& meshFilePath)
 {
 	IO::Options opt;
+	m_mesh.request_vertex_normals();
     if (IO::read_mesh(m_mesh, meshFilePath.data()), opt) {
         qDebug() << "Loaded STL file: " << meshFilePath.data();
     }
@@ -47,6 +55,12 @@ void FoxMeshModel::setMesh(std::string_view meshFilePath)
 Cart3D::OpenTriMesh FoxMeshModel::getMesh()
 {
     return m_mesh;
+}
+
+std::vector<float> FoxMeshModel::getMeshVertexs()
+{
+	std::vector<float> vertexs = meshDataToVertexData(m_mesh);
+	return vertexs;
 }
 
 void FoxMeshModel::cuttingMesh()
@@ -80,12 +94,51 @@ void FoxMeshModel::cuttingMesh()
 	{
 		m_cutMesh = right_mesh;
 		m_beCutMesh = left_mesh;
-		//std::string m_process_path = "E:\\learning\\Qt_learning\\Cart3D_QTDemo\\testData\\";
-		//OpenMesh::IO::write_mesh(m_mesh, m_process_path + "UpperJaw_sub.stl");
-		//OpenMesh::IO::write_mesh(left_mesh, m_process_path + "cut_lmesh.stl");
-		//OpenMesh::IO::write_mesh(right_mesh, m_process_path + "cut_rmesh.stl");
-		//clogger->info("save ok...");
 	}
 	clogger->info("end CurveCutMesh...");
 
+}
+
+Cart3D::OpenTriMesh FoxMeshModel::getCutMesh()
+{
+	return m_cutMesh;
+}
+
+Cart3D::OpenTriMesh FoxMeshModel::getBeCutMesh()
+{
+	return m_cutMesh;
+}
+
+std::vector<float> FoxMeshModel::meshDataToVertexData(Cart3D::OpenTriMesh mesh)
+{
+	std::vector<float> vertex;
+	// 遍历面片
+	for (Cart3D::OpenTriMesh::FaceIter f_it = mesh.faces_begin(); f_it != mesh.faces_end(); ++f_it)
+	{
+		// 遍历面片上的顶点
+		for (Cart3D::OpenTriMesh::FaceVertexIter fv_it = mesh.fv_iter(*f_it); fv_it.is_valid(); ++fv_it)
+		{
+			// 获取每个面片上的点
+			auto& point = mesh.point(*fv_it);
+			// 获取法向量
+			auto& normal = mesh.normal(*fv_it);
+			vertex.push_back(point[0]);
+			vertex.push_back(point[1]);
+			vertex.push_back(point[2]);
+			// 添加法向量
+			vertex.push_back(normal[0]);
+			vertex.push_back(normal[1]);
+			vertex.push_back(normal[2]);
+			// 添加纹理坐标
+			//float u = point[0] / SCR_WIDTH;
+			//float v = point[1] / SCR_HEIGHT;
+			float u = 0.5+(qAtan2(point[1], point[0]) / (2 * M_PI));
+			float v = 0.5 - (qAsin(point[2]) / M_PI);
+
+			vertex.push_back(u);
+			vertex.push_back(v);
+		}
+	}
+
+	return vertex;
 }

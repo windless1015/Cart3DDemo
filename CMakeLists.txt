@@ -12,30 +12,37 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(Cart3D_DIR "${CMAKE_SOURCE_DIR}/lib/Cart3D/bin")
 set(OpenMesh_DIR "${CMAKE_SOURCE_DIR}/lib/OpenMesh/share/OpenMesh/cmake")
 
-message(${Cart3D_DIR})
-
+set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
+set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
+message(" Cart3D_DIR: ${Cart3D_DIR}")
+message("CMAKE_BINARY_DIR:${CMAKE_BINARY_DIR}")
 find_package(QT NAMES Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
 find_package(OpenGL)
 find_package(Qt5Gui REQUIRED)
 find_package(Qt5OpenGL REQUIRED)
-find_package(Cart3D REQUIRED)
+find_package(Cart3D )
 find_package(OpenMesh)
 
 
 
 set(PROJECT_SOURCES
-        main.cpp
-        mainwindow.cpp
-        mainwindow.h
-        mainwindow.ui
+        "main.cpp"
+        "mainwindow.cpp"
+        "mainwindow.h"
+        "mainwindow.ui"
 
-        foxopenGLwidget.h
-        foxopenGLwidget.cpp
+        "foxopenGLwidget.h"
+        "foxopenGLwidget.cpp"
 
-        foxmeshmodel.h
-        foxmeshmodel.cpp
+        "foxmeshmodel.h"
+        "foxmeshmodel.cpp"
+
+        "foxcamera.h"
+        "foxcamera.cpp"
+        "foxlighting.h"
+        "foxlighting.cpp"
 )
 
 
@@ -49,14 +56,13 @@ target_link_libraries(Cart3DDemo PRIVATE ${CART3D_MODELS_DLL})
 target_link_libraries(Cart3DDemo PRIVATE Qt5::OpenGL)
 target_link_libraries(Cart3DDemo PRIVATE OpenMeshCore OpenMeshTools)
 
-
 if(MSVC)
-    file(GLOB CART3D_DLL "${CMAKE_CURRENT_SOURCE_DIR}/lib/Cart3D/bin/*.dll")
-    #message(${CART3D_DLL})
-    add_custom_command(
-    TARGET Cart3DDemo POST_BUILD  
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different 
-	${CART3D_DLL}  $<TARGET_FILE_DIR:Cart3DDemo>  
-)
+    file(GLOB CAR3D_DLL ${Cart3D_DIR}/*.dll)
+    message(${CAR3D_DLL})
+      add_custom_command(TARGET Cart3DDemo
+                    POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    ${CAR3D_DLL}
+                    $<TARGET_FILE_DIR:Cart3DDemo>)
 endif()
 

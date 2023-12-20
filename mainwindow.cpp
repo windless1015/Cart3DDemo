@@ -18,8 +18,9 @@ MainWindow::MainWindow(QWidget *parent)
     //E:\\learning\\Qt_learning\\Cart3D_QTDemo\\testData\\100642730142856
     // cone.stl
     m_foxMeshModel = std::make_shared<FoxMeshModel>();
-    m_foxMeshModel->setMesh("E:\\learning\\Qt_learning\\Cart3D_QTDemo\\testData\\100642730142856\\lower.stl");
-    m_foxOpenGLWidget->setLoadMesh(m_foxMeshModel->getMesh());
+    m_foxMeshModel->setMeshFilePath("E:\\learning\\Qt_learning\\Cart3D_QTDemo\\testData\\100642730142856\\lower.stl");
+    //m_foxOpenGLWidget->setLoadMesh(m_foxMeshModel->getMesh());
+    m_foxOpenGLWidget->setVertex(m_foxMeshModel->getMeshVertexs());
     setCentralWidget(m_foxOpenGLWidget);
 
     // ÇÐ¸î

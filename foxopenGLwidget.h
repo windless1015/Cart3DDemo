@@ -21,20 +21,24 @@
 
 
 #include <common/Util/OpenMeshUtil.h>
-
+//
+class FoxCamera;
+class FoxLighting;
 class FoxOpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
 
 public:
-	FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent){ }
+    FoxOpenGLWidget(QWidget* parent);
     ~FoxOpenGLWidget();
 
     // 通过文件路径加载网格模型
-    void loadSTLFile(std::string_view path);
+    void loadSTLFile(const std::string& path);
     
     // 设置加载网格
     void setLoadMesh(Cart3D::OpenTriMesh mesh);
 
+    // 设置顶点数据
+    void setVertex(std::vector<float> vertex);
 
 protected:
     // 初始化
@@ -43,10 +47,6 @@ protected:
     void resizeGL(int w, int h) override;
     // 绘制
     void paintGL() override;
-
-    QMatrix4x4 getViewMatrix();
-
-    void calculateCamera();
 
 protected:
     void mousePressEvent(QMouseEvent* event) override;
@@ -59,28 +59,18 @@ protected:
 private:
     Cart3D::OpenTriMesh m_mesh;
     QPoint m_lastMousePos;
-    //std::vector<float> m_vertex;
 
-    QOpenGLShaderProgram m_shaderProgram;
+    QOpenGLShaderProgram *m_shaderProgram;
     QOpenGLVertexArrayObject m_VAO;
     QOpenGLBuffer m_VBO;
 
-    float cameraSpeed{ 0.5f }; //移动速度
-    float cameraSensitivity{ 0.1f }; //鼠标拖动灵敏度
-    float projectionFovy{ 45.0f }; //透视投影的fovy参数，视野范围
+    // 网格的位置
+    QVector3D m_meshPosition;
+    std::vector<float> m_vertex;
 
-    int rotate{ 0 };
-
-    //Camera Attributes
-    QVector3D cameraPos{ 0.0f, 0.0f, 3.0f };
-    QVector3D cameraFront{ 0.0f, 0.0f, -1.0f };
-    QVector3D cameraUp{ 0.0f, 1.0f, 0.0f };
-    QVector3D cameraRight{ 1.0f, 0.0f, 0.0f };
-
-    float eulerYaw{ -90.0f }; //偏航角，绕y左右转
-    float eulerPitch{ 0.0f }; //俯仰角，绕x上下转
-
-
-
+    // 相机
+    FoxCamera* m_camera;
+    // 灯光
+    FoxLighting* m_lighting;
 };
 

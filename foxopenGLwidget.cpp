@@ -1,10 +1,21 @@
 #include "foxopenGLwidget.h"
 
+#include "foxcamera.h"
+#include  "foxlighting.h"
+
+
 #include <QMatrix4x4>
 
 #include <QtOpenGL/qgl.h>
 
 using namespace OpenMesh;
+
+FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent):QOpenGLWidget(parent)
+{
+    m_camera = new FoxCamera();
+    m_camera->setPosition(QVector3D(0.0f, 0.0f, 6.0f));
+
+}
 
 FoxOpenGLWidget::~FoxOpenGLWidget()
 {
@@ -12,9 +23,13 @@ FoxOpenGLWidget::~FoxOpenGLWidget()
     m_VBO.destroy();
     m_VAO.destroy();
     doneCurrent();
+
+    delete m_camera;
+    delete m_lighting;
+
 }
 
-void FoxOpenGLWidget::loadSTLFile(std::string_view path)
+void FoxOpenGLWidget::loadSTLFile(const std::string& path)
 {
     if (IO::read_mesh(m_mesh, path.data())) {
         qDebug() << "Loaded STL file: " << path.data();
@@ -38,9 +53,11 @@ void FoxOpenGLWidget::loadSTLFile(std::string_view path)
 void FoxOpenGLWidget::setLoadMesh(Cart3D::OpenTriMesh mesh)
 {
     this->m_mesh = mesh;
+}
 
-
-
+void FoxOpenGLWidget::setVertex(std::vector<float> vertex)
+{
+    m_vertex = vertex;
 }
 
 
@@ -48,107 +65,94 @@ void FoxOpenGLWidget::setLoadMesh(Cart3D::OpenTriMesh mesh)
 void FoxOpenGLWidget::initializeGL()
 {
     initializeOpenGLFunctions();
+    m_lighting = new FoxLighting();
+    QVector3D ambient = QVector3D(0.3f, 0.3f, 0.3f);
+    QVector3D diffuse = QVector3D(0.5f, 0.5f, 0.5f);
+    QVector3D specular = QVector3D(1.0f, 1.0f, 1.0f);
+    QVector3D position = QVector3D(5.2f, 10.0f, 30.0f);
+    m_lighting->setLightingPosition(position);
+    m_lighting->setLightingProperties(ambient, diffuse, specular);
+    const char* vertexShaderCode = R"(#version 330 core
+            layout (location = 0) in vec3 aPos;
+            layout (location = 1) in vec3 aNormal;
+            out vec3 FragPos;
+            out vec3 Normal;
+            uniform mat4 model;
+            uniform mat4 view;
+            uniform mat4 projection;
+            void main()
+            {
+                FragPos = vec3(model * vec4(aPos, 1.0));
+                Normal = mat3(transpose(inverse(model))) * aNormal;
+                gl_Position = projection * view * vec4(FragPos, 1.0);
+            })";
 
-    const char* vertex_str = R"(#version 330 core
-        layout (location = 0) in vec3 inPos;
-        layout (location = 1) in vec2 inTexCoord;
-        uniform mat4 model;
-        uniform mat4 view;
-        uniform mat4 projection;
+    const char* fragmentShaderCode = R"(#version 330 core
+            out vec4 FragColor;
 
-        void main()
-        {
-        gl_Position = projection * view * model * vec4(inPos, 1.0);
-       
-        })";
+            in vec3 Normal;
+            in vec3 FragPos;
+  
+            uniform vec3 lightPos;
+            uniform vec3 viewPos;
+            uniform vec3 lightColor;
+            uniform vec3 objectColor;
 
-    const char* fragment_str = R"(#version 330 core
-        out vec4 fragColor;
-        void main()
-        {
-        fragColor = vec4(1.0f, 1.0f, 1.0f, 0.0f);
+            void main()
+            {
+                float ambientStrength = 0.3;
+                vec3 ambient = ambientStrength * lightColor;
+                vec3 norm = normalize(Normal);
+                vec3 lightDir = normalize(lightPos - FragPos);
+                float diff = max(dot(norm, lightDir), 0.0);
+                vec3 diffuse = diff * lightColor;
+                float specularStrength = 0.5; 
+                vec3 viewDir = normalize(viewPos - FragPos); 
+                vec3 reflectDir = reflect(-lightDir, norm);
+                float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+                vec3 specular = specularStrength * spec * lightColor;
+                vec3 result = (ambient + diffuse + specular) * objectColor;
+                FragColor = vec4(result, 1.0);
+            })";
 
-        })";
-    //将source编译为指定类型的着色器，并添加到此着色器程序
-    if (!m_shaderProgram.addCacheableShaderFromSourceCode(
-        QOpenGLShader::Vertex, vertex_str)) {
-        qDebug() << "compiler vertex error" << m_shaderProgram.log();
-    }
-    if (!m_shaderProgram.addCacheableShaderFromSourceCode(
-        QOpenGLShader::Fragment, fragment_str)) {
-        qDebug() << "compiler fragment error" << m_shaderProgram.log();
-    }
-    //使用addShader()将添加到该程序的着色器链接在一起。
-    if (!m_shaderProgram.link()) {
-        qDebug() << "link shaderprogram error" << m_shaderProgram.log();
-    }
+    // 顶点着色器
+    QOpenGLShader* vertexShader = new QOpenGLShader(QOpenGLShader::Vertex, this);
+    //vertexShader->compileSourceFile("E:\\learning\\OpenGL_learning\\ColorAndLightLearning\\ColorLightTest\\ShaderFile\\basic_lighting_vs.hlsli");
+    vertexShader->compileSourceCode(vertexShaderCode);
+    // 片段着色器
+    QOpenGLShader* fragmentShader = new QOpenGLShader(QOpenGLShader::Fragment, this);
+    //fragmentShader->compileSourceFile("E:\\learning\\OpenGL_learning\\ColorAndLightLearning\\ColorLightTest\\ShaderFile\\basic_lighting_fs.hlsli");
+    fragmentShader->compileSourceCode(fragmentShaderCode);
+    m_shaderProgram = new QOpenGLShaderProgram;
+    m_shaderProgram->addShader(vertexShader);
+    m_shaderProgram->addShader(fragmentShader);
 
-    // 测试的方块
-    float vertices[] = {
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-        0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-        0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-        0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-        0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-        0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-        0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-        0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-    };
-
-
-
-    //makeCurrent();
+    m_shaderProgram->link();
+    m_shaderProgram->bind();
     m_VAO.create();
     m_VAO.bind();
-
-    m_VBO = QOpenGLBuffer(QOpenGLBuffer::VertexBuffer);
+   // QOpenGLVertexArrayObject::Binder{ &m_VAO };
     m_VBO.create();
     m_VBO.bind();
-    // openmesh读取的牙齿模型的顶点
-    //m_VBO.allocate(&m_mesh.points()[0], m_mesh.n_vertices());
-     
-    
-    // 测试用的方块数据
-    m_VBO.allocate(vertices,sizeof(vertices));
-     
-    
-    
-   // position attribute
-    m_shaderProgram.setAttributeBuffer(0, GL_FLOAT, 0, 3, sizeof(GLfloat) * 5);
-    m_shaderProgram.enableAttributeArray(0);
+
+
+    m_VBO.allocate(m_vertex.data(), m_vertex.size()*sizeof(float));
+    // 设置物体的颜色
+    m_shaderProgram->setUniformValue("objectColor", QVector3D(0.5f, 0.5f, 0.5f));
+    // 设置灯光的颜色
+    m_shaderProgram->setUniformValue("lightColor", QVector3D(1.0f, 1.0f, 1.0f));
+    m_shaderProgram->setAttributeBuffer("aPos", GL_FLOAT, 0, 3, 8 * sizeof(float));
+    m_shaderProgram->enableAttributeArray("aPos");
+    m_shaderProgram->setAttributeBuffer("aNormal", GL_FLOAT, sizeof(float) * 3, 3, 8 * sizeof(float));
+    m_shaderProgram->enableAttributeArray("aNormal");
+    //m_shaderProgram->setAttributeBuffer(2, GL_FLOAT, sizeof(GL_FLOAT) *6, 2, 8 * sizeof(float));
+    //m_shaderProgram->enableAttributeArray(2);
+
+    m_shaderProgram->release();
+    m_VAO.release();
+
+    m_meshPosition = QVector3D(0.0f, 0.0f, m_vertex[0]);
+
 
 }
 
@@ -157,250 +161,90 @@ void FoxOpenGLWidget::resizeGL(int w, int h)
 	glViewport(0, 0, w, h);
 }
 
-static QVector3D cubePositions[] = {
-    QVector3D(0.0f,  0.0f,  0.0f),
-    QVector3D(2.0f,  5.0f, -15.0f),
-    QVector3D(-1.5f, -2.2f, -2.5f),
-    QVector3D(-3.8f, -2.0f, -12.3f),
-    QVector3D(2.4f, -0.4f, -3.5f),
-    QVector3D(-1.7f,  3.0f, -7.5f),
-    QVector3D(1.3f, -2.0f, -2.5f),
-    QVector3D(1.5f,  2.0f, -2.5f),
-    QVector3D(1.5f,  0.2f, -1.5f),
-    QVector3D(-1.3f,  1.0f, -1.5f)
-};
-
 
 void FoxOpenGLWidget::paintGL()
 {
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    //因为我们使用了深度测试，需要在每次渲染迭代之前清除深度缓冲
+    //（否则前一帧的深度信息仍然保存在缓冲中）
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        //因为我们使用了深度测试，需要在每次渲染迭代之前清除深度缓冲
-        //（否则前一帧的深度信息仍然保存在缓冲中）
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //Z缓冲(Z-buffer)，也被称为深度缓冲(Depth Buffer)
+    glEnable(GL_DEPTH_TEST); //默认关闭的
 
-        //Z缓冲(Z-buffer)，也被称为深度缓冲(Depth Buffer)
-        glEnable(GL_DEPTH_TEST); //默认关闭的
+    m_shaderProgram->bind();
 
-        m_shaderProgram.bind();
-        m_VAO.bind();
+    QMatrix4x4 projection;
+    projection.perspective(45.0f, (float)width() / (float)height(), 0.1f, 100.0f);
 
-        // 模型单位矩阵
-        QMatrix4x4 model;
-        model.scale(20.0f, 20.0f);
-        m_shaderProgram.setUniformValue("model", model);
+    QMatrix4x4 view = m_camera->getViewMatrix();
+    //QMatrix4x4 view;
+    QMatrix4x4 model;
+    model.translate(m_meshPosition);
+    model.scale(0.5f);
 
-        // 视图矩阵
-        m_shaderProgram.setUniformValue("view", getViewMatrix());
+    m_shaderProgram->setUniformValue("projection", projection);
+    m_shaderProgram->setUniformValue("view", view);
+    m_shaderProgram->setUniformValue("model", model);
 
-        // 投影矩阵
-        QMatrix4x4 projection;
-        projection.perspective(projectionFovy, 1.0f * width() / height(), 0.1f, 100.0f);
-        m_shaderProgram.setUniformValue("projection", projection);
-        // 绘制牙齿stl模型
-        //glDrawArrays(GL_TRIANGLES, 0, m_mesh.n_vertices());
+    m_VAO.bind();
+    glDrawArrays(GL_TRIANGLES, 0, m_vertex.size());
 
-        // 绘制测试用的方块箱子
-        for (unsigned int i = 0; i < 10; i++) {
-            //计算模型矩阵
-            QMatrix4x4 model;
-            //平移
-            model.translate(cubePositions[i]);
-            //这样每个箱子旋转的速度就不一样
-            float angle = (i + 1.0f) * rotate;
-            //旋转
-            model.rotate(angle, QVector3D(1.0f, 0.3f, 0.5f));
-            //传入着色器并绘制
-            m_shaderProgram.setUniformValue("model", model);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
-
-        m_VAO.release();
-        //m_VBO.release();
-        m_shaderProgram.release();
-
-    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-   
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // 渲染模式为填充
-    //
-    //// 开始渲染模型
-    //glMatrixMode(GL_MODELVIEW);
-    //glLoadIdentity();
-    //glEnableClientState(GL_VERTEX_ARRAY);
-    //glBegin(GL_TRIANGLES);
-    //for (Cart3D::OpenTriMesh::FaceIter f_it = m_mesh.faces_begin(); f_it != m_mesh.faces_end(); ++f_it) {
-    //    for (Cart3D::OpenTriMesh::FaceVertexIter fv_it = m_mesh.fv_begin(*f_it); fv_it != m_mesh.fv_end(*f_it); ++fv_it) {
-    //        Cart3D::OpenTriMesh::Point point = m_mesh.point(*fv_it);
-    //        //auto normal = m_mesh.normal(*fv_it).data();
-    //        glColor3f(point[0]+0.5, point[1]+0.5, point[2]+0.5);
-    //        //glNormal3fv((const float*)normal);
-    //        glVertex3f(point[0], point[1], point[2]);
-    //    }
-    //}
-    //glEnd();
-
-    //glDisableClientState(GL_VERTEX_ARRAY);
-
-
-
-
-}
-
-QMatrix4x4 FoxOpenGLWidget::getViewMatrix()
-{
-    QMatrix4x4 view; //观察矩阵
-    view.lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-    //view.lookAt(QVector3D(0.0f, 0.0f, -5.0f), QVector3D(0.0f, 0.0f, 0.0f), QVector3D(0.0f, 1.0f,0.0f));
-    return view;
-}
-
-void FoxOpenGLWidget::calculateCamera()
-{
-    const float yaw = qDegreesToRadians(eulerYaw);
-    const float pitch = qDegreesToRadians(eulerPitch);
-    QVector3D front;
-    front.setX(std::cos(yaw) * std::cos(pitch));
-    front.setY(std::sin(pitch));
-    front.setZ(std::sin(yaw) * std::cos(pitch));
-    cameraFront = front.normalized();
+    m_lighting->setLightingMatrix4x4(projection, view);
+    m_lighting->drawLightingArrays();
 
 }
 
 void FoxOpenGLWidget::mousePressEvent(QMouseEvent* event)
 {
-    m_lastMousePos = event->pos();
+    std::cout << "点击事件\n";
+   // m_lastMousePos = event->pos();
 }
 
 void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 {
-   // printf("void MyOpenGLWidget::mouseMoveEvent(QMouseEvent* event)\n");
-
-    // 判断鼠标按钮
-    //Qt::MouseButtons buttons = event->buttons();
-    //if (buttons & Qt::LeftButton) {
-    //    // 左键旋转
-    //    // 计算鼠标移动的距离
-    //    int dx = event->x() - m_lastMousePos.x();
-    //    int dy = event->y() - m_lastMousePos.y();
-
-    //    // 根据移动距离进行旋转
-    //    float angleX = M_PI * dy / height();
-    //    float angleY = M_PI * dx / width();
-
-    //    // 遍历网格的顶点，并根据旋转角度进行坐标变换
-    //    for (Cart3D::OpenTriMesh::VertexIter v_it = m_mesh.vertices_begin(); v_it != m_mesh.vertices_end(); ++v_it)
-    //    {
-    //        Cart3D::OpenTriMesh::Point& point = m_mesh.point(*v_it);
-    //        // 绕X轴旋转
-    //        point = Cart3D::OpenTriMesh::Point(
-    //            point[0],
-    //            point[1] * cos(angleX) - point[2] * sin(angleX),
-    //            point[1] * sin(angleX) + point[2] * cos(angleX)
-    //        );
-    //        // 绕Y轴旋转
-    //        point = Cart3D::OpenTriMesh::Point(
-    //            point[0] * cos(angleY) + point[2] * sin(angleY),
-    //            point[1],
-    //            -point[0] * sin(angleY) + point[2] * cos(angleY)
-    //        );
-    //    }
-    //}
-    //else if (buttons & Qt::RightButton) {
-    //    // 右键拖动
-    //    // 计算鼠标移动的距离
-    //    int dx = event->x() - m_lastMousePos.x();
-    //    int dy = event->y() - m_lastMousePos.y();
-
-    //    // 根据移动距离进行平移
-    //    float translationX = dx / float(width());
-    //    float translationY = -dy / float(height());
-
-    //    // 遍历网格的顶点，并根据平移距离进行坐标变换
-    //    for (Cart3D::OpenTriMesh::VertexIter v_it = m_mesh.vertices_begin(); v_it != m_mesh.vertices_end(); ++v_it)
-    //    {
-    //        Cart3D::OpenTriMesh::Point& point = m_mesh.point(*v_it);
-    //        point[0] += translationX;
-    //        point[1] += translationY;
-    //    }
-    //}
-
+    std::cout << "移动事件\n";
+    //event->accept();
+    //int x_offset = event->pos().x() - m_lastMousePos.x();
+    //int y_offset = event->pos().y() - m_lastMousePos.y();
     //m_lastMousePos = event->pos();
+    ////y轴的坐标是从下往上，所以相反
+    ////我这里移动的是摄像机，所以场景往相反方向动
+    //eulerYaw += x_offset * cameraSensitivity;
+    //eulerPitch -= y_offset * cameraSensitivity;
 
+    //if (eulerPitch > 89.0f)
+    //    eulerPitch = 89.0f;
+    //else if (eulerPitch < -89.0f)
+    //    eulerPitch = -89.0f;
+    //calculateCamera();
 
-    event->accept();
-    int x_offset = event->pos().x() - m_lastMousePos.x();
-    int y_offset = event->pos().y() - m_lastMousePos.y();
-    m_lastMousePos = event->pos();
-    //y轴的坐标是从下往上，所以相反
-    //我这里移动的是摄像机，所以场景往相反方向动
-    eulerYaw += x_offset * cameraSensitivity;
-    eulerPitch -= y_offset * cameraSensitivity;
-
-    if (eulerPitch > 89.0f)
-        eulerPitch = 89.0f;
-    else if (eulerPitch < -89.0f)
-        eulerPitch = -89.0f;
-    calculateCamera();
-
-    update(); // 触发重绘
+    //update(); // 触发重绘
 }
 
 void FoxOpenGLWidget::wheelEvent(QWheelEvent* event)
 {
-    // 计算缩放因子
-    //float scaleFactor = 1.0 + event->angleDelta().y() / 1200.0;
-
-    //// 遍历网格的顶点，并根据缩放因子进行坐标变换
-    //for (Cart3D::OpenTriMesh::VertexIter v_it = m_mesh.vertices_begin(); v_it != m_mesh.vertices_end(); ++v_it)
-    //{
-    //    Cart3D::OpenTriMesh::Point& point = m_mesh.point(*v_it);
-    //    point *= scaleFactor; // 缩放顶点坐标
+    ////std::cout << "滑动滚轮事件\n";
+    //event->accept();
+    ////fovy越小，模型看起来越大
+    //if (event->delta() < 0) {
+    //    //鼠标向下滑动为-，这里作为zoom out
+    //    projectionFovy += cameraSpeed;
+    //    if (projectionFovy > 90)
+    //        projectionFovy = 90;
+    //}
+    //else {
+    //    //鼠标向上滑动为+，这里作为zoom in
+    //    projectionFovy -= cameraSpeed;
+    //    if (projectionFovy < 1)
+    //        projectionFovy = 1;
     //}
 
-    event->accept();
-    //fovy越小，模型看起来越大
-    if (event->delta() < 0) {
-        //鼠标向下滑动为-，这里作为zoom out
-        projectionFovy += cameraSpeed;
-        if (projectionFovy > 90)
-            projectionFovy = 90;
-    }
-    else {
-        //鼠标向上滑动为+，这里作为zoom in
-        projectionFovy -= cameraSpeed;
-        if (projectionFovy < 1)
-            projectionFovy = 1;
-    }
-
-    update(); // 触发重绘
 }
 
 void FoxOpenGLWidget::keyPressEvent(QKeyEvent* event)
 {
-    //横向是移动，不是绕0点
-    switch (event->key()) {
-    case Qt::Key_W: //摄像机往上，场景往下
-        cameraPos -= QVector3D::crossProduct(cameraFront, cameraRight).normalized() * cameraSpeed;
-        break;
-    case Qt::Key_S: //摄像机往下，场景往上
-        cameraPos += QVector3D::crossProduct(cameraFront, cameraRight).normalized() * cameraSpeed;
-        break;
-    case Qt::Key_A: //摄像机往左，场景往右
-        cameraPos -= QVector3D::crossProduct(cameraFront, cameraUp).normalized() * cameraSpeed;
-        break;
-    case Qt::Key_D: //摄像机往右，场景往左
-        cameraPos += QVector3D::crossProduct(cameraFront, cameraUp).normalized() * cameraSpeed;
-        break;
-    case Qt::Key_E: //远
-        cameraPos -= cameraFront * cameraSpeed;
-        break;
-    case Qt::Key_Q: //近
-        cameraPos += cameraFront * cameraSpeed;
-        break;
-    default:
-        break;
-    }
-    update();
+
 
 
 }
