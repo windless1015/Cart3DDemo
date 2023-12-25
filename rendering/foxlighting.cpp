@@ -114,6 +114,8 @@ FoxLighting::~FoxLighting()
 		delete m_shaderProgram;
 		m_shaderProgram = nullptr;
 	}
+	m_lightingVAO.destroy();
+	m_lightingVBO.destroy();
 }
 
 void FoxLighting::setLightingPosition(QVector3D position)
@@ -137,7 +139,7 @@ void FoxLighting::setLightingMatrix4x4(QMatrix4x4 projection, QMatrix4x4 view)
 	m_shaderProgram->setUniformValue("view", view);
 	QMatrix4x4 lightingModel;
 	lightingModel.translate(m_position);
-	lightingModel.scale(0.2f);
+	lightingModel.scale(0.9f);
 	m_shaderProgram->setUniformValue("view", lightingModel);
 }
 
@@ -145,7 +147,6 @@ void FoxLighting::drawLightingArrays()
 {
 	m_shaderProgram->bind();
 	m_lightingVAO.bind();
-	
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
 }

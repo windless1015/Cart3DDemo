@@ -16,29 +16,28 @@
 #include <QOpenGLBuffer>
 #include <QOpenGLShaderProgram>
 #include <QtMath>
-
+#include <QElapsedTimer>
+#include <QOpenGLTexture>
 #include <QKeyEvent>
 
 
 #include <common/Util/OpenMeshUtil.h>
-//
+
 class FoxCamera;
 class FoxLighting;
+class FoxMeshModel;
 class FoxOpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
 
 public:
     FoxOpenGLWidget(QWidget* parent);
     ~FoxOpenGLWidget();
-
-    // 通过文件路径加载网格模型
-    void loadSTLFile(const std::string& path);
-    
-    // 设置加载网格
-    void setLoadMesh(Cart3D::OpenTriMesh mesh);
-
     // 设置顶点数据
     void setVertex(std::vector<float> vertex);
+    // 键盘输入
+    void keyboardPressInput(QKeyEvent* event);
+    // 读取文件夹
+    void openMeshFolderPath(QString path);
 
 protected:
     // 初始化
@@ -53,24 +52,34 @@ protected:
     void mouseMoveEvent(QMouseEvent* event) override;
     void wheelEvent(QWheelEvent* event) override;
 
-    void keyPressEvent(QKeyEvent* event) override;
-
 
 private:
+    std::vector<float> m_vertex;
+    QVector3D m_lightPos;
     Cart3D::OpenTriMesh m_mesh;
     QPoint m_lastMousePos;
-
+    bool m_firstMouse;
+    // 计时器
+    QElapsedTimer m_elapsedTimer;
+    float m_deltatime;
+    float m_lastFrame;
+    // 着色器程序
     QOpenGLShaderProgram *m_shaderProgram;
-    QOpenGLVertexArrayObject m_VAO;
-    QOpenGLBuffer m_VBO;
-
     // 网格的位置
     QVector3D m_meshPosition;
-    std::vector<float> m_vertex;
-
     // 相机
     FoxCamera* m_camera;
     // 灯光
     FoxLighting* m_lighting;
+
+    // 牙齿模型
+    std::shared_ptr<FoxMeshModel> m_toothMeshModel;
+    // 牙龈模型
+    std::shared_ptr<FoxMeshModel> m_gingivaMeshModel;
+
+    // 牙齿纹理
+    QOpenGLTexture* m_toothTexture;
+    // 牙龈纹理
+    QOpenGLTexture* m_gingivaTexture;
 };
 

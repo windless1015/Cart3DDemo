@@ -33,16 +33,16 @@ set(PROJECT_SOURCES
         "mainwindow.h"
         "mainwindow.ui"
 
-        "foxopenGLwidget.h"
-        "foxopenGLwidget.cpp"
+        "view/foxopenGLwidget.h"
+        "view/foxopenGLwidget.cpp"
 
-        "foxmeshmodel.h"
-        "foxmeshmodel.cpp"
+        "model/foxmeshmodel.h"
+        "model/foxmeshmodel.cpp"
 
-        "foxcamera.h"
-        "foxcamera.cpp"
-        "foxlighting.h"
-        "foxlighting.cpp"
+        "rendering/foxcamera.h"
+        "rendering/foxcamera.cpp"
+        "rendering/foxlighting.h"
+        "rendering/foxlighting.cpp"
 )
 
 

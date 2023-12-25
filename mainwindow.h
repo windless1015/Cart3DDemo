@@ -25,11 +25,16 @@ private slots:
     void slotsShowCutMesh();
     // 显示被切割的网格
     void slotsShowBeCutMesh();
+    // 打开文件夹
+    void slotsOpenMeshFolder();
+
+protected:
+    void keyPressEvent(QKeyEvent* event) override;
 
 private:
    Ui::MainWindow *ui;
    FoxOpenGLWidget* m_foxOpenGLWidget;
-   std::shared_ptr<FoxMeshModel> m_foxMeshModel;
+   //std::shared_ptr<FoxMeshModel> m_foxMeshModel;
 
 };
 

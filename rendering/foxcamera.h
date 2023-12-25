@@ -4,10 +4,12 @@
 #include <QtMath>
 #include <QVector3D>
 #include <QObject>
+#include <qopengl.h>
+#include <QKeyEvent>
 
 const float YAW = -90.0f;
 const float PITCH = 0.0f;
-const float SPEED = 2.5f;
+const float SPEED = 4.5f;
 const float SENSITIVITY = 0.1f;
 const float ZOOM = 45.0f;
 
@@ -16,15 +18,21 @@ class FoxCamera:public QObject
 {
 
 public:
-	FoxCamera();
+	FoxCamera(QVector3D position=QVector3D(0.0f, 0.0f, 0.0f),QVector3D up=QVector3D(0.0f, 1.0f, 0.0f),
+		float yaw=YAW,float pitch = PITCH);
 	~FoxCamera();
-
+	float getCameraZoom();
+	QVector3D getPosition();
 	// 设置相机的位置
 	void setPosition(QVector3D position);
-
 	// 返回欧拉角和lookat矩阵计算的视图矩阵
 	QMatrix4x4 getViewMatrix();
+	// 处理鼠标事件
+	void processMouseMovement(float xoffset, float yoffset,GLboolean constrainPitch =true);
+	// 处理键盘事件
+	void processKeyboard(QKeyEvent* event, float deltaTime);
 
+protected:
 	// 更新相机的向量
 	void updateCameraVectors();
 

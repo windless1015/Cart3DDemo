@@ -9,13 +9,8 @@
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLShaderProgram>
 #include <QObject>
+
 // 灯光类
-// 灯光所具有的属性
-// 1. 灯光自己的着色器
-// 2. 灯光的位置
-// 3. 灯光的模型顶点(这里就是个简单的盒子)
-
-
 class FoxLighting:public QObject, public QOpenGLFunctions
 {
 

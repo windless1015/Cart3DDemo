@@ -31,6 +31,8 @@
     <addaction name="actionCutting"/>
     <addaction name="actionShowL"/>
     <addaction name="actionShowR"/>
+    <addaction name="actionShowToothAndGingiva"/>
+    <addaction name="actionOpenMeshFolder"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -47,12 +49,22 @@
   </action>
   <action name="actionShowL">
    <property name="text">
-    <string>ShowL</string>
+    <string>ShowTooth</string>
    </property>
   </action>
   <action name="actionShowR">
    <property name="text">
-    <string>ShowR</string>
+    <string>ShowGingiva</string>
+   </property>
+  </action>
+  <action name="actionShowToothAndGingiva">
+   <property name="text">
+    <string>ShowToothAndGingiva</string>
+   </property>
+  </action>
+  <action name="actionOpenMeshFolder">
+   <property name="text">
+    <string>Open Mesh Folder</string>
    </property>
   </action>
  </widget>
