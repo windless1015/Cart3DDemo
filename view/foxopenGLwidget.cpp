@@ -25,8 +25,11 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent):QOpenGLWidget(parent)
 
 FoxOpenGLWidget::~FoxOpenGLWidget()
 {
+    // 确保释放opengl资源时上下文正确
+    makeCurrent();
     delete m_camera;
     delete m_lighting;
+    doneCurrent();
 }
 
 void FoxOpenGLWidget::setVertex(std::vector<float> vertex)
@@ -164,6 +167,7 @@ void FoxOpenGLWidget::initializeGL()
     m_shaderProgram->bind();
 
 
+  
     // 加载两个模型
     m_toothMeshModel = std::make_shared<FoxMeshModel>();
     // 读取牙齿文件夹路径，读取文件夹目录下的所有stl
