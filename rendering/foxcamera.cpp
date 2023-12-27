@@ -76,6 +76,23 @@ void FoxCamera::processKeyboard(QKeyEvent* event, float deltaTime)
 
 }
 
+void FoxCamera::wheelScrollEvent(float yoffset)
+{
+
+
+	m_zoom -= yoffset;
+	// ÏÞ¶¨·¶Î§
+	if (m_zoom < 1.0f) {
+		m_zoom = 1.0f;
+	}
+	if (m_zoom > 45.0f)
+	{
+		m_zoom = 45.0f;
+	}
+
+
+}
+
    
 
 void FoxCamera::updateCameraVectors()

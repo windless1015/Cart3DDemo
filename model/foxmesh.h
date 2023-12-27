@@ -24,10 +24,6 @@ public:
 	// 绘制网格模型
 	void darw(QOpenGLShaderProgram* shaderProgram);
 
-	QOpenGLVertexArrayObject* getVAO() { return &m_VAO; }
-	int getVertexSize() { return m_vertexData.size(); }
-	std::vector<float> getVertex() { return m_vertexData; }
-
 private:
 	void setupMesh();
 

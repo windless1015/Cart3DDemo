@@ -27,6 +27,10 @@ private slots:
     void slotsShowBeCutMesh();
     // 打开文件夹
     void slotsOpenMeshFolder();
+    // 打开文件
+    void slotsOpenMeshFile();
+    // 使用纹理
+    void slotsUseTexture();
 
 protected:
     void keyPressEvent(QKeyEvent* event) override;
@@ -34,7 +38,7 @@ protected:
 private:
    Ui::MainWindow *ui;
    FoxOpenGLWidget* m_foxOpenGLWidget;
-   //std::shared_ptr<FoxMeshModel> m_foxMeshModel;
-
+   // 纹理开个状态  true:开   false:关
+   bool m_actionUseTextureStatus;
 };
 

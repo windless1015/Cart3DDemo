@@ -11,8 +11,6 @@
 // cart3D
 #include <Util/OpenMeshUtil.h>
 
-
-
 /// <summary>
 ///  负责处理网格模型 
 ///  包括切割 切割
@@ -20,6 +18,7 @@
 class FoxMesh;
 class FoxMeshModel
 {
+	typedef std::shared_ptr<FoxMesh> sptr_FoxMesh;
 public:
 	FoxMeshModel();
 	~FoxMeshModel();
@@ -53,7 +52,7 @@ private:
 	Cart3D::OpenTriMesh m_beCutMesh; 
 	Cart3D::OpenTriMesh m_cutMesh;
 	
-	std::vector<FoxMesh*> m_foxMeshs;
+	std::vector<sptr_FoxMesh> m_foxMeshs;
 	std::vector<Cart3D::OpenTriMesh> m_openTriMeshs;
 	QOpenGLShaderProgram* m_shaderProgram;
 };

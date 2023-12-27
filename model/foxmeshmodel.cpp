@@ -31,10 +31,6 @@ FoxMeshModel::FoxMeshModel()
 
 FoxMeshModel::~FoxMeshModel()
 {
-	for (auto& foxmesh : m_foxMeshs) {
-		delete foxmesh;
-	}
-
 }
 
 void FoxMeshModel::setMeshFileName(const std::string& meshFileName)
@@ -49,7 +45,7 @@ void FoxMeshModel::setMeshFileFolder(const std::string& meshFolderPath)
 	QString path = QString::fromStdString(meshFolderPath);
 	QDir directory(path); // 替换为你的文件夹路径
 	if (!directory.exists()) {
-		qDebug() << "文件夹不存在";
+		qDebug() << QString::fromLocal8Bit("文件夹不存在");
 		return;
 	}
 	directory.setFilter(QDir::Files | QDir::NoDotAndDotDot);
@@ -59,7 +55,6 @@ void FoxMeshModel::setMeshFileFolder(const std::string& meshFolderPath)
 		// 做一个文件名拼接
 		QString name = path + "\\" + file;
 		std::string fileName = name.toStdString();
-		//std::cout << "file name:" << fileName << "\n";
 		// 将文件名转化为网格
 		Cart3D::OpenTriMesh mesh = fileNameToMeshData(fileName);
 		m_openTriMeshs.push_back(mesh);
@@ -125,7 +120,7 @@ void FoxMeshModel::addMesh(QOpenGLShaderProgram* shader)
 	for (auto& mesh : m_openTriMeshs)
 	{
 		std::vector<float> vertex = meshDataToVertexData(mesh);
-		FoxMesh* mesh = new FoxMesh(vertex, shader);
+		sptr_FoxMesh mesh = std::make_shared<FoxMesh>(vertex, shader);
 		m_foxMeshs.push_back(mesh);
 	}
 
@@ -170,11 +165,11 @@ Cart3D::OpenTriMesh FoxMeshModel::fileNameToMeshData(const std::string& fileName
 	mesh.request_vertex_normals();
 	if (IO::read_mesh(mesh, fileName.data())) {
 		qDebug() << "Loaded STL file: " << fileName.data();
+		setMeshNormals(mesh);
 	}
 	else {
 		qDebug() << "Failed to load STL file: " << fileName.data();
 	}
-	setMeshNormals(mesh);
 	return mesh;
 }
 

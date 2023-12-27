@@ -31,6 +31,8 @@ public:
 	void processMouseMovement(float xoffset, float yoffset,GLboolean constrainPitch =true);
 	// 处理键盘事件
 	void processKeyboard(QKeyEvent* event, float deltaTime);
+	// 处理鼠标滚轮事件
+	void wheelScrollEvent(float yoffset);
 
 protected:
 	// 更新相机的向量

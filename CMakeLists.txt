@@ -38,13 +38,15 @@ set(PROJECT_SOURCES
 
         "model/foxmeshmodel.h"
         "model/foxmeshmodel.cpp"
-	"model/foxmesh.h"	
-	"model/foxmesh.cpp"
+	    "model/foxmesh.h"	
+	    "model/foxmesh.cpp"
 
         "rendering/foxcamera.h"
         "rendering/foxcamera.cpp"
         "rendering/foxlighting.h"
         "rendering/foxlighting.cpp"
+        "rendering/foxshaderprogram.h" 
+        "rendering/foxshaderprogram.cpp"
 )
 
 
