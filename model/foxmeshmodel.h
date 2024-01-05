@@ -29,10 +29,14 @@ public:
 	// 测试切割算法的例子, 最后生成两个网格
 	void cuttingMesh();
 
-	// 加载网格
+	// 加载网格(绘制网格)
 	void loadMesh(QOpenGLShaderProgram* shader);
 	// 添加网格
 	void addMesh(QOpenGLShaderProgram* shader);
+
+
+	// 模型是否可见 true可见 false 不可见
+	void setVisible(bool isVisible);
 
 private:
 	// 将网格数据转化成顶点数组
@@ -43,17 +47,19 @@ private:
 	void setMeshNormals(Cart3D::OpenTriMesh& mesh);
 
 private:
+	bool m_isVisible;
 	Cart3D::OpenTriMesh m_mesh; // 读取出来的网格
-	std::vector<float> m_testVertex;
-
-	std::vector<float> m_cutMeshVertex;
-	std::vector<float> m_beCutMeshVertex;
 
 	Cart3D::OpenTriMesh m_beCutMesh; 
 	Cart3D::OpenTriMesh m_cutMesh;
 	
 	std::vector<sptr_FoxMesh> m_foxMeshs;
 	std::vector<Cart3D::OpenTriMesh> m_openTriMeshs;
+
+	std::vector<sptr_FoxMesh> m_cuttingFoxMeshs;
+	std::vector<Cart3D::OpenTriMesh> m_cuttingMeshs;
+
+
 	QOpenGLShaderProgram* m_shaderProgram;
 };
 

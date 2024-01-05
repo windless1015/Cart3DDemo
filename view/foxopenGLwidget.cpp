@@ -17,6 +17,7 @@ using namespace OpenMesh;
 
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent):QOpenGLWidget(parent)
 {
+    m_meshIsVisible = true;
     m_firstMouse = true;
     m_useTexturel = false;
     m_deltatime = 0.0f;
@@ -30,7 +31,8 @@ FoxOpenGLWidget::~FoxOpenGLWidget()
     // 确保释放opengl资源时上下文正确
     makeCurrent();
     delete m_camera;
-    doneCurrent();
+    //doneCurrent();
+    std::cout << "~FoxOpenGLWidget\n";
 }
 
 void FoxOpenGLWidget::setVertex(std::vector<float> vertex)
@@ -48,13 +50,12 @@ void FoxOpenGLWidget::keyboardPressInput(QKeyEvent* event)
 void FoxOpenGLWidget::openMeshFolderPath(const QString& path)
 {
     makeCurrent();
-    //m_shaderProgram->bind();
     m_shaderProgram->shaderBind();
     std::string folderPath = path.toStdString();
     m_toothMeshModel->setMeshFileFolder(folderPath);
     m_toothMeshModel->addMesh(m_shaderProgram->getShaderProgram());
     update();
-    //m_shaderProgram->release();
+
     m_shaderProgram->shaderRelease();
 }
 
@@ -75,6 +76,32 @@ void FoxOpenGLWidget::setUseTexture(bool useTexture)
     m_useTexturel = useTexture;
     update();
 }
+
+void FoxOpenGLWidget::hiddenMesh()
+{
+
+    makeCurrent();
+    m_meshIsVisible = false;
+    m_toothMeshModel->setVisible(m_meshIsVisible);
+    update();
+}
+
+void FoxOpenGLWidget::showMesh()
+{
+    makeCurrent();
+    m_meshIsVisible = true;
+    m_toothMeshModel->setVisible(m_meshIsVisible);
+    update();
+}
+
+void FoxOpenGLWidget::cuttingMesh()
+{
+    makeCurrent();
+    m_toothMeshModel->cuttingMesh();
+    m_toothMeshModel->addMesh(m_shaderProgram->getShaderProgram());
+    update();
+}
+
 
 
 
@@ -139,7 +166,6 @@ void FoxOpenGLWidget::paintGL()
     float cameraZoom = m_camera->getCameraZoom();
     projection.perspective(cameraZoom, (float)width() / (float)height(), 0.1f, 100.0f);
 
-
     QMatrix4x4 view = m_camera->getViewMatrix();
     // 模型矩阵
     QMatrix4x4 model;
@@ -149,7 +175,7 @@ void FoxOpenGLWidget::paintGL()
     // 绑定着色器
     m_shaderProgram->useShaderProgram(m_useTexturel,viewPos,projection,view,model);
 
-     // 绘制牙齿
+     // 绘制
      m_toothTexture->bind();
      m_toothMeshModel->loadMesh(m_shaderProgram->getShaderProgram());
 

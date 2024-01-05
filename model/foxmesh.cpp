@@ -15,6 +15,7 @@ FoxMesh::FoxMesh(std::vector<float> vertexData,QOpenGLShaderProgram* shaderProgr
 
 FoxMesh::~FoxMesh()
 {
+	std::cout << "~FoxMesh\n";
 	m_VBO.destroy();
 	m_VAO.destroy();
 }

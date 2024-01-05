@@ -37,7 +37,7 @@ public:
     void setVertex(std::vector<float> vertex);
     // 键盘输入
     void keyboardPressInput(QKeyEvent* event);
-
+    
     /// -------------------菜单事件-------------------
     // 读取文件夹
     void openMeshFolderPath(const QString& path);
@@ -45,6 +45,13 @@ public:
     void openMeshFilePath(const QString& path);
     // 设置使用纹理
     void setUseTexture(bool useTexture);
+    // 隐藏模型
+    void hiddenMesh();
+    // 显示模型
+    void showMesh();
+    // 切割
+    void cuttingMesh();
+
 
     // 窗口的OpenGL事件
 protected:
@@ -63,6 +70,7 @@ protected:
 
 
 private:
+    bool m_meshIsVisible;
     std::vector<float> m_vertex;
     QVector3D m_lightPos;
     //Cart3D::OpenTriMesh m_mesh;

@@ -35,8 +35,8 @@
      <string>网格处理</string>
     </property>
     <addaction name="actionCutting"/>
-    <addaction name="actionShowTooth"/>
-    <addaction name="actionShowGingiva"/>
+    <addaction name="actionVisibleTooth"/>
+    <addaction name="actionVisibleGingiva"/>
     <addaction name="actionShowToothAndGingiva"/>
    </widget>
    <widget class="QMenu" name="menuRendering">
@@ -60,14 +60,14 @@
     <string>分割</string>
    </property>
   </action>
-  <action name="actionShowTooth">
+  <action name="actionVisibleTooth">
    <property name="text">
-    <string>显示牙齿</string>
+    <string>隐藏牙齿</string>
    </property>
   </action>
-  <action name="actionShowGingiva">
+  <action name="actionVisibleGingiva">
    <property name="text">
-    <string>显示牙龈</string>
+    <string>隐藏牙龈</string>
    </property>
   </action>
   <action name="actionShowToothAndGingiva">

@@ -19,14 +19,15 @@ MainWindow::MainWindow(QWidget *parent)
     m_foxOpenGLWidget = new FoxOpenGLWidget(this);
     // 默认是不使用纹理
     m_actionUseTextureStatus = false;
-
+    // 默认是不隐藏
+    m_actionShowToothStatus = false;
     setCentralWidget(m_foxOpenGLWidget);
 
     // 切割
     connect(ui->actionCutting, &QAction::triggered, this, &MainWindow::slotsCuttingMesh);
     // 显示
-    connect(ui->actionShowTooth, &QAction::triggered, this, &MainWindow::slotsShowBeCutMesh);
-    connect(ui->actionShowGingiva, &QAction::triggered, this, &MainWindow::slotsShowCutMesh);
+    connect(ui->actionVisibleTooth, &QAction::triggered, this, &MainWindow::slotsSetVisibleTooth);
+    connect(ui->actionVisibleGingiva, &QAction::triggered, this, &MainWindow::slotsSetVisibleGingiva);
 
     // 打开文件夹
     connect(ui->actionOpenMeshFolder, &QAction::triggered, this, &MainWindow::slotsOpenMeshFolder);
@@ -44,22 +45,26 @@ MainWindow::~MainWindow()
 
 void MainWindow::slotsCuttingMesh()
 {
-    std::cout << "切割.........\n";
-    //m_foxMeshModel->cuttingMesh();
+    m_foxOpenGLWidget->cuttingMesh();
 }
 
-void MainWindow::slotsShowCutMesh()
+void MainWindow::slotsSetVisibleTooth()
 {
-    std::cout << "显示切割网格.....\n";
-    //m_foxOpenGLWidget->setLoadMesh(m_foxMeshModel->getCutMesh());
-    //m_foxOpenGLWidget->setVertex(m_foxMeshModel->getCutMeshVertexs());
+    if (!m_actionShowToothStatus) {
+        ui->actionVisibleTooth->setText(QString::fromLocal8Bit("显示牙齿"));
+        m_foxOpenGLWidget->hiddenMesh();
+        m_actionShowToothStatus = true;
+    }
+    else {
+        ui->actionVisibleTooth->setText(QString::fromLocal8Bit("隐藏牙齿"));
+        m_foxOpenGLWidget->showMesh();
+        m_actionShowToothStatus = false;
+    }
 }
 
-void MainWindow::slotsShowBeCutMesh()
+void MainWindow::slotsSetVisibleGingiva()
 {
-    std::cout << "显示被切割网格.......\n";
-    //m_foxOpenGLWidget->setLoadMesh(m_foxMeshModel->getBeCutMesh());
-    //m_foxOpenGLWidget->setVertex(m_foxMeshModel->getBeCutMehsVertexs());
+
 }
 
 void MainWindow::slotsOpenMeshFolder()

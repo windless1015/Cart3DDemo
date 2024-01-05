@@ -15,7 +15,7 @@
 #include <QOpenGLShaderProgram>
 
 // Õ¯∏Ò¿‡
-class FoxMesh :public QObject, public QOpenGLFunctions
+class FoxMesh : public QOpenGLFunctions
 {
 public:
 	FoxMesh(std::vector<float> vertexData, QOpenGLShaderProgram* shaderProgram);
