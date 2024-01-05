@@ -110,12 +110,12 @@ void FoxOpenGLWidget::initializeGL()
     initializeOpenGLFunctions();
     m_camera = new FoxCamera(QVector3D(0.0f, 0.0f, 6.0f));
     // 设置牙齿纹理图片文件
-    m_toothTexture = new QOpenGLTexture(QImage("E:\\3D\\TestData\\testData\\texture\\ToothTexture.png").mirrored());
+    m_toothTexture = new QOpenGLTexture(QImage(".\\res\\texture\\ToothTexture.png").mirrored());
     m_toothTexture->setMinMagFilters(QOpenGLTexture::LinearMipMapLinear, QOpenGLTexture::Linear);
     m_toothTexture->setWrapMode(QOpenGLTexture::DirectionS, QOpenGLTexture::Repeat);
     m_toothTexture->setWrapMode(QOpenGLTexture::DirectionT, QOpenGLTexture::Repeat);
     // 设置牙龈纹理图片文件
-    m_gingivaTexture = new QOpenGLTexture(QImage("E:\\3D\\TestData\\testData\\texture\\GingivaTexture.png").mirrored());
+    m_gingivaTexture = new QOpenGLTexture(QImage(".\\res\\texture\\GingivaTexture.png").mirrored());
     m_gingivaTexture->setMinMagFilters(QOpenGLTexture::LinearMipMapLinear, QOpenGLTexture::Linear);
     m_gingivaTexture->setWrapMode(QOpenGLTexture::DirectionS, QOpenGLTexture::Repeat);
     m_gingivaTexture->setWrapMode(QOpenGLTexture::DirectionT, QOpenGLTexture::Repeat);

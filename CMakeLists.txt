@@ -68,5 +68,16 @@ if(MSVC)
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different
                     ${CAR3D_DLL}
                     $<TARGET_FILE_DIR:Cart3DDemo>)
+       
+
+      add_custom_command(TARGET Cart3DDemo
+                    POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E  copy_directory  
+                    "${CMAKE_CURRENT_SOURCE_DIR}/res" 
+					$<TARGET_FILE_DIR:Cart3DDemo>/res)
+
+  execute_process( COMMAND ${CMAKE_COMMAND} -E copy_directory 
+  					${CMAKE_CURRENT_SOURCE_DIR}/res 
+					${CMAKE_CURRENT_SOURCE_DIR}/build/res)
 endif()
 

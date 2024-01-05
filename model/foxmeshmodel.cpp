@@ -32,7 +32,7 @@ FoxMeshModel::FoxMeshModel()
 FoxMeshModel::~FoxMeshModel()
 {
 	m_foxMeshs.clear();
-	std::cout << "~FoxMeshModel\n";
+
 }
 
 void FoxMeshModel::setMeshFileName(const std::string& meshFileName)
@@ -321,7 +321,6 @@ void FoxMeshModel::cuttingMesh()
 
 
 	m_mesh = m_openTriMeshs[0];
-	IO::read_mesh(m_mesh, "E:\\3D\\TestData\\testData\\100642730142856\\lower.stl");
 	std::shared_ptr<fcpw::Scene<3>> tree;
 	m_openTriMeshs.clear();
 	// 用于构建几何查询场景
@@ -409,9 +408,6 @@ std::vector<float> FoxMeshModel::meshDataToVertexData(Cart3D::OpenTriMesh& mesh)
 			vertex.push_back(v);
 		}
 	}
-
-	std::cout << "u 坐标" << vertex[6] <<"\n";
-	std::cout << "v 坐标" << vertex[7] << "\n";
 	return vertex;
 }
 
