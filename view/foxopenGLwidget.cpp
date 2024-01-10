@@ -20,6 +20,7 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent):QOpenGLWidget(parent)
     m_meshIsVisible = true;
     m_firstMouse = true;
     m_useTexturel = false;
+    m_isPressMouseLeft = false;
     m_toothMeshModel = std::make_shared<FoxMeshModel>();
 }
 
@@ -96,7 +97,7 @@ void FoxOpenGLWidget::cuttingMesh()
 void FoxOpenGLWidget::initializeGL()
 {
     initializeOpenGLFunctions();
-    m_camera = new FoxCamera(QVector3D(0.0f, 0.0f, 3.0f));
+    m_camera = new FoxCamera(QVector3D(0.0f, 0.0f, 6.0f));
     // 设置牙齿纹理图片文件
     m_toothTexture = new QOpenGLTexture(QImage(".\\res\\texture\\ToothTexture.png").mirrored());
     m_toothTexture->setMinMagFilters(QOpenGLTexture::LinearMipMapLinear, QOpenGLTexture::Linear);
@@ -124,13 +125,14 @@ void FoxOpenGLWidget::initializeGL()
 
     m_meshPosition = QVector3D(0.0f, 0.0f, -30.0f);
     m_shaderProgram->shaderRelease();
-
-    // 矩阵初始化
-    float cameraZoom = m_camera->getCameraZoom();
-    m_projection.perspective(cameraZoom, (float)width() / (float)height(), 0.1f, 100.0f);
+    m_zoom = m_camera->getCameraZoom();
+    m_projection.perspective(m_zoom, (float)width() / (float)height(), 0.1f, 100.0f);
     m_view = m_camera->getViewMatrix();
     m_model.translate(m_meshPosition);
     m_model.scale(0.3f);
+    // 设置观察向量
+    m_viewPos = m_camera->getPosition();
+    qDebug() << m_projection;
 }
 
 void FoxOpenGLWidget::resizeGL(int w, int h)
@@ -146,11 +148,13 @@ void FoxOpenGLWidget::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     //Z缓冲(Z-buffer)，也被称为深度缓冲(Depth Buffer)
     glEnable(GL_DEPTH_TEST); //默认关闭的
+    // 矩阵初始化
+    QMatrix4x4 model = m_model;
+    QMatrix4x4 view = m_view;
+    QMatrix4x4 projection = m_projection;
 
-    // 设置观察向量
-    QVector3D viewPos = m_camera->getPosition();
-    // 绑定着色器
-    m_shaderProgram->useShaderProgram(m_useTexturel,viewPos,m_projection,m_view,m_model);
+    // 绑定着色器 
+    m_shaderProgram->useShaderProgram(m_useTexturel, m_viewPos, projection, view, model);
      // 绘制
      m_toothTexture->bind();
      m_toothMeshModel->loadMesh(m_shaderProgram->getShaderProgram());
@@ -161,13 +165,19 @@ void FoxOpenGLWidget::paintGL()
 void FoxOpenGLWidget::mousePressEvent(QMouseEvent* event)
 {
    // std::cout << "点击事件\n";
-   m_lastMousePos = event->pos();
+    if(event->button() == Qt::LeftButton){
+        m_lastMousePos = event->pos();
+        m_isPressMouseLeft = true;
+    }
 }
 
 void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 {
     //std::cout << "移动事件\n";
     event->accept();
+    // 如果按下的不是左键就没办法移动
+    if (!m_isPressMouseLeft) return;
+
     if(m_firstMouse){
             m_lastMousePos.setX(event->pos().x());
             m_lastMousePos.setY(event->pos().y());
@@ -179,13 +189,12 @@ void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
     m_lastMousePos.setY(event->pos().y());
     float angle = 1.4f;
     m_model.rotate(angle, QVector3D(-yoffset, -xoffset, 0));
-    
     update(); // 触发重绘
+        
 }
 
 void FoxOpenGLWidget::wheelEvent(QWheelEvent* event)
 {
-    
     // 滚动的速度
     float speed = 1;
     // 获取滚轮的返回值滚轮往前滚是正往后是负
@@ -196,7 +205,20 @@ void FoxOpenGLWidget::wheelEvent(QWheelEvent* event)
     if (yoffset < 0)
         yoffset = -speed;
     m_camera->wheelScrollEvent(yoffset);
+    m_zoom = m_camera->getCameraZoom();
+    QMatrix4x4 projection;
+    projection.perspective(m_zoom, (float)width() / (float)height(), 0.1f, 100.0f);
+    m_projection = projection;
     update();
+}
+
+void FoxOpenGLWidget::mouseReleaseEvent(QMouseEvent* event)
+{
+    if (event->button() == Qt::LeftButton) {
+        // 松开左键后设置为false;
+        m_isPressMouseLeft = false;
+    }
+
 }
 
 

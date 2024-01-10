@@ -62,7 +62,7 @@ protected:
     void mousePressEvent(QMouseEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event) override;
     void wheelEvent(QWheelEvent* event) override;
-
+    void mouseReleaseEvent(QMouseEvent* event) override;
 
 private:
     bool m_meshIsVisible;
@@ -70,6 +70,7 @@ private:
     QPoint m_lastMousePos; 
     // 是否是第一次鼠标操作
     bool m_firstMouse;
+    bool m_isPressMouseLeft;
     // 设置是否使用材质
     bool m_useTexturel;
     // 网格的位置
@@ -82,6 +83,8 @@ private:
     QMatrix4x4 m_model;
     QMatrix4x4 m_view;
     QMatrix4x4 m_projection;
+    QVector3D m_viewPos;
+    float m_zoom;
 
     // 牙齿模型
     std::shared_ptr<FoxMeshModel> m_toothMeshModel;

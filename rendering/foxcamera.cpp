@@ -70,7 +70,6 @@ void FoxCamera::wheelScrollEvent(float yoffset)
 	{
 		m_zoom = 45.0f;
 	}
-
 }
 
    
