@@ -62,22 +62,36 @@ target_link_libraries(Cart3DDemo PRIVATE OpenMeshCore OpenMeshTools)
 
 if(MSVC)
     file(GLOB CAR3D_DLL ${Cart3D_DIR}/*.dll)
-    message(${CAR3D_DLL})
-      add_custom_command(TARGET Cart3DDemo
-                    POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    ${CAR3D_DLL}
-                    $<TARGET_FILE_DIR:Cart3DDemo>)
+
+    add_custom_command(TARGET Cart3DDemo
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${CAR3D_DLL}
+            $<TARGET_FILE_DIR:Cart3DDemo>)
        
+    # copy res to release folder
+    add_custom_command(TARGET Cart3DDemo
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E  copy_directory  
+            "${CMAKE_CURRENT_SOURCE_DIR}/res" 
+		    $<TARGET_FILE_DIR:Cart3DDemo>/res)
 
-      add_custom_command(TARGET Cart3DDemo
-                    POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E  copy_directory  
-                    "${CMAKE_CURRENT_SOURCE_DIR}/res" 
-					$<TARGET_FILE_DIR:Cart3DDemo>/res)
+    # copy res to build folder
+    execute_process( COMMAND ${CMAKE_COMMAND} -E copy_directory 
+  			    ${CMAKE_CURRENT_SOURCE_DIR}/res 
+			    ${CMAKE_CURRENT_SOURCE_DIR}/build/res)
 
-  execute_process( COMMAND ${CMAKE_COMMAND} -E copy_directory 
-  					${CMAKE_CURRENT_SOURCE_DIR}/res 
-					${CMAKE_CURRENT_SOURCE_DIR}/build/res)
+    # copy caseData folder to release folder
+    add_custom_command(TARGET Cart3DDemo
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E  copy_directory  
+            "${CMAKE_CURRENT_SOURCE_DIR}/caseData" 
+		    $<TARGET_FILE_DIR:Cart3DDemo>/caseData)
+
+    # copy caseData folder to build folder
+    execute_process( COMMAND ${CMAKE_COMMAND} -E copy_directory 
+  			    ${CMAKE_CURRENT_SOURCE_DIR}/caseData 
+			    ${CMAKE_CURRENT_SOURCE_DIR}/build/caseData)
+
 endif()
 

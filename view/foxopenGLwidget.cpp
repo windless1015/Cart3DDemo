@@ -20,9 +20,6 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent):QOpenGLWidget(parent)
     m_meshIsVisible = true;
     m_firstMouse = true;
     m_useTexturel = false;
-    m_deltatime = 0.0f;
-    m_lastFrame = 0.0f;
-    m_elapsedTimer.start();
     m_toothMeshModel = std::make_shared<FoxMeshModel>();
 }
 
@@ -35,17 +32,8 @@ FoxOpenGLWidget::~FoxOpenGLWidget()
     std::cout << "~FoxOpenGLWidget\n";
 }
 
-void FoxOpenGLWidget::setVertex(std::vector<float> vertex)
-{
-    m_vertex = vertex;
-}
 
-void FoxOpenGLWidget::keyboardPressInput(QKeyEvent* event)
-{
-    // 将事件转移给相机外加计算器时间, 计算时速
-    m_camera->processKeyboard(event, m_deltatime);
-    update();
-}
+
 
 void FoxOpenGLWidget::openMeshFolderPath(const QString& path)
 {
@@ -108,7 +96,7 @@ void FoxOpenGLWidget::cuttingMesh()
 void FoxOpenGLWidget::initializeGL()
 {
     initializeOpenGLFunctions();
-    m_camera = new FoxCamera(QVector3D(0.0f, 0.0f, 6.0f));
+    m_camera = new FoxCamera(QVector3D(0.0f, 0.0f, 3.0f));
     // 设置牙齿纹理图片文件
     m_toothTexture = new QOpenGLTexture(QImage(".\\res\\texture\\ToothTexture.png").mirrored());
     m_toothTexture->setMinMagFilters(QOpenGLTexture::LinearMipMapLinear, QOpenGLTexture::Linear);
@@ -136,6 +124,13 @@ void FoxOpenGLWidget::initializeGL()
 
     m_meshPosition = QVector3D(0.0f, 0.0f, -30.0f);
     m_shaderProgram->shaderRelease();
+
+    // 矩阵初始化
+    float cameraZoom = m_camera->getCameraZoom();
+    m_projection.perspective(cameraZoom, (float)width() / (float)height(), 0.1f, 100.0f);
+    m_view = m_camera->getViewMatrix();
+    m_model.translate(m_meshPosition);
+    m_model.scale(0.3f);
 }
 
 void FoxOpenGLWidget::resizeGL(int w, int h)
@@ -147,41 +142,18 @@ void FoxOpenGLWidget::resizeGL(int w, int h)
 void FoxOpenGLWidget::paintGL()
 {
     // 用于计算相机的移动时速
-    float currentFrame = m_elapsedTimer.elapsed() * 0.001;
-    m_deltatime = currentFrame - m_lastFrame;
-    m_lastFrame = currentFrame;
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    //因为我们使用了深度测试，需要在每次渲染迭代之前清除深度缓冲
-    //（否则前一帧的深度信息仍然保存在缓冲中）
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-   
     //Z缓冲(Z-buffer)，也被称为深度缓冲(Depth Buffer)
     glEnable(GL_DEPTH_TEST); //默认关闭的
 
     // 设置观察向量
     QVector3D viewPos = m_camera->getPosition();
-
-    // 设置投影矩阵
-    QMatrix4x4 projection;
-    float cameraZoom = m_camera->getCameraZoom();
-    projection.perspective(cameraZoom, (float)width() / (float)height(), 0.1f, 100.0f);
-
-    QMatrix4x4 view = m_camera->getViewMatrix();
-    // 模型矩阵
-    QMatrix4x4 model;
-    model.translate(m_meshPosition);
-    model.scale(0.3f);
-
     // 绑定着色器
-    m_shaderProgram->useShaderProgram(m_useTexturel,viewPos,projection,view,model);
-
+    m_shaderProgram->useShaderProgram(m_useTexturel,viewPos,m_projection,m_view,m_model);
      // 绘制
      m_toothTexture->bind();
      m_toothMeshModel->loadMesh(m_shaderProgram->getShaderProgram());
-
-     // 绘制纹理 和绘制牙龈
-     //m_gingivaTexture->bind();
-     //m_gingivaMeshModel->loadMesh(m_shaderProgram->getShaderProgram());
 
 
 }
@@ -205,13 +177,15 @@ void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
     float yoffset = m_lastMousePos.y() - event->pos().y();
     m_lastMousePos.setX(event->pos().x());
     m_lastMousePos.setY(event->pos().y());
-    m_camera->processMouseMovement(xoffset, yoffset);
+    float angle = 1.4f;
+    m_model.rotate(angle, QVector3D(-yoffset, -xoffset, 0));
     
     update(); // 触发重绘
 }
 
 void FoxOpenGLWidget::wheelEvent(QWheelEvent* event)
 {
+    
     // 滚动的速度
     float speed = 1;
     // 获取滚轮的返回值滚轮往前滚是正往后是负

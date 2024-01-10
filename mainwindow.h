@@ -31,9 +31,8 @@ private slots:
     void slotsOpenMeshFile();
     // 使用纹理
     void slotsUseTexture();
-
-protected:
-    void keyPressEvent(QKeyEvent* event) override;
+    // 打开病例
+    void slotsOpenCaseData();
 
 private:
    Ui::MainWindow *ui;

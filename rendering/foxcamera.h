@@ -29,8 +29,7 @@ public:
 	QMatrix4x4 getViewMatrix();
 	// 处理鼠标事件
 	void processMouseMovement(float xoffset, float yoffset,GLboolean constrainPitch =true);
-	// 处理键盘事件
-	void processKeyboard(QKeyEvent* event, float deltaTime);
+
 	// 处理鼠标滚轮事件
 	void wheelScrollEvent(float yoffset);
 

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>796</width>
+    <height>591</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>796</width>
      <height>22</height>
     </rect>
    </property>
@@ -27,8 +27,15 @@
     <property name="title">
      <string>文件</string>
     </property>
+    <widget class="QMenu" name="menuCase">
+     <property name="title">
+      <string>病例</string>
+     </property>
+     <addaction name="actionCaseTest1"/>
+    </widget>
     <addaction name="actionOpenMeshFile"/>
     <addaction name="actionOpenMeshFolder"/>
+    <addaction name="menuCase"/>
    </widget>
    <widget class="QMenu" name="menuMesh">
     <property name="title">
@@ -83,6 +90,11 @@
   <action name="actionUseTexture">
    <property name="text">
     <string>使用纹理</string>
+   </property>
+  </action>
+  <action name="actionCaseTest1">
+   <property name="text">
+    <string>打开142856病例下颌</string>
    </property>
   </action>
  </widget>

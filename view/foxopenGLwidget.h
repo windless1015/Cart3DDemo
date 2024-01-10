@@ -32,12 +32,7 @@ class FoxOpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 
 public:
     FoxOpenGLWidget(QWidget* parent);
-    ~FoxOpenGLWidget();
-    // 设置顶点数据
-    void setVertex(std::vector<float> vertex);
-    // 键盘输入
-    void keyboardPressInput(QKeyEvent* event);
-    
+    ~FoxOpenGLWidget();    
     /// -------------------菜单事件-------------------
     // 读取文件夹
     void openMeshFolderPath(const QString& path);
@@ -71,27 +66,22 @@ protected:
 
 private:
     bool m_meshIsVisible;
-    std::vector<float> m_vertex;
-    QVector3D m_lightPos;
-    //Cart3D::OpenTriMesh m_mesh;
     // 鼠标的位置
     QPoint m_lastMousePos; 
     // 是否是第一次鼠标操作
     bool m_firstMouse;
-    // 计时器
-    QElapsedTimer m_elapsedTimer;
-    float m_deltatime;
-    float m_lastFrame;
     // 设置是否使用材质
     bool m_useTexturel;
     // 网格的位置
     QVector3D m_meshPosition;
-    // 相机
+    // 相机 灯光 着色器
     FoxCamera* m_camera;
-    // 灯光
     FoxLighting* m_lighting;
-    // 着色器
     FoxShaderProgram* m_shaderProgram;
+    // 模型矩阵 视图矩阵 投影矩阵
+    QMatrix4x4 m_model;
+    QMatrix4x4 m_view;
+    QMatrix4x4 m_projection;
 
     // 牙齿模型
     std::shared_ptr<FoxMeshModel> m_toothMeshModel;

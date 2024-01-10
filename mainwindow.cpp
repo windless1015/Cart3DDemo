@@ -23,6 +23,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_actionShowToothStatus = false;
     setCentralWidget(m_foxOpenGLWidget);
 
+
     // 切割
     connect(ui->actionCutting, &QAction::triggered, this, &MainWindow::slotsCuttingMesh);
     // 显示
@@ -35,6 +36,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actionOpenMeshFile, &QAction::triggered, this, &MainWindow::slotsOpenMeshFile);
     // 使用纹理
     connect(ui->actionUseTexture, &QAction::triggered, this, &MainWindow::slotsUseTexture);
+    // 打开病例
+    connect(ui->actionCaseTest1, &QAction::triggered,this,&MainWindow::slotsOpenCaseData);
 }
 
 MainWindow::~MainWindow()
@@ -112,9 +115,9 @@ void MainWindow::slotsUseTexture()
     }
 }
 
-void MainWindow::keyPressEvent(QKeyEvent* event)
+void MainWindow::slotsOpenCaseData()
 {
-
-    m_foxOpenGLWidget->keyboardPressInput(event);
+    // 打开项目内现有的数据100642730142856
+    QString fileName = ".\\caseData\\100642730142856\\lower.stl";
+    m_foxOpenGLWidget->openMeshFilePath(fileName);
 }
-

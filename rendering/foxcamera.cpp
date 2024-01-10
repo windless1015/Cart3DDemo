@@ -35,7 +35,7 @@ void FoxCamera::setPosition(QVector3D position)
 	//updateCameraVectors();
 }
 
-QMatrix4x4 FoxCamera::getViewMatrix()
+QMatrix4x4 FoxCamera::getViewMatrix() 
 {
 	QMatrix4x4 view;
 	view.lookAt(m_position, m_position + m_front, m_up);
@@ -56,29 +56,10 @@ void FoxCamera::processMouseMovement(float xoffset, float yoffset, GLboolean con
 	updateCameraVectors();
 }
 
-void FoxCamera::processKeyboard(QKeyEvent* event, float deltaTime)
-{
 
-	float velocity = m_movementSpeed * deltaTime;
-
-	// w 前进
-	if (event->key() == Qt::Key_W)
-		m_position += m_front * velocity;
-	// s 后退
-	if (event->key() == Qt::Key_S)
-		m_position -= m_front * velocity;
-	// a 左
-	if (event->key() == Qt::Key_A)
-		m_position -= m_right * velocity;
-	// d 右
-	if (event->key() == Qt::Key_D)
-		m_position += m_right * velocity;
-
-}
 
 void FoxCamera::wheelScrollEvent(float yoffset)
 {
-
 
 	m_zoom -= yoffset;
 	// 限定范围
@@ -89,7 +70,6 @@ void FoxCamera::wheelScrollEvent(float yoffset)
 	{
 		m_zoom = 45.0f;
 	}
-
 
 }
 
