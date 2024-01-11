@@ -21,6 +21,7 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent):QOpenGLWidget(parent)
     m_firstMouse = true;
     m_useTexturel = false;
     m_isPressMouseLeft = false;
+    m_isPressMouseMiddle = false;
     m_toothMeshModel = std::make_shared<FoxMeshModel>();
 }
 
@@ -166,31 +167,53 @@ void FoxOpenGLWidget::mousePressEvent(QMouseEvent* event)
 {
    // std::cout << "点击事件\n";
     if(event->button() == Qt::LeftButton){
-        m_lastMousePos = event->pos();
+        m_leftMoveMousePos = event->pos();
         m_isPressMouseLeft = true;
     }
+    if (event->button() == Qt::MiddleButton) {
+        m_middleMoveMousePos = event->pos();
+        m_isPressMouseMiddle = true;
+    }
+
+
 }
 
 void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 {
     //std::cout << "移动事件\n";
     event->accept();
-    // 如果按下的不是左键就没办法移动
-    if (!m_isPressMouseLeft) return;
-
-    if(m_firstMouse){
-            m_lastMousePos.setX(event->pos().x());
-            m_lastMousePos.setY(event->pos().y());
-            m_firstMouse = false;
+    // 如果按下的是左键就移动
+    if (m_isPressMouseLeft) {
+        if(m_firstMouse){
+                m_leftMoveMousePos.setX(event->pos().x());
+                m_leftMoveMousePos.setY(event->pos().y());
+                m_firstMouse = false;
+        }
+        float xoffset = m_leftMoveMousePos.x()- event->pos().x();
+        float yoffset = m_leftMoveMousePos.y() - event->pos().y();
+        m_leftMoveMousePos.setX(event->pos().x());
+        m_leftMoveMousePos.setY(event->pos().y());
+        float angle = 1.4f;
+        m_model.rotate(angle, QVector3D(-yoffset, -xoffset, 0));
     }
-    float xoffset = m_lastMousePos.x()- event->pos().x();
-    float yoffset = m_lastMousePos.y() - event->pos().y();
-    m_lastMousePos.setX(event->pos().x());
-    m_lastMousePos.setY(event->pos().y());
-    float angle = 1.4f;
-    m_model.rotate(angle, QVector3D(-yoffset, -xoffset, 0));
+
+    if (m_isPressMouseMiddle) {
+        if (m_firstMouse) {
+            m_middleMoveMousePos.setX(event->pos().x());
+            m_middleMoveMousePos.setY(event->pos().y());
+            m_firstMouse = false;
+        }
+        float xoffset = m_middleMoveMousePos.x() - event->pos().x();
+        float yoffset = m_middleMoveMousePos.y() - event->pos().y();
+        m_middleMoveMousePos.setX(event->pos().x());
+        m_middleMoveMousePos.setY(event->pos().y());
+        float sensitivity = 0.2;
+        xoffset *= sensitivity;
+        yoffset *= sensitivity;
+        m_model.translate(QVector3D(-xoffset, yoffset, 0));
+    }
+
     update(); // 触发重绘
-        
 }
 
 void FoxOpenGLWidget::wheelEvent(QWheelEvent* event)
@@ -218,6 +241,11 @@ void FoxOpenGLWidget::mouseReleaseEvent(QMouseEvent* event)
         // 松开左键后设置为false;
         m_isPressMouseLeft = false;
     }
+    if (event->button() == Qt::MiddleButton) {
+        m_isPressMouseMiddle = false;
+    }
+
+    
 
 }
 

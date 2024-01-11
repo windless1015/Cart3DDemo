@@ -67,10 +67,12 @@ protected:
 private:
     bool m_meshIsVisible;
     // 鼠标的位置
-    QPoint m_lastMousePos; 
+    QPoint m_leftMoveMousePos; 
+    QPoint m_middleMoveMousePos;
     // 是否是第一次鼠标操作
     bool m_firstMouse;
     bool m_isPressMouseLeft;
+    bool m_isPressMouseMiddle;
     // 设置是否使用材质
     bool m_useTexturel;
     // 网格的位置
