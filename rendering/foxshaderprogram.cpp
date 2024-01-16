@@ -103,9 +103,6 @@ void main()
 
 
 
-// ≤‚ ‘µ∆π‚
-#include "foxlighting.h"
-
 FoxShaderProgram::FoxShaderProgram(QObject* parent)
 {
     m_shaderProgram = new QOpenGLShaderProgram(parent);
