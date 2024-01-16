@@ -103,7 +103,8 @@ void main()
 
 
 
-
+// 测试灯光
+#include "foxlighting.h"
 
 FoxShaderProgram::FoxShaderProgram(QObject* parent)
 {
@@ -142,13 +143,23 @@ void FoxShaderProgram::useShaderProgram(bool useMaterial,QVector3D& viewPosition
     m_shaderProgram->setUniformValue("useMaterial", useMaterial);
     // 物体颜色
     m_shaderProgram->setUniformValue("objectColor", m_objectColor[0], m_objectColor[1], m_objectColor[2]);
-    // 设置灯光
+
+    // ------------------------------------------------
+    // 2024-01-16
+    // 场景中灯管的属性 等下将下面的东西都封装到灯光类中
+    // ------------------------------------------------
+    
+
     m_shaderProgram->setUniformValue("light.position", QVector3D(5.0f, 10.0f, 30.0f));
     m_shaderProgram->setUniformValue("light.ambient", QVector3D(0.3f, 0.3f, 0.3f));
     m_shaderProgram->setUniformValue("light.diffuse", QVector3D(0.7f, 0.7f, 0.7f));
     m_shaderProgram->setUniformValue("light.specular", QVector3D(1.0f, 1.0f, 1.0f));
 
-    // 设置材质
+
+    // ------------------------------------------------
+    // 2024-01-16
+    // 设置材质 后面看看要不要独立出一个foxTexture类在管理纹理
+    // ------------------------------------------------
     m_shaderProgram->setUniformValue("material.specular", QVector3D(0.5f, 0.5f, 0.5f));
     m_shaderProgram->setUniformValue("material.shininess", 64.0f);
 

@@ -2,60 +2,47 @@
 
 
 
-
-#include <qopenglfunctions.h>
 #include <QVector3D>
-#include <QOpenGLBuffer>
-#include <QOpenGLVertexArrayObject>
-#include <QOpenGLShaderProgram>
-#include <QObject>
 
-// 灯光类
-class FoxLighting:public QObject, public QOpenGLFunctions
+/**
+ * @brief 灯光类主要在程序中设置灯光属性.
+ *  主要内容就是包含一些灯光的设置，将这些设置都包含在这个类中
+ *  最后通过get set 的方法获取对应的比如说灯光颜色，灯光的位置漫反射强度镜面反射强度等
+ *  就不需要再着色器程序中设置
+ */
+class QVector3D;
+class FoxLighting
 {
-
 public:
 	FoxLighting();
 	~FoxLighting();
-	/// <summary>
-	///  设置灯光的位置
-	/// </summary>
-	/// <param name="position">传入灯光的三维位置信息，有默认值</param>
-	void setLightingPosition(QVector3D position=QVector3D(5.2f, 10.0f, 30.0f));
-	
-	/// <summary>
-	///  设置灯光的属性
-	/// </summary>
-	/// <param name="ambient">环境光影响强度</param>
-	/// <param name="diffuse">漫反射影响强度</param>
-	/// <param name="specular">镜面反射的影响强度</param>
-	void setLightingProperties(QVector3D ambient,QVector3D diffuse,QVector3D specular);
 
-	/// <summary>
-	///  设置灯光的渲染矩阵
-	/// </summary>
-	/// <param name="projection">投影矩阵</param>
-	/// <param name="view">观察矩阵</param>
-	void setLightingMatrix4x4(QMatrix4x4 projection, QMatrix4x4 view);
+	// 设置和获取环境光强度
+	void setAmbient(QVector3D ambient);
+	QVector3D& getAmbient();
 
-	/// <summary>
-	///  绘制灯光
-	/// </summary>
-	void drawLightingArrays();
+	// 设置和获取灯光颜色
+	void setLightingColor(QVector3D color);
+	QVector3D& getLightingColor();
+
+	// 设置和获取漫反射强度
+	void setDiffuse(QVector3D diffuse);
+	QVector3D& getDiffuse();
+
+	// 设置和获取镜面反射强度
+	void setSpecuar(QVector3D specular);
+	QVector3D& getSpecuar();
+
+	// 设置和获取灯光位置
+	void setPosition(QVector3D position);
+	QVector3D& getPosition();
 
 private:
 	// 灯光属性
-	QVector3D m_position;
-	QVector3D m_ambient;
-	QVector3D m_diffuse;
-	QVector3D m_specular;
-
-	// 灯光的绘制
-	QOpenGLBuffer m_lightingVBO;
-	QOpenGLVertexArrayObject m_lightingVAO;
-	QOpenGLShaderProgram* m_shaderProgram;
-
-	
-
+	QVector3D m_position; // 位置
+	QVector3D m_ambient; // 环境
+	QVector3D m_diffuse; // 漫反射
+	QVector3D m_specular; // 镜面反射
+	QVector3D m_lightingColor; // 灯光颜色
 };
 

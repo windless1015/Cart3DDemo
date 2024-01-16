@@ -28,29 +28,30 @@ find_package(OpenMesh)
 
 
 set(PROJECT_SOURCES
-        "main.cpp"
-        "mainwindow.cpp"
-        "mainwindow.h"
-        "mainwindow.ui"
+"main.cpp"
+"mainwindow.cpp"
+"mainwindow.h"
+"mainwindow.ui"
 
-        "view/foxopenGLwidget.h"
-        "view/foxopenGLwidget.cpp"
+"view/foxopenGLwidget.h"
+"view/foxopenGLwidget.cpp"
 
-        "model/foxmeshmodel.h"
-        "model/foxmeshmodel.cpp"
-	    "model/foxmesh.h"	
-	    "model/foxmesh.cpp"
+"model/foxmeshmodel.h"
+"model/foxmeshmodel.cpp"
+"model/foxmesh.h"	
+"model/foxmesh.cpp"
 
-        "rendering/foxcamera.h"
-        "rendering/foxcamera.cpp"
-        "rendering/foxlighting.h"
-        "rendering/foxlighting.cpp"
-        "rendering/foxshaderprogram.h" 
-        "rendering/foxshaderprogram.cpp"
+"rendering/foxcamera.h"
+"rendering/foxcamera.cpp"
+"rendering/foxlighting.h"
+"rendering/foxlighting.cpp"
+"rendering/foxshaderprogram.h" 
+"rendering/foxshaderprogram.cpp"
 
-        "geometry/foxspheresource.h"
-        "geometry/foxspheresource.cpp"
-)
+"geometry/foxspheresource.h"
+"geometry/foxspheresource.cpp"
+ "rendering/foxrenderer.h"
+ "rendering/foxrenderer.cpp")
 
 
 

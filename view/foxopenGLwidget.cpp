@@ -133,6 +133,11 @@ void FoxOpenGLWidget::initializeGL()
     //m_gingivaMeshModel->setMeshFileName("E:\\3D\\TestData\\testData\\DownArch\\gingiva\\m_CutGumPd0_14.stl");
     //m_gingivaMeshModel->addMesh(m_shaderProgram->getShaderProgram());
 
+    // ------------------------------------------------
+    // 2024-01-16
+    // 下面的这些代码直接交给FoxRenderer类来管理
+    // 在这个三维显示窗口只需要调用 read->draw();
+    // ------------------------------------------------
     m_meshPosition = QVector3D(0.0f, 0.0f, -30.0f);
     m_shaderProgram->shaderRelease();
     m_zoom = m_camera->getCameraZoom();
@@ -158,23 +163,18 @@ void FoxOpenGLWidget::resizeGL(int w, int h)
 
 void FoxOpenGLWidget::paintGL()
 {
-    // 用于计算相机的移动时速
     glClearColor(0.85f, 0.85f, 0.85f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     //Z缓冲(Z-buffer)，也被称为深度缓冲(Depth Buffer)
     glEnable(GL_DEPTH_TEST); //默认关闭的
-    // 矩阵初始化
     QMatrix4x4 model = m_model;
     QMatrix4x4 view = m_view;
     QMatrix4x4 projection = m_projection;
-
      // 绑定着色器 
      m_shaderProgram->useShaderProgram(m_useTexturel, m_viewPos, projection, view, model);
      // 绘制
      m_toothTexture->bind();
      m_toothMeshModel->loadMesh(m_shaderProgram->getShaderProgram());
-
-
 }
 
 void FoxOpenGLWidget::mousePressEvent(QMouseEvent* event)
@@ -188,8 +188,6 @@ void FoxOpenGLWidget::mousePressEvent(QMouseEvent* event)
         m_middleMoveMousePos = event->pos();
         m_isPressMouseMiddle = true;
     }
-
-
 }
 
 void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
@@ -209,14 +207,19 @@ void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
         float yoffset = m_leftMoveMousePos.y() - event->pos().y();
         m_leftMoveMousePos.setX(event->pos().x());
         m_leftMoveMousePos.setY(event->pos().y());
-        //// 旋转角度
-        float angle = 1.4f;
-        //// 进行矩阵的旋转
+
+        // ------------------------------------------------
+        // 2024-01-16
         // 还有点问题，原因就是opengl不知道自身的xyz轴，旋转到了那个轴上
         // 目前有个思路就是判断选择的角度到90的时候改变旋转
         // 当前指向我们的是z轴 QVector3D(-yoffset, -xoffset, 0.0f)  当向右旋转到90度的时候也就是
         // 当模型的x轴指向我们时改变 QVector3D(0.0f, -xoffset, -yoffset)
         // 思路暂时保留, 现在先去重构渲染
+        // 说不定可以交给交互器
+        // ------------------------------------------------
+        //// 旋转角度
+        float angle = 1.4f;
+        //// 进行矩阵的旋转
         m_model.rotate(angle, QVector3D(-yoffset, -xoffset, 0.0f));
     }
     // 判断是否按下的是中键
