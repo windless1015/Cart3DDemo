@@ -212,14 +212,17 @@ void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
         //// 旋转角度
         float angle = 1.4f;
         //// 进行矩阵的旋转
-        qDebug() << "xoffset:" << xoffset;
+        // 还有点问题，原因就是opengl不知道自身的xyz轴，旋转到了那个轴上
+        // 目前有个思路就是判断选择的角度到90的时候改变旋转
+        // 当前指向我们的是z轴 QVector3D(-yoffset, -xoffset, 0.0f)  当向右旋转到90度的时候也就是
+        // 当模型的x轴指向我们时改变 QVector3D(0.0f, -xoffset, -yoffset)
+        // 思路暂时保留, 现在先去重构渲染
         m_model.rotate(angle, QVector3D(-yoffset, -xoffset, 0.0f));
-        
-
     }
     // 判断是否按下的是中键
     if (m_isPressMouseMiddle) {
         if (m_firstMouse) {
+            // 如果是第一次按下记录当前的位置
             m_middleMoveMousePos.setX(event->pos().x());
             m_middleMoveMousePos.setY(event->pos().y());
             m_firstMouse = false;
@@ -231,6 +234,7 @@ void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
         float sensitivity = 0.2;
         xoffset *= sensitivity;
         yoffset *= sensitivity;
+        // 平移模型
         m_model.translate(QVector3D(-xoffset, yoffset, 0));
     }
 
