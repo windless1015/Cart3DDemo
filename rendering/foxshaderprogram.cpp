@@ -2,6 +2,7 @@
 
 
 #include <QOpenGLShaderProgram>
+#include <QVector3D>
 #include <QObject>
 
 // 默认渲染着色器的代码
@@ -53,11 +54,11 @@ uniform vec3 viewPos;
 uniform Material material;
 uniform Light light;
 uniform bool useMaterial;
-
+uniform vec3 objectColor;
 void main()
 {
     vec3 lightColor = vec3(1.0, 1.0, 1.0);
-    vec3 objectColor = vec3(0.5, 0.5, 0.5);
+    //vec3 objectColor = vec3(0.5, 0.5, 0.5);
    
     vec3 ambient;
     if(useMaterial){
@@ -111,7 +112,9 @@ FoxShaderProgram::FoxShaderProgram(QObject* parent)
     m_shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderCode);
     m_shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShadeCode);
     m_shaderProgram->link();
-
+    m_objectColor[0] = { 0.5f };
+    m_objectColor[1] = { 0.5f };
+    m_objectColor[2] = { 0.5f };
 }
 
 FoxShaderProgram::~FoxShaderProgram(){}
@@ -126,10 +129,19 @@ void FoxShaderProgram::shaderRelease()
     m_shaderProgram->release();
 }
 
+void FoxShaderProgram::setObjectColor(float r, float g, float b)
+{
+    m_objectColor[0] = r;
+    m_objectColor[1] = g;
+    m_objectColor[2] = b;
+}
+
 void FoxShaderProgram::useShaderProgram(bool useMaterial,QVector3D& viewPosition, QMatrix4x4& projection, QMatrix4x4& view, QMatrix4x4& model)
 {
     m_shaderProgram->bind();
     m_shaderProgram->setUniformValue("useMaterial", useMaterial);
+    // 物体颜色
+    m_shaderProgram->setUniformValue("objectColor", m_objectColor[0], m_objectColor[1], m_objectColor[2]);
     // 设置灯光
     m_shaderProgram->setUniformValue("light.position", QVector3D(5.0f, 10.0f, 30.0f));
     m_shaderProgram->setUniformValue("light.ambient", QVector3D(0.3f, 0.3f, 0.3f));
@@ -153,6 +165,11 @@ void FoxShaderProgram::useShaderProgram(bool useMaterial,QVector3D& viewPosition
 QOpenGLShaderProgram* FoxShaderProgram::getShaderProgram()
 {
     return m_shaderProgram;
+}
+
+void FoxShaderProgram::setShaderProgram(QOpenGLShaderProgram* shaderProgram)
+{
+    m_shaderProgram = shaderProgram;
 }
 
 

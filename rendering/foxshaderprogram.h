@@ -17,6 +17,9 @@ public:
 	~FoxShaderProgram();
 	void shaderBind();
 	void shaderRelease();
+	
+
+	void setObjectColor(float r,float g,float b);
 
 	/// <summary>
 	///  在渲染时执行着色器
@@ -29,11 +32,12 @@ public:
 	void useShaderProgram(bool useMaterial,QVector3D& viewPosition,QMatrix4x4& projection,QMatrix4x4& view,QMatrix4x4& model);
 
 	QOpenGLShaderProgram* getShaderProgram();
-
+	void setShaderProgram(QOpenGLShaderProgram* shaderProgram);
 private:
 	// 着色器程序
 	QOpenGLShaderProgram* m_shaderProgram;
-
+	// 物体颜色
+	float m_objectColor[3];
 };
 
 

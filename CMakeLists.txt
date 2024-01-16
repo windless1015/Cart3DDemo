@@ -47,6 +47,9 @@ set(PROJECT_SOURCES
         "rendering/foxlighting.cpp"
         "rendering/foxshaderprogram.h" 
         "rendering/foxshaderprogram.cpp"
+
+        "geometry/foxspheresource.h"
+        "geometry/foxspheresource.cpp"
 )
 
 

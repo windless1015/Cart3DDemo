@@ -33,6 +33,8 @@ private slots:
     void slotsUseTexture();
     // 打开病例
     void slotsOpenCaseData();
+    // 显示小球
+    void slotsShowSphere();
 
 private:
    Ui::MainWindow *ui;

@@ -4,6 +4,7 @@
 #include "view/foxopenGLwidget.h"
 #include "model/foxmeshmodel.h"
 
+#include "geometry/foxspheresource.h"
 
 #include <QAction>
 #include <QVBoxLayout>
@@ -38,6 +39,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actionUseTexture, &QAction::triggered, this, &MainWindow::slotsUseTexture);
     // 打开病例
     connect(ui->actionCaseTest1, &QAction::triggered,this,&MainWindow::slotsOpenCaseData);
+    // 显示小球
+    connect(ui->actionShowSphere, &QAction::triggered, this, &MainWindow::slotsShowSphere);
 }
 
 MainWindow::~MainWindow()
@@ -120,4 +123,11 @@ void MainWindow::slotsOpenCaseData()
     // 打开项目内现有的数据100642730142856
     QString fileName = ".\\caseData\\100642730142856\\lower.stl";
     m_foxOpenGLWidget->openMeshFilePath(fileName);
+}
+
+void MainWindow::slotsShowSphere()
+{
+
+    m_foxOpenGLWidget->showSphere();
+
 }

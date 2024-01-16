@@ -92,6 +92,15 @@ void FoxOpenGLWidget::cuttingMesh()
     update();
 }
 
+void FoxOpenGLWidget::showSphere()
+{
+    makeCurrent();
+
+    m_toothMeshModel->showSphere(m_shaderProgram->getShaderProgram());
+    update();
+
+}
+
 
 
 
@@ -136,16 +145,21 @@ void FoxOpenGLWidget::initializeGL()
     qDebug() << m_projection;
 }
 
+// 窗口改变时执行
 void FoxOpenGLWidget::resizeGL(int w, int h)
 {
 	glViewport(0, 0, w, h);
+    QMatrix4x4 projection;
+    projection.perspective(m_zoom, (float)width() / (float)height(), 0.1f, 100.0f);
+    m_projection = projection;
+    update();
 }
 
 
 void FoxOpenGLWidget::paintGL()
 {
     // 用于计算相机的移动时速
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClearColor(0.85f, 0.85f, 0.85f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     //Z缓冲(Z-buffer)，也被称为深度缓冲(Depth Buffer)
     glEnable(GL_DEPTH_TEST); //默认关闭的
@@ -154,8 +168,8 @@ void FoxOpenGLWidget::paintGL()
     QMatrix4x4 view = m_view;
     QMatrix4x4 projection = m_projection;
 
-    // 绑定着色器 
-    m_shaderProgram->useShaderProgram(m_useTexturel, m_viewPos, projection, view, model);
+     // 绑定着色器 
+     m_shaderProgram->useShaderProgram(m_useTexturel, m_viewPos, projection, view, model);
      // 绘制
      m_toothTexture->bind();
      m_toothMeshModel->loadMesh(m_shaderProgram->getShaderProgram());
@@ -180,23 +194,30 @@ void FoxOpenGLWidget::mousePressEvent(QMouseEvent* event)
 
 void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 {
-    //std::cout << "移动事件\n";
+
     event->accept();
     // 如果按下的是左键就移动
     if (m_isPressMouseLeft) {
+        // 如果是第一次按下则记录下位置
         if(m_firstMouse){
                 m_leftMoveMousePos.setX(event->pos().x());
                 m_leftMoveMousePos.setY(event->pos().y());
                 m_firstMouse = false;
         }
+        // 上一次的位置减去当前的位置得到移动的结果
         float xoffset = m_leftMoveMousePos.x()- event->pos().x();
         float yoffset = m_leftMoveMousePos.y() - event->pos().y();
         m_leftMoveMousePos.setX(event->pos().x());
         m_leftMoveMousePos.setY(event->pos().y());
+        //// 旋转角度
         float angle = 1.4f;
-        m_model.rotate(angle, QVector3D(-yoffset, -xoffset, 0));
-    }
+        //// 进行矩阵的旋转
+        qDebug() << "xoffset:" << xoffset;
+        m_model.rotate(angle, QVector3D(-yoffset, -xoffset, 0.0f));
+        
 
+    }
+    // 判断是否按下的是中键
     if (m_isPressMouseMiddle) {
         if (m_firstMouse) {
             m_middleMoveMousePos.setX(event->pos().x());

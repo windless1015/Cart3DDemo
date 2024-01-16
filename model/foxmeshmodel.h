@@ -28,12 +28,14 @@ public:
 	void setMeshFileFolder(const std::string& meshFolderPath);
 	// 测试切割算法的例子, 最后生成两个网格
 	void cuttingMesh();
+	// 显示边界线的小球点
+	void showSphere(QOpenGLShaderProgram* shader);
+	
 
 	// 加载网格(绘制网格)
 	void loadMesh(QOpenGLShaderProgram* shader);
 	// 添加网格
 	void addMesh(QOpenGLShaderProgram* shader);
-
 
 	// 模型是否可见 true可见 false 不可见
 	void setVisible(bool isVisible);

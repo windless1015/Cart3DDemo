@@ -46,7 +46,8 @@ public:
     void showMesh();
     // 切割
     void cuttingMesh();
-
+    // 显示小球
+    void showSphere();
 
     // 窗口的OpenGL事件
 protected:

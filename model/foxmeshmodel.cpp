@@ -11,7 +11,6 @@
 #include <QDir>
 #include <QFileInfoList>
 
-
 //Cart3d
 #include <Profile/ShowData.h>
 #include <Profile/DebugUtil.hpp>
@@ -21,6 +20,8 @@
 #include <MeshCSG/CountourCutMesh.h>
 #include <Sys/Logger.h>
 #include "MeshCurve/MeshSmoothCurve.h"
+
+#include "../geometry/foxspheresource.h"
 
 using namespace OpenMesh;
 using namespace Cart3D;
@@ -343,6 +344,39 @@ void FoxMeshModel::cuttingMesh()
 	}
 	clogger->info("end CurveCutMesh...");
 	m_foxMeshs.clear();
+}
+
+void FoxMeshModel::showSphere(QOpenGLShaderProgram* shader)
+{
+	// 创建小球
+	Cart3D::OpenTriMesh mesh;
+	FoxSphereSource sphere;
+	sphere.setRadius(1.5f);
+	sphere.setCenter(-27.336922, -0.094851606, -22.03377);
+	// 获取小球数据
+	sphere.getSphereMesh(mesh);
+	mesh.request_vertex_normals();
+	setMeshNormals(mesh);
+	std::vector<float> vertex = meshDataToVertexData(mesh);
+	// 传入mesh
+	sptr_FoxMesh foxMesh = std::make_shared<FoxMesh>(vertex, shader);
+
+	//-30.468161, -0.1347039, -20.110193
+		// 创建小球
+	Cart3D::OpenTriMesh mesh2;
+	FoxSphereSource sphere2;
+	sphere2.setRadius(1.5f);
+	sphere2.setCenter(-30.468161, -0.1347039, -20.110193);
+	// 获取小球数据
+	sphere2.getSphereMesh(mesh2);
+	mesh2.request_vertex_normals();
+	setMeshNormals(mesh2);
+	std::vector<float> vertex2 = meshDataToVertexData(mesh2);
+	// 传入mesh
+	sptr_FoxMesh foxMesh2 = std::make_shared<FoxMesh>(vertex2, shader);
+
+	m_foxMeshs.push_back(foxMesh);
+
 }
 
 

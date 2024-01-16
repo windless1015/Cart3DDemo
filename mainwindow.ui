@@ -44,7 +44,7 @@
     <addaction name="actionCutting"/>
     <addaction name="actionVisibleTooth"/>
     <addaction name="actionVisibleGingiva"/>
-    <addaction name="actionShowToothAndGingiva"/>
+    <addaction name="actionShowSphere"/>
    </widget>
    <widget class="QMenu" name="menuRendering">
     <property name="title">
@@ -77,9 +77,9 @@
     <string>隐藏牙龈</string>
    </property>
   </action>
-  <action name="actionShowToothAndGingiva">
+  <action name="actionShowSphere">
    <property name="text">
-    <string>显示牙齿和牙龈</string>
+    <string>显示小球</string>
    </property>
   </action>
   <action name="actionOpenMeshFolder">
