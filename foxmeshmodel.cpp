@@ -26,6 +26,13 @@ FoxMeshModel::~FoxMeshModel()
 
 void FoxMeshModel::setMesh(std::string_view meshFilePath)
 {
+	m_mesh.request_face_normals();
+	m_mesh.request_face_colors();
+	m_mesh.request_vertex_normals();
+	m_mesh.request_vertex_colors();
+	m_mesh.request_vertex_texcoords2D();
+
+
 	IO::Options opt;
     if (IO::read_mesh(m_mesh, meshFilePath.data()), opt) {
         qDebug() << "Loaded STL file: " << meshFilePath.data();
@@ -33,13 +40,41 @@ void FoxMeshModel::setMesh(std::string_view meshFilePath)
     else {
         qDebug() << "Failed to load STL file: " << meshFilePath.data();
     }
-	if (!opt.check(OpenMesh::IO::Options::VertexNormal))
+	
+	// update face and vertex normals     
+	if (!opt.check(IO::Options::FaceNormal))
+		m_mesh.update_face_normals();
+	else
+		std::cout << "File provides face normals\n";
+
+	if (!opt.check(IO::Options::VertexNormal))
+		m_mesh.update_vertex_normals();
+	else
+		std::cout << "File provides vertex normals\n";
+
+
+	// check for possible color information
+	if (opt.check(IO::Options::VertexColor))
 	{
-		Logger::console_logger->info("º∆À„∑®œﬂ----");
-		m_mesh.request_face_normals();
-		m_mesh.update_normals();
-		m_mesh.release_face_normals();
+		std::cout << "File provides vertex colors\n";
+		add_draw_mode("Colored Vertices");
 	}
+	else
+		m_mesh.release_vertex_colors();
+
+	if (opt.check(IO::Options::FaceColor))
+	{
+		std::cout << "File provides face colors\n";
+		add_draw_mode("Solid Colored Faces");
+		add_draw_mode("Smooth Colored Faces");
+	}
+	else
+		m_mesh.release_face_colors();
+
+	if (opt.check(IO::Options::VertexTexCoord))
+		std::cout << "File provides texture coordinates\n";
+
+
 
 
 }
