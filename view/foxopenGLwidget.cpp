@@ -71,8 +71,6 @@ void FoxOpenGLWidget::openMeshFilePath(const QString& upper, const QString& lowe
 {
     makeCurrent();
 
-
-
     //-------------------测试渲染类-------------------
     // 北京时间 : 2024-01-18 17:42  
     // 下面的代码是测试封装的渲染类

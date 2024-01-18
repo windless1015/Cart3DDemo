@@ -35,7 +35,6 @@ void FoxOpenGLPolyDataMapper::releaseVBO()
 
 void FoxOpenGLPolyDataMapper::renderer()
 {
-	std::cout << "mapper»æÖÆ----------->\n";
 	// °ó¶¨VAO »æÖÆ
 	QOpenGLVertexArrayObject::Binder vaoBinder(&m_VAO);
 	glDrawArrays(GL_TRIANGLES, 0, m_polydata->getMeshVertexDataSize());
