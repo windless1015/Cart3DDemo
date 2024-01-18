@@ -23,6 +23,9 @@
 
 #include <common/Util/OpenMeshUtil.h>
 
+// test
+class FoxRenderer;
+
 class FoxCamera;
 class FoxLighting;
 class FoxMeshModel;
@@ -33,11 +36,14 @@ class FoxOpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 public:
     FoxOpenGLWidget(QWidget* parent);
     ~FoxOpenGLWidget();    
+
+      
     /// -------------------菜单事件-------------------
     // 读取文件夹
     void openMeshFolderPath(const QString& path);
     // 读取文件
     void openMeshFilePath(const QString& path);
+    void openMeshFilePath(const QString& upper, const QString& lower);
     // 设置使用纹理
     void setUseTexture(bool useTexture);
     // 隐藏模型
@@ -66,6 +72,10 @@ protected:
     void mouseReleaseEvent(QMouseEvent* event) override;
 
 private:
+    //---------test------------
+    std::shared_ptr<FoxRenderer> m_renderer;
+    //------------------------
+
     bool m_meshIsVisible;
     // 鼠标的位置
     QPoint m_leftMoveMousePos; 

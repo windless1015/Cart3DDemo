@@ -330,17 +330,12 @@ void FoxMeshModel::cuttingMesh()
 		clogger->info("create_scene3D is ok");
 	}
 	// 遍历边界线进行分割
-	//int i = 0;
 	for (std::vector<cvector3d> cpts : cptslist) {
 		Cart3D::OpenTriMesh left_mesh, right_mesh;
 		if (CountourCutMesh::countour_cut_mesh(m_mesh,tree, cpts, left_mesh, right_mesh, true))
 		{
-			//std::string name = "right_mesh" + std::to_string(i) + ".stl";
-			//IO::write_mesh(left_mesh, "E:\\3D\\TestData\\testData\\100642730142856\\test\\left_mesh.stl");
-			//IO::write_mesh(right_mesh, "E:\\3D\\TestData\\testData\\100642730142856\\test\\"+name);
 			m_openTriMeshs.push_back(right_mesh);
 		}
-		//++i;
 	}
 	clogger->info("end CurveCutMesh...");
 	m_foxMeshs.clear();

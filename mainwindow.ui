@@ -94,7 +94,7 @@
   </action>
   <action name="actionCaseTest1">
    <property name="text">
-    <string>打开142856病例下颌</string>
+    <string>打开142856病例上下颌</string>
    </property>
   </action>
  </widget>

@@ -15,7 +15,6 @@ FoxMesh::FoxMesh(std::vector<float> vertexData,QOpenGLShaderProgram* shaderProgr
 
 FoxMesh::~FoxMesh()
 {
-	std::cout << "~FoxMesh\n";
 	m_VBO.destroy();
 	m_VAO.destroy();
 }
@@ -31,9 +30,10 @@ void FoxMesh::darw(QOpenGLShaderProgram* shaderProgram)
 
 void FoxMesh::setupMesh()
 {
-	
+
 
 	QOpenGLVertexArrayObject::Binder vaoBinder(&m_VAO);
+
 
 	m_VBO.create();
 	m_VBO.bind();
@@ -46,7 +46,6 @@ void FoxMesh::setupMesh()
 	m_shaderProgram->enableAttributeArray("aNormal");
 	m_shaderProgram->setAttributeBuffer("aTexCoords", GL_FLOAT, sizeof(float) * 6, 2, 8 * sizeof(float));
 	m_shaderProgram->enableAttributeArray("aTexCoords");
-
 	m_VBO.release();
 }
 

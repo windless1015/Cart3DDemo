@@ -12,6 +12,8 @@
 #include <QDesktopServices>
 
 
+
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -23,7 +25,7 @@ MainWindow::MainWindow(QWidget *parent)
     // 默认是不隐藏
     m_actionShowToothStatus = false;
     setCentralWidget(m_foxOpenGLWidget);
-
+    this->setWindowTitle("Cart3D_Demo");
 
     // 切割
     connect(ui->actionCutting, &QAction::triggered, this, &MainWindow::slotsCuttingMesh);
@@ -121,8 +123,10 @@ void MainWindow::slotsUseTexture()
 void MainWindow::slotsOpenCaseData()
 {
     // 打开项目内现有的数据100642730142856
-    QString fileName = ".\\caseData\\100642730142856\\lower.stl";
-    m_foxOpenGLWidget->openMeshFilePath(fileName);
+    QString fileName_lower = ".\\caseData\\100642730142856\\lower.stl";
+    QString fileName_upper = ".\\caseData\\100642730142856\\upper.stl";
+    //m_foxOpenGLWidget->openMeshFilePath(fileName);
+    m_foxOpenGLWidget->openMeshFilePath(fileName_upper, fileName_lower);
 }
 
 void MainWindow::slotsShowSphere()

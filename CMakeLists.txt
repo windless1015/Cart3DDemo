@@ -47,11 +47,18 @@ set(PROJECT_SOURCES
 "rendering/foxlighting.cpp"
 "rendering/foxshaderprogram.h" 
 "rendering/foxshaderprogram.cpp"
+ "rendering/foxrenderer.h"
+ "rendering/foxrenderer.cpp" 
+ "rendering/foxactor.h" 
+ "rendering/foxactor.cpp" 
+ "rendering/foxopenglpolydatamapper.h" 
+ "rendering/foxopenglpolydatamapper.cpp" 
+ "rendering/foxpolydata.h" 
+ "rendering/foxpolydata.cpp"
 
 "geometry/foxspheresource.h"
 "geometry/foxspheresource.cpp"
- "rendering/foxrenderer.h"
- "rendering/foxrenderer.cpp")
+)
 
 
 

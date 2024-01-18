@@ -5,13 +5,19 @@
 #include  "../model/foxmeshmodel.h"
 #include "../model/foxmesh.h"
 #include "../rendering/foxshaderprogram.h"
+#include "../rendering/foxrenderer.h"
 
 #include <QKeyEvent>
 #include <QMatrix4x4>
 
 #include <QtOpenGL/qgl.h>
 
-
+//----------------test----------------
+#include "../rendering/foxactor.h"
+#include "../rendering/foxpolydata.h"
+#include "../rendering/foxopenglpolydatamapper.h"
+#include "../rendering/foxrenderer.h"
+//----------------test----------------
 
 using namespace OpenMesh;
 
@@ -23,6 +29,9 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent):QOpenGLWidget(parent)
     m_isPressMouseLeft = false;
     m_isPressMouseMiddle = false;
     m_toothMeshModel = std::make_shared<FoxMeshModel>();
+
+    /// test
+    m_renderer = std::make_shared<FoxRenderer>();
 }
 
 FoxOpenGLWidget::~FoxOpenGLWidget()
@@ -31,9 +40,7 @@ FoxOpenGLWidget::~FoxOpenGLWidget()
     makeCurrent();
     delete m_camera;
     //doneCurrent();
-    std::cout << "~FoxOpenGLWidget\n";
 }
-
 
 
 
@@ -51,13 +58,54 @@ void FoxOpenGLWidget::openMeshFolderPath(const QString& path)
 
 void FoxOpenGLWidget::openMeshFilePath(const QString& path)
 {
-    makeCurrent();
-    m_shaderProgram->shaderBind();
     std::string fileName = path.toStdString();
+    m_shaderProgram->shaderBind();
+     //下面是之前的代码
     m_toothMeshModel->setMeshFileName(fileName);
     m_toothMeshModel->addMesh(m_shaderProgram->getShaderProgram());
     update();
     m_shaderProgram->shaderRelease();
+}
+
+void FoxOpenGLWidget::openMeshFilePath(const QString& upper, const QString& lower)
+{
+    makeCurrent();
+
+
+
+    //-------------------测试渲染类-------------------
+    // 北京时间 : 2024-01-18 17:42  
+    // 下面的代码是测试封装的渲染类
+    std::string fileName = lower.toStdString();
+    Cart3D::OpenTriMesh mesh;
+    IO::read_mesh(mesh, fileName);
+
+    std::shared_ptr<FoxPolyData> polydata = std::make_shared<FoxPolyData>(mesh);
+    std::shared_ptr<FoxOpenGLPolyDataMapper> mapper = std::make_shared<FoxOpenGLPolyDataMapper>();
+    mapper->setPolyData(polydata);
+    std::shared_ptr<FoxActor> actor = std::make_shared<FoxActor>(this);
+    actor->setPolyDataMapper(mapper);
+    // 设置红色
+    actor->setColor(1.0f, 0.0f, 0.0f);
+
+    // 上颌
+    std::string fileName1 = upper.toStdString();
+    // openmesh 读取成网格数据
+    Cart3D::OpenTriMesh mesh1;
+    IO::read_mesh(mesh1, fileName1);
+    // 交给polydata 转化成顶点数据
+    std::shared_ptr<FoxPolyData> polydata1 = std::make_shared<FoxPolyData>(mesh1);
+    std::shared_ptr<FoxOpenGLPolyDataMapper> mapper1 = std::make_shared<FoxOpenGLPolyDataMapper>();
+    mapper1->setPolyData(polydata1);
+    std::shared_ptr<FoxActor> actor1 = std::make_shared<FoxActor>(this);
+    actor1->setPolyDataMapper(mapper1);
+    // 设置蓝色
+    actor1->setColor(0.0f, 0.0f, 1.0f);
+
+    m_renderer->addActor(actor);
+    m_renderer->addActor(actor1);
+    update();
+    //-----------------------------------------------
 }
 
 void FoxOpenGLWidget::setUseTexture(bool useTexture)
@@ -122,17 +170,6 @@ void FoxOpenGLWidget::initializeGL()
     // 创建着色器程序
     m_shaderProgram = new FoxShaderProgram(this);
 
-    //// 加载两个模型
-    //m_toothMeshModel = std::make_shared<FoxMeshModel>();
-    //// 读取牙齿文件夹路径，读取文件夹目录下的所有stl
-    //m_toothMeshModel->setMeshFileFolder("E:\\3D\\TestData\\testData\\DownArch");
-    //// 添加网格
-    //m_toothMeshModel->addMesh(m_shaderProgram->getShaderProgram());
-    //// 读取牙龈模型文件
-    //m_gingivaMeshModel = std::make_shared<FoxMeshModel>();
-    //m_gingivaMeshModel->setMeshFileName("E:\\3D\\TestData\\testData\\DownArch\\gingiva\\m_CutGumPd0_14.stl");
-    //m_gingivaMeshModel->addMesh(m_shaderProgram->getShaderProgram());
-
     // ------------------------------------------------
     // 2024-01-16
     // 下面的这些代码直接交给FoxRenderer类来管理
@@ -147,7 +184,7 @@ void FoxOpenGLWidget::initializeGL()
     m_model.scale(0.3f);
     // 设置观察向量
     m_viewPos = m_camera->getPosition();
-    qDebug() << m_projection;
+
 }
 
 // 窗口改变时执行
@@ -167,14 +204,16 @@ void FoxOpenGLWidget::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     //Z缓冲(Z-buffer)，也被称为深度缓冲(Depth Buffer)
     glEnable(GL_DEPTH_TEST); //默认关闭的
-    QMatrix4x4 model = m_model;
-    QMatrix4x4 view = m_view;
-    QMatrix4x4 projection = m_projection;
-     // 绑定着色器 
-     m_shaderProgram->useShaderProgram(m_useTexturel, m_viewPos, projection, view, model);
-     // 绘制
-     m_toothTexture->bind();
-     m_toothMeshModel->loadMesh(m_shaderProgram->getShaderProgram());
+
+    m_renderer->renderer();
+    //QMatrix4x4 model = m_model;
+    //QMatrix4x4 view = m_view;
+    //QMatrix4x4 projection = m_projection;
+    // // 绑定着色器 
+    // m_shaderProgram->useShaderProgram(m_useTexturel, m_viewPos, projection, view, model);
+    // // 绘制
+    // m_toothTexture->bind();
+    // m_toothMeshModel->loadMesh(m_shaderProgram->getShaderProgram());
 }
 
 void FoxOpenGLWidget::mousePressEvent(QMouseEvent* event)

@@ -1,5 +1,5 @@
 #include "foxshaderprogram.h"
-
+#include "foxlighting.h"
 
 #include <QOpenGLShaderProgram>
 #include <QVector3D>
@@ -40,7 +40,7 @@ struct Material
 struct Light
 {
     vec3 position;
-
+    vec3 color;
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
@@ -57,7 +57,7 @@ uniform bool useMaterial;
 uniform vec3 objectColor;
 void main()
 {
-    vec3 lightColor = vec3(1.0, 1.0, 1.0);
+    //vec3 lightColor = vec3(1.0, 1.0, 1.0);
     //vec3 objectColor = vec3(0.5, 0.5, 0.5);
    
     vec3 ambient;
@@ -65,7 +65,7 @@ void main()
         ambient = light.ambient * texture(material.diffuse, TexCoords).rgb;
     }
     else{
-        ambient = light.ambient * lightColor;
+        ambient = light.ambient * light.color;
     }
 
     vec3 norm = normalize(Normal);
@@ -77,7 +77,7 @@ void main()
        diffuse = light.diffuse * diff * texture(material.diffuse, TexCoords).rgb;
     }
     else{
-        diffuse = light.diffuse * diff * lightColor;       
+        diffuse = light.diffuse * diff * light.color;       
     }
 
     vec3 viewDir = normalize(viewPos - FragPos);
@@ -93,7 +93,7 @@ void main()
     }
     else{
         spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
-        specular = light.specular * spec * lightColor;
+        specular = light.specular * spec * light.color;
         result = (ambient + diffuse + specular) * objectColor;
     }
 
@@ -129,10 +129,46 @@ void FoxShaderProgram::shaderRelease()
 
 void FoxShaderProgram::setObjectColor(float r, float g, float b)
 {
-    m_objectColor[0] = r;
-    m_objectColor[1] = g;
-    m_objectColor[2] = b;
+    m_shaderProgram->bind();
+    // 设置模型颜色
+    m_shaderProgram->setUniformValue("objectColor", r, g, b);
 }
+
+void FoxShaderProgram::setMatrix4x4(QMatrix4x4& projection, QMatrix4x4& view, QMatrix4x4& model)
+{
+    m_shaderProgram->bind();
+    // 设置投影矩阵 视图矩阵 模型矩阵
+    m_shaderProgram->setUniformValue("projection", projection);
+    m_shaderProgram->setUniformValue("view", view);
+    m_shaderProgram->setUniformValue("model", model);
+
+}
+
+void FoxShaderProgram::setUseMaterial(bool useMaterial = false)
+{
+    m_shaderProgram->bind();
+    // 设置是否使用材质
+    m_shaderProgram->setUniformValue("useMaterial", useMaterial);
+}
+
+void FoxShaderProgram::setLighting(std::shared_ptr<FoxLighting> lighting)
+{
+    m_shaderProgram->bind();
+    // 通过灯光类对象设置灯光属性
+    m_shaderProgram->setUniformValue("light.position", lighting->getPosition());
+    m_shaderProgram->setUniformValue("light.color", lighting->getLightingColor());
+    m_shaderProgram->setUniformValue("light.ambient", lighting->getAmbient());
+    m_shaderProgram->setUniformValue("light.diffuse", lighting->getDiffuse());
+    m_shaderProgram->setUniformValue("light.specular", lighting->getSpecuar());
+}
+
+void FoxShaderProgram::setVertexAttributeBuffe(const char* name, int offset, int tupleSize, int stride)
+{
+    m_shaderProgram->setAttributeBuffer(name, GL_FLOAT, offset, tupleSize, stride);
+    m_shaderProgram->enableAttributeArray(name);
+}
+
+
 
 void FoxShaderProgram::useShaderProgram(bool useMaterial,QVector3D& viewPosition, QMatrix4x4& projection, QMatrix4x4& view, QMatrix4x4& model)
 {
@@ -146,8 +182,8 @@ void FoxShaderProgram::useShaderProgram(bool useMaterial,QVector3D& viewPosition
     // 场景中灯管的属性 等下将下面的东西都封装到灯光类中
     // ------------------------------------------------
     
-
     m_shaderProgram->setUniformValue("light.position", QVector3D(5.0f, 10.0f, 30.0f));
+    m_shaderProgram->setUniformValue("light.color", QVector3D(1.0f, 1.0f, 1.0f));
     m_shaderProgram->setUniformValue("light.ambient", QVector3D(0.3f, 0.3f, 0.3f));
     m_shaderProgram->setUniformValue("light.diffuse", QVector3D(0.7f, 0.7f, 0.7f));
     m_shaderProgram->setUniformValue("light.specular", QVector3D(1.0f, 1.0f, 1.0f));
