@@ -10,7 +10,6 @@ FoxPolyData::FoxPolyData(Cart3D::OpenTriMesh mesh):m_mesh(mesh)
     calcuatingNormal();
 	// 将网格转化顶点数据
 	meshToVertexData();
-	std::cout << "PolyData 转化数据完成------------>\n";
 }
 
 std::vector<float>& FoxPolyData::getMeshVertexData()
