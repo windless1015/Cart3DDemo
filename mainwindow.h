@@ -21,15 +21,26 @@ public:
 private slots:
     // 切割
     void slotsCuttingMesh();
-    // 显示切割部分的网格
-    void slotsShowCutMesh();
-    // 显示被切割的网格
-    void slotsShowBeCutMesh();
+    // 显示牙齿
+    void slotsSetVisibleTooth();
+    // 显示牙龈
+    void slotsSetVisibleGingiva();
+    // 打开文件夹
+    void slotsOpenMeshFolder();
+    // 打开文件
+    void slotsOpenMeshFile();
+    // 使用纹理
+    void slotsUseTexture();
+    // 打开病例
+    void slotsOpenCaseData();
+    // 显示小球
+    void slotsShowSphere();
 
 private:
    Ui::MainWindow *ui;
    FoxOpenGLWidget* m_foxOpenGLWidget;
-   std::shared_ptr<FoxMeshModel> m_foxMeshModel;
-
+   // 纹理开个状态  true:开   false:关
+   bool m_actionUseTextureStatus;
+   bool m_actionShowToothStatus;
 };
 

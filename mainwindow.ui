@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>796</width>
+    <height>591</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,40 +19,82 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>796</width>
      <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>File</string>
+     <string>文件</string>
     </property>
-    <addaction name="actionOpenMesh"/>
+    <widget class="QMenu" name="menuCase">
+     <property name="title">
+      <string>病例</string>
+     </property>
+     <addaction name="actionCaseTest1"/>
+    </widget>
+    <addaction name="actionOpenMeshFile"/>
+    <addaction name="actionOpenMeshFolder"/>
+    <addaction name="menuCase"/>
+   </widget>
+   <widget class="QMenu" name="menuMesh">
+    <property name="title">
+     <string>网格处理</string>
+    </property>
     <addaction name="actionCutting"/>
-    <addaction name="actionShowL"/>
-    <addaction name="actionShowR"/>
+    <addaction name="actionVisibleTooth"/>
+    <addaction name="actionVisibleGingiva"/>
+    <addaction name="actionShowSphere"/>
+   </widget>
+   <widget class="QMenu" name="menuRendering">
+    <property name="title">
+     <string>渲染</string>
+    </property>
+    <addaction name="actionUseTexture"/>
    </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuMesh"/>
+   <addaction name="menuRendering"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="actionOpenMesh">
+  <action name="actionOpenMeshFile">
    <property name="text">
-    <string>Open Mesh File</string>
+    <string>打开文件</string>
    </property>
   </action>
   <action name="actionCutting">
    <property name="text">
-    <string>Cutting</string>
+    <string>分割</string>
    </property>
   </action>
-  <action name="actionShowL">
+  <action name="actionVisibleTooth">
    <property name="text">
-    <string>ShowL</string>
+    <string>隐藏牙齿</string>
    </property>
   </action>
-  <action name="actionShowR">
+  <action name="actionVisibleGingiva">
    <property name="text">
-    <string>ShowR</string>
+    <string>隐藏牙龈</string>
+   </property>
+  </action>
+  <action name="actionShowSphere">
+   <property name="text">
+    <string>显示小球</string>
+   </property>
+  </action>
+  <action name="actionOpenMeshFolder">
+   <property name="text">
+    <string>打开文件夹</string>
+   </property>
+  </action>
+  <action name="actionUseTexture">
+   <property name="text">
+    <string>使用纹理</string>
+   </property>
+  </action>
+  <action name="actionCaseTest1">
+   <property name="text">
+    <string>打开142856病例上下颌</string>
    </property>
   </action>
  </widget>
