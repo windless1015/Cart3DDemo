@@ -3,7 +3,7 @@
 
 #include <QMatrix4x4>
 #include <QVector3D>
-
+#include <QQuaternion>
 /**
  * @brief Actor类主要是负责模型属性的设置.
  * 比如说模型的矩阵变换，模型的颜色修改等相关的渲染设置
@@ -26,15 +26,22 @@ public:
 	// 设置位置
 	void setActorPosition(QVector3D& position);
 	
+	// 是否可见 true 可见 false 不可见
+	void setVisibility(bool visibility);
+
 	// 设置投影矩阵
 	void setProjection(float zoom, float width, float hight, float nearPlane, float farPlane);
 
-	// 设置模型矩阵
+	// 设置模型矩阵 变换 缩放 旋转
 	void setModelTranslation(QVector3D& position);
 	void setModelScale(float factor);
+	void setModelRotate(QQuaternion& rotateQuat);
 
 	// 设置视图矩阵
 	void setView(std::shared_ptr<FoxCamera> camera);
+	// 旋转视图矩阵
+	void setViewRotate(QQuaternion& rotateQuat);
+
 
 	// 更新actor的着色器数据
 	void updataShaderProgram();
@@ -47,6 +54,7 @@ public:
 	void draw();
 
 private:
+	QQuaternion m_rotateQuat;// 用于旋转的四元数
 	QMatrix4x4 m_model; // 模型矩阵
 	QMatrix4x4 m_projection; // 投影矩阵
 	QMatrix4x4 m_view; // 视图矩阵
@@ -58,5 +66,5 @@ private:
 	float m_nearPlane;
 	float m_farPlane;
 	bool m_useTexture; // 是否使用材质
-
+	bool m_actorVisibility; // 可见性
 };

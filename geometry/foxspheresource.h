@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 // cart3D
 #include <Util/OpenMeshUtil.h>
 
@@ -7,6 +9,7 @@
 /**
  * @brief 通过经纬度的方式来构建一个球体.
  */
+class FoxPolyData;
 class FoxSphereSource
 {
 public:
@@ -45,11 +48,18 @@ public:
 	/// <returns>true 生成成功 false 生成失败</returns>
 	bool getSphereMesh(Cart3D::OpenTriMesh &mesh);
 
+	/// <summary>
+	///  获取多边形数据
+	/// </summary>
+	/// <returns> 返回多边形数据FoxPolyData </returns>
+	std::shared_ptr<FoxPolyData> getOutputPolyData();
+
 private:
 	double m_radius; // 半径
 	Cart3D::OpenTriMesh::Point m_center; // 圆心
+	Cart3D::OpenTriMesh m_mesh;// 网格
 	int m_latitude;  // 球的纬度
 	int m_longitude;  //  球的经度
-
+	std::shared_ptr<FoxPolyData> m_polyData; // 多边形数据
 };
 

@@ -17,6 +17,9 @@ FoxActor::FoxActor(QObject* parent):m_zoom(45.0f),m_nearPlane(0.1f),m_farPlane(1
 	m_projection.perspective(m_zoom, m_aspectRatio, m_nearPlane, m_farPlane);
 	m_shaderProgarm->setUseMaterial(false);
 	m_shaderProgarm->setObjectColor(0.5f, 0.5f, 0.5f);
+	// actor 是否可见
+	m_actorVisibility = true;
+	
 }
 
 FoxActor::~FoxActor()
@@ -42,25 +45,49 @@ void FoxActor::setActorPosition(QVector3D& position)
 	m_actorPosition = position;
 }
 
+void FoxActor::setVisibility(bool visibility)
+{
+	m_actorVisibility = visibility;
+}
+
 void FoxActor::setProjection(float zoom, float width, float hight, float nearPlane, float farPlane)
 {
 	float aspectRatio = width / hight;
-	m_projection.perspective(zoom, aspectRatio, nearPlane, farPlane);
+	m_zoom = zoom;
+	QMatrix4x4 projection;
+	projection.perspective(m_zoom, aspectRatio, nearPlane, farPlane);
+	m_projection = projection;
+	updataShaderProgram();
 }
 
 void FoxActor::setModelTranslation(QVector3D& position)
 {
 	m_model.translate(position);
+	updataShaderProgram();
 }
 
 void FoxActor::setModelScale(float factor)
 {
 	m_model.scale(factor);
+	updataShaderProgram();
+}
+
+void FoxActor::setModelRotate(QQuaternion& rotateQuat)
+{
+	m_model.rotate(rotateQuat);
+	updataShaderProgram();
 }
 
 void FoxActor::setView(std::shared_ptr<FoxCamera> camera)
 {
 	m_view = camera->getViewMatrix();
+	updataShaderProgram();
+}
+
+void FoxActor::setViewRotate(QQuaternion& rotateQuat)
+{
+	m_view.rotate(rotateQuat);
+	updataShaderProgram();
 }
 
 
@@ -69,6 +96,7 @@ void FoxActor::updataShaderProgram()
 {
 	// 绑定着色器
 	m_shaderProgarm->shaderBind();
+	// 重新设置矩阵
 	m_shaderProgarm->setMatrix4x4(m_projection, m_view, m_model);
 }
 
@@ -86,6 +114,8 @@ void FoxActor::setVertexBuffe()
 
 void FoxActor::draw()
 {
+	// 如果不可见就 直接返回
+	if (!m_actorVisibility) return;
 	m_shaderProgarm->shaderBind();
 	m_polyDataMapper->renderer();
 }

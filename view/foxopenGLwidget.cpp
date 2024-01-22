@@ -17,6 +17,7 @@
 #include "../rendering/foxpolydata.h"
 #include "../rendering/foxopenglpolydatamapper.h"
 #include "../rendering/foxrenderer.h"
+#include "../geometry/foxspheresource.h"
 //----------------test----------------
 
 using namespace OpenMesh;
@@ -29,9 +30,11 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent):QOpenGLWidget(parent)
     m_isPressMouseLeft = false;
     m_isPressMouseMiddle = false;
     m_toothMeshModel = std::make_shared<FoxMeshModel>();
-
+    m_angle = 0.0f;
     /// test
     m_renderer = std::make_shared<FoxRenderer>();
+    m_rotateQuat = QQuaternion::fromAxisAndAngle(1.0f, 0.0f, 0.0f, 30.0f);
+    m_rotateQuat *= QQuaternion::fromAxisAndAngle(0.0f, 1.0f, 0.0f, -10.0f);
 }
 
 FoxOpenGLWidget::~FoxOpenGLWidget()
@@ -83,25 +86,24 @@ void FoxOpenGLWidget::openMeshFilePath(const QString& upper, const QString& lowe
     mapper->setPolyData(polydata);
     std::shared_ptr<FoxActor> actor = std::make_shared<FoxActor>(this);
     actor->setPolyDataMapper(mapper);
-    // 设置红色
-    actor->setColor(1.0f, 0.0f, 0.0f);
+    actor->setColor(0.5f, 0.5f, 0.5f);
 
-    // 上颌
-    std::string fileName1 = upper.toStdString();
-    // openmesh 读取成网格数据
-    Cart3D::OpenTriMesh mesh1;
-    IO::read_mesh(mesh1, fileName1);
-    // 交给polydata 转化成顶点数据
-    std::shared_ptr<FoxPolyData> polydata1 = std::make_shared<FoxPolyData>(mesh1);
-    std::shared_ptr<FoxOpenGLPolyDataMapper> mapper1 = std::make_shared<FoxOpenGLPolyDataMapper>();
-    mapper1->setPolyData(polydata1);
-    std::shared_ptr<FoxActor> actor1 = std::make_shared<FoxActor>(this);
-    actor1->setPolyDataMapper(mapper1);
-    // 设置蓝色
-    actor1->setColor(0.0f, 0.0f, 1.0f);
+    //// 上颌
+    //std::string fileName1 = upper.toStdString();
+    //// openmesh 读取成网格数据
+    //Cart3D::OpenTriMesh mesh1;
+    //IO::read_mesh(mesh1, fileName1);
+    //// 交给polydata 转化成顶点数据
+    //std::shared_ptr<FoxPolyData> polydata1 = std::make_shared<FoxPolyData>(mesh1);
+    //std::shared_ptr<FoxOpenGLPolyDataMapper> mapper1 = std::make_shared<FoxOpenGLPolyDataMapper>();
+    //mapper1->setPolyData(polydata1);
+    //std::shared_ptr<FoxActor> actor1 = std::make_shared<FoxActor>(this);
+    //actor1->setPolyDataMapper(mapper1);
+    //// 设置蓝色
+    //actor1->setColor(0.5f, 0.5f, 0.5f);
 
     m_renderer->addActor(actor);
-    m_renderer->addActor(actor1);
+    //m_renderer->addActor(actor1);
     update();
     //-----------------------------------------------
 }
@@ -140,9 +142,32 @@ void FoxOpenGLWidget::cuttingMesh()
 
 void FoxOpenGLWidget::showSphere()
 {
+    if (m_renderer->getActors().size() == 0) return;
     makeCurrent();
-
-    m_toothMeshModel->showSphere(m_shaderProgram->getShaderProgram());
+    std::vector<QVector3D> cpts1;
+    cpts1.push_back(QVector3D(-27.336922, -0.094851606, -22.03377));
+    cpts1.push_back(QVector3D(-30.468161, -0.1347039, -20.110193));
+    cpts1.push_back(QVector3D(-31.713745, -0.70289636, -17.194614));
+    cpts1.push_back(QVector3D(-30.220974, -2.65732, -12.747708));
+    cpts1.push_back(QVector3D(-26.199223, -2.8259952, -10.861499));
+    cpts1.push_back(QVector3D(-22.798359, -0.83309388, -11.493107));
+    cpts1.push_back(QVector3D(-20.818401, -2.0832605, -12.664121));
+    cpts1.push_back(QVector3D(-20.490623, -4.0871673, -14.601606));
+    cpts1.push_back(QVector3D(-20.636423, -4.1962366, -17.01095));
+    cpts1.push_back(QVector3D(-21.415751, -3.6642685, -19.164167));
+    cpts1.push_back(QVector3D(-23.169182, -1.9599953, -22.090446));
+    for(auto& point:cpts1){
+        FoxSphereSource sphere;
+        sphere.setRadius(0.5f);
+        sphere.setCenter(point.x(), point.y(), point.z());
+        std::shared_ptr<FoxOpenGLPolyDataMapper> mapper = std::make_shared<FoxOpenGLPolyDataMapper>();
+        mapper->setPolyData(sphere.getOutputPolyData());
+        std::shared_ptr<FoxActor> actor = std::make_shared<FoxActor>(this);
+        actor->setPolyDataMapper(mapper);
+        actor->setColor(1.0f, 0.0f, 0.0f);
+        m_renderer->addActor(actor);
+    }
+   //m_toothMeshModel->showSphere(m_shaderProgram->getShaderProgram());
     update();
 
 }
@@ -189,9 +214,17 @@ void FoxOpenGLWidget::initializeGL()
 void FoxOpenGLWidget::resizeGL(int w, int h)
 {
 	glViewport(0, 0, w, h);
-    QMatrix4x4 projection;
-    projection.perspective(m_zoom, (float)width() / (float)height(), 0.1f, 100.0f);
-    m_projection = projection;
+    // -------------------------------------------
+    // 2024-01-19 
+    // 下面的东西我在想是否应该交给什么类来作为Actor的更新
+
+    // 改变所有模型的投影矩阵保证模型不会变形
+    float zoom = 45.0;
+    for (auto& actor : m_renderer->getActors())
+    {
+        actor->setProjection(zoom, (float)width() , (float)height(), 0.1f, 100.0f);
+    }
+
     update();
 }
 
@@ -216,6 +249,7 @@ void FoxOpenGLWidget::paintGL()
 
 void FoxOpenGLWidget::mousePressEvent(QMouseEvent* event)
 {
+    if (m_renderer->getActors().size() == 0) return;
    // std::cout << "点击事件\n";
     if(event->button() == Qt::LeftButton){
         m_leftMoveMousePos = event->pos();
@@ -229,35 +263,34 @@ void FoxOpenGLWidget::mousePressEvent(QMouseEvent* event)
 
 void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 {
+    if (m_renderer->getActors().size() == 0) return;
 
     event->accept();
     // 如果按下的是左键就移动
     if (m_isPressMouseLeft) {
-        // 如果是第一次按下则记录下位置
-        if(m_firstMouse){
-                m_leftMoveMousePos.setX(event->pos().x());
-                m_leftMoveMousePos.setY(event->pos().y());
-                m_firstMouse = false;
+        //// 如果是第一次按下则记录下位置
+        //if(m_firstMouse){
+        //        m_leftMoveMousePos.setX(event->pos().x());
+        //        m_leftMoveMousePos.setY(event->pos().y());
+        //        m_firstMouse = false;
+        //}
+        //// 上一次的位置减去当前的位置得到移动的结果
+        //float xoffset = m_leftMoveMousePos.x()- event->pos().x();
+        //float yoffset = m_leftMoveMousePos.y() - event->pos().y();
+        //m_leftMoveMousePos.setX(event->pos().x());
+        //m_leftMoveMousePos.setY(event->pos().y());
+        float angle = 1.5f;
+        QVector2D diff = QVector2D(event->pos())-QVector2D(m_leftMoveMousePos);
+        m_leftMoveMousePos = event->pos();
+        QVector3D n;        
+         n = QVector3D(diff.y(), diff.x(), 0.0f).normalized();
+        m_rotateAxis = (m_rotateAxis + n).normalized();
+        m_rotateQuat = QQuaternion::fromAxisAndAngle(m_rotateAxis, angle);
+        for (auto& actor : m_renderer->getActors()) {
+            actor->setModelRotate(m_rotateQuat);
         }
-        // 上一次的位置减去当前的位置得到移动的结果
-        float xoffset = m_leftMoveMousePos.x()- event->pos().x();
-        float yoffset = m_leftMoveMousePos.y() - event->pos().y();
-        m_leftMoveMousePos.setX(event->pos().x());
-        m_leftMoveMousePos.setY(event->pos().y());
+        update();
 
-        // ------------------------------------------------
-        // 2024-01-16
-        // 还有点问题，原因就是opengl不知道自身的xyz轴，旋转到了那个轴上
-        // 目前有个思路就是判断选择的角度到90的时候改变旋转
-        // 当前指向我们的是z轴 QVector3D(-yoffset, -xoffset, 0.0f)  当向右旋转到90度的时候也就是
-        // 当模型的x轴指向我们时改变 QVector3D(0.0f, -xoffset, -yoffset)
-        // 思路暂时保留, 现在先去重构渲染
-        // 说不定可以交给交互器
-        // ------------------------------------------------
-        //// 旋转角度
-        float angle = 1.4f;
-        //// 进行矩阵的旋转
-        m_model.rotate(angle, QVector3D(-yoffset, -xoffset, 0.0f));
     }
     // 判断是否按下的是中键
     if (m_isPressMouseMiddle) {
@@ -275,7 +308,10 @@ void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
         xoffset *= sensitivity;
         yoffset *= sensitivity;
         // 平移模型
-        m_model.translate(QVector3D(-xoffset, yoffset, 0));
+        //m_model.translate(QVector3D(-xoffset, yoffset, 0));
+        for (auto& actor : m_renderer->getActors()) {
+            actor->setModelTranslation(QVector3D(-xoffset, yoffset, 0));
+        }
     }
 
     update(); // 触发重绘
@@ -283,6 +319,7 @@ void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 
 void FoxOpenGLWidget::wheelEvent(QWheelEvent* event)
 {
+    if (m_renderer->getActors().size() == 0) return;
     // 滚动的速度
     float speed = 1;
     // 获取滚轮的返回值滚轮往前滚是正往后是负
@@ -292,16 +329,24 @@ void FoxOpenGLWidget::wheelEvent(QWheelEvent* event)
         yoffset = speed;
     if (yoffset < 0)
         yoffset = -speed;
-    m_camera->wheelScrollEvent(yoffset);
-    m_zoom = m_camera->getCameraZoom();
-    QMatrix4x4 projection;
-    projection.perspective(m_zoom, (float)width() / (float)height(), 0.1f, 100.0f);
-    m_projection = projection;
+    //m_camera->wheelScrollEvent(yoffset);
+    //m_zoom = m_camera->getCameraZoom();
+    //QMatrix4x4 projection;
+    //projection.perspective(m_zoom, (float)width() / (float)height(), 0.1f, 100.0f);
+    //m_projection = projection;
+    m_renderer->setCameraZoom(yoffset);
+    m_zoom = m_renderer->getCameraZoom();
+    for (auto& actor : m_renderer->getActors())
+    {
+        actor->setProjection(m_zoom, (float)width() ,(float)height(), 0.1f, 100.0f);
+    }
+
     update();
 }
 
 void FoxOpenGLWidget::mouseReleaseEvent(QMouseEvent* event)
 {
+    if (m_renderer->getActors().size() == 0) return;
     if (event->button() == Qt::LeftButton) {
         // 松开左键后设置为false;
         m_isPressMouseLeft = false;

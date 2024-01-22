@@ -98,7 +98,9 @@ private:
     QMatrix4x4 m_projection;
     QVector3D m_viewPos;
     float m_zoom;
-
+    QQuaternion m_rotateQuat; // 四元数
+    QVector3D m_rotateAxis; // 旋转轴
+    float m_angle; // 角度
     // 牙齿模型
     std::shared_ptr<FoxMeshModel> m_toothMeshModel;
     // 牙龈模型

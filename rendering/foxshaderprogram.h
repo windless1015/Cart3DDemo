@@ -30,7 +30,8 @@ public:
 	void setLighting(std::shared_ptr<FoxLighting> lighting);
 	// 设置属性缓存
 	void setVertexAttributeBuffe(const char* name, int offset, int tupleSize, int stride = 0);
-
+	// 设置观察角度
+	void setViewPosition(QVector3D& viewPosition);
 	/// <summary>
 	///  在渲染时执行着色器
 	/// </summary>

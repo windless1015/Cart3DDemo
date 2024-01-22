@@ -23,7 +23,7 @@ void main()
     FragPos = vec3(model * vec4(aPos, 1.0));
     Normal = mat3(transpose(inverse(model))) * aNormal;
     TexCoords = aTexCoords;
-    gl_Position = projection * view * vec4(FragPos, 1.0);
+    gl_Position = projection * view* vec4(FragPos, 1.0);
 }
 )";
 
@@ -141,7 +141,7 @@ void FoxShaderProgram::setMatrix4x4(QMatrix4x4& projection, QMatrix4x4& view, QM
     m_shaderProgram->setUniformValue("projection", projection);
     m_shaderProgram->setUniformValue("view", view);
     m_shaderProgram->setUniformValue("model", model);
-
+    m_shaderProgram->release();
 }
 
 void FoxShaderProgram::setUseMaterial(bool useMaterial = false)
@@ -149,6 +149,7 @@ void FoxShaderProgram::setUseMaterial(bool useMaterial = false)
     m_shaderProgram->bind();
     // 设置是否使用材质
     m_shaderProgram->setUniformValue("useMaterial", useMaterial);
+    m_shaderProgram->release();
 }
 
 void FoxShaderProgram::setLighting(std::shared_ptr<FoxLighting> lighting)
@@ -160,12 +161,20 @@ void FoxShaderProgram::setLighting(std::shared_ptr<FoxLighting> lighting)
     m_shaderProgram->setUniformValue("light.ambient", lighting->getAmbient());
     m_shaderProgram->setUniformValue("light.diffuse", lighting->getDiffuse());
     m_shaderProgram->setUniformValue("light.specular", lighting->getSpecuar());
+    m_shaderProgram->release();
 }
 
 void FoxShaderProgram::setVertexAttributeBuffe(const char* name, int offset, int tupleSize, int stride)
 {
     m_shaderProgram->setAttributeBuffer(name, GL_FLOAT, offset, tupleSize, stride);
     m_shaderProgram->enableAttributeArray(name);
+}
+
+void FoxShaderProgram::setViewPosition(QVector3D& viewPosition)
+{
+    m_shaderProgram->bind();
+
+
 }
 
 

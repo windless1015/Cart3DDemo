@@ -66,9 +66,9 @@ void FoxCamera::wheelScrollEvent(float yoffset)
 	if (m_zoom < 1.0f) {
 		m_zoom = 1.0f;
 	}
-	if (m_zoom > 45.0f)
+	if (m_zoom > 90.0f)
 	{
-		m_zoom = 45.0f;
+		m_zoom = 90.0f;
 	}
 }
 

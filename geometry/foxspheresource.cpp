@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "../rendering/foxpolydata.h"
 
 using namespace Cart3D;
 
@@ -10,6 +11,7 @@ const double PI = 3.1415926;
 FoxSphereSource::FoxSphereSource():m_latitude(15),m_longitude(15),m_radius(2.5f)
 {
 	m_center = OpenTriMesh::Point(0.0, 0.0, 0.0);
+
 }
 
 FoxSphereSource::~FoxSphereSource()
@@ -122,5 +124,15 @@ bool FoxSphereSource::getSphereMesh(Cart3D::OpenTriMesh& mesh)
     face_vhandles.push_back(vhandle[k - 1]);
     mesh.add_face(face_vhandles);
 
+
+
 	return true;
+}
+
+std::shared_ptr<FoxPolyData> FoxSphereSource::getOutputPolyData()
+{
+    getSphereMesh(m_mesh);
+    // 将网格数据添加至FoxPolyData
+    m_polyData = std::make_shared<FoxPolyData>(m_mesh);
+    return m_polyData;
 }

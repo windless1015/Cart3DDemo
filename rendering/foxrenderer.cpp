@@ -22,7 +22,6 @@ void FoxRenderer::addActor(std::shared_ptr<FoxActor> actor)
 	// 设置相机和灯光
 	actor->setView(m_camera); // 设置视图矩阵
 	actor->getShaderProgram()->setLighting(m_lighting);
-	actor->updataShaderProgram(); // 更新着色器
 	// 添加至m_actor队列中
 	m_actors.push_back(actor);
 }
@@ -33,4 +32,19 @@ void FoxRenderer::renderer()
 	{
 		actor->draw();
 	}
+}
+
+std::vector<std::shared_ptr<FoxActor>> FoxRenderer::getActors()
+{
+	return m_actors;
+}
+
+void FoxRenderer::setCameraZoom(float yoffset)
+{
+	m_camera->wheelScrollEvent(yoffset);
+}
+
+float FoxRenderer::getCameraZoom()
+{
+	return m_camera->getCameraZoom();
 }

@@ -20,8 +20,12 @@ public:
 	void addActor(std::shared_ptr<FoxActor> actor);
 	// 绘制所有的Actor
 	void renderer();
+	// 获取所有actor
+	std::vector<std::shared_ptr<FoxActor>> getActors();
 
-	// 清空
+	// 触发相机缩放zoom
+	void setCameraZoom(float yoffset);
+	float getCameraZoom();
 
 private:
 	std::shared_ptr<FoxCamera> m_camera; // 相机
