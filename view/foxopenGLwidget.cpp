@@ -17,6 +17,7 @@
 #include "../rendering/foxpolydata.h"
 #include "../rendering/foxopenglpolydatamapper.h"
 #include "../rendering/foxrenderer.h"
+#include "../rendering/foxlinerenderer.h"
 #include "../geometry/foxspheresource.h"
 //----------------test----------------
 
@@ -33,6 +34,8 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent):QOpenGLWidget(parent)
     m_angle = 0.0f;
     /// test
     m_renderer = std::make_shared<FoxRenderer>();
+
+
     m_rotateQuat = QQuaternion::fromAxisAndAngle(1.0f, 0.0f, 0.0f, 30.0f);
     m_rotateQuat *= QQuaternion::fromAxisAndAngle(0.0f, 1.0f, 0.0f, -10.0f);
 }
@@ -134,40 +137,61 @@ void FoxOpenGLWidget::showMesh()
 
 void FoxOpenGLWidget::cuttingMesh()
 {
+    qDebug() << "cuttingMesh" << m_renderer->getActors().size();
+    if (m_renderer->getActors().size()==0) return;
+
     makeCurrent();
-    m_toothMeshModel->cuttingMesh();
-    m_toothMeshModel->addMesh(m_shaderProgram->getShaderProgram());
+    // 获取当前病例
+    std::shared_ptr<FoxActor> actor = m_renderer->getActors()[0];
+    // 调用切割算法并获取多个polydata
+    std::vector<std::shared_ptr<FoxPolyData>> polyDataList;
+    std::shared_ptr<FoxPolyData> polydata = actor->getPolyDataMapper()->getPolyData();
+    polyDataList = m_toothMeshModel->cuttingMesh(polydata->getMesh());
+    // 加载多个polydata数据
+    m_renderer->clearActors(); // 加载之前清空之前的数据
+    for(auto& data:polyDataList){
+        std::shared_ptr<FoxOpenGLPolyDataMapper> cuttingMapper = std::make_shared<FoxOpenGLPolyDataMapper>();
+        cuttingMapper->setPolyData(data);
+        std::shared_ptr<FoxActor> cuttingActor = std::make_shared<FoxActor>(this);
+        cuttingActor->setPolyDataMapper(cuttingMapper);
+        m_renderer->addActor(cuttingActor);
+    }
+   
     update();
 }
 
-void FoxOpenGLWidget::showSphere()
+void FoxOpenGLWidget::showSphereAndLine()
 {
     if (m_renderer->getActors().size() == 0) return;
     makeCurrent();
-    std::vector<QVector3D> cpts1;
-    cpts1.push_back(QVector3D(-27.336922, -0.094851606, -22.03377));
-    cpts1.push_back(QVector3D(-30.468161, -0.1347039, -20.110193));
-    cpts1.push_back(QVector3D(-31.713745, -0.70289636, -17.194614));
-    cpts1.push_back(QVector3D(-30.220974, -2.65732, -12.747708));
-    cpts1.push_back(QVector3D(-26.199223, -2.8259952, -10.861499));
-    cpts1.push_back(QVector3D(-22.798359, -0.83309388, -11.493107));
-    cpts1.push_back(QVector3D(-20.818401, -2.0832605, -12.664121));
-    cpts1.push_back(QVector3D(-20.490623, -4.0871673, -14.601606));
-    cpts1.push_back(QVector3D(-20.636423, -4.1962366, -17.01095));
-    cpts1.push_back(QVector3D(-21.415751, -3.6642685, -19.164167));
-    cpts1.push_back(QVector3D(-23.169182, -1.9599953, -22.090446));
-    for(auto& point:cpts1){
-        FoxSphereSource sphere;
-        sphere.setRadius(0.5f);
-        sphere.setCenter(point.x(), point.y(), point.z());
-        std::shared_ptr<FoxOpenGLPolyDataMapper> mapper = std::make_shared<FoxOpenGLPolyDataMapper>();
-        mapper->setPolyData(sphere.getOutputPolyData());
-        std::shared_ptr<FoxActor> actor = std::make_shared<FoxActor>(this);
-        actor->setPolyDataMapper(mapper);
-        actor->setColor(1.0f, 0.0f, 0.0f);
-        m_renderer->addActor(actor);
+
+    // 获取边界线顶点数据
+    std::vector<std::vector<QVector3D>> dataList = m_toothMeshModel->getBoundaryVertex();
+    for(auto &cpts: dataList){
+        for(auto& point:cpts){
+            // 创建球体
+            FoxSphereSource sphere;
+            sphere.setRadius(0.5f);
+            // 设置圆心
+            sphere.setCenter(point.x(), point.y(), point.z());
+            std::shared_ptr<FoxOpenGLPolyDataMapper> mapper = std::make_shared<FoxOpenGLPolyDataMapper>();
+            mapper->setPolyData(sphere.getOutputPolyData());
+            std::shared_ptr<FoxActor> actor = std::make_shared<FoxActor>(this);
+            actor->setPolyDataMapper(mapper);
+            // 设置球体颜色
+            actor->setColor(0.0f, 1.0f, 0.0f);
+            m_renderer->addActor(actor);
+        }
     }
-   //m_toothMeshModel->showSphere(m_shaderProgram->getShaderProgram());
+
+
+    for(auto& vertex: dataList){
+        QVector<QVector3D> controlPoints = QVector<QVector3D>::fromStdVector(vertex);
+        std::shared_ptr<FoxLineRenderer> lineRenderer = std::make_shared<FoxLineRenderer>();
+        lineRenderer->setVector(controlPoints);
+        m_lineRenderer.push_back(lineRenderer);
+    }
+
     update();
 
 }
@@ -229,6 +253,8 @@ void FoxOpenGLWidget::resizeGL(int w, int h)
 }
 
 
+
+
 void FoxOpenGLWidget::paintGL()
 {
     glClearColor(0.85f, 0.85f, 0.85f, 1.0f);
@@ -237,14 +263,11 @@ void FoxOpenGLWidget::paintGL()
     glEnable(GL_DEPTH_TEST); //默认关闭的
 
     m_renderer->renderer();
-    //QMatrix4x4 model = m_model;
-    //QMatrix4x4 view = m_view;
-    //QMatrix4x4 projection = m_projection;
-    // // 绑定着色器 
-    // m_shaderProgram->useShaderProgram(m_useTexturel, m_viewPos, projection, view, model);
-    // // 绘制
-    // m_toothTexture->bind();
-    // m_toothMeshModel->loadMesh(m_shaderProgram->getShaderProgram());
+    for(auto& line:m_lineRenderer){
+        line->initialize();
+        line->render();
+    }
+
 }
 
 void FoxOpenGLWidget::mousePressEvent(QMouseEvent* event)
@@ -268,17 +291,7 @@ void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
     event->accept();
     // 如果按下的是左键就移动
     if (m_isPressMouseLeft) {
-        //// 如果是第一次按下则记录下位置
-        //if(m_firstMouse){
-        //        m_leftMoveMousePos.setX(event->pos().x());
-        //        m_leftMoveMousePos.setY(event->pos().y());
-        //        m_firstMouse = false;
-        //}
-        //// 上一次的位置减去当前的位置得到移动的结果
-        //float xoffset = m_leftMoveMousePos.x()- event->pos().x();
-        //float yoffset = m_leftMoveMousePos.y() - event->pos().y();
-        //m_leftMoveMousePos.setX(event->pos().x());
-        //m_leftMoveMousePos.setY(event->pos().y());
+
         float angle = 1.5f;
         QVector2D diff = QVector2D(event->pos())-QVector2D(m_leftMoveMousePos);
         m_leftMoveMousePos = event->pos();

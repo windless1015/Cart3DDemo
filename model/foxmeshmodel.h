@@ -11,6 +11,8 @@
 // cart3D
 #include <Util/OpenMeshUtil.h>
 
+#include "../rendering/foxpolydata.h"
+
 /// <summary>
 ///  负责处理网格模型 
 ///  包括切割 切割
@@ -22,14 +24,18 @@ class FoxMeshModel
 public:
 	FoxMeshModel();
 	~FoxMeshModel();
+
+	std::vector<std::vector<QVector3D>> getBoundaryVertex();
+
 	// 通过文件路径设置网格模型
 	void setMeshFileName(const std::string& meshFileName);
 	// 通过文件夹路径设置多个网格模型
 	void setMeshFileFolder(const std::string& meshFolderPath);
 	// 测试切割算法的例子, 最后生成两个网格
 	void cuttingMesh();
+	std::vector<std::shared_ptr<FoxPolyData>> cuttingMesh(Cart3D::OpenTriMesh mesh);
 	// 显示边界线的小球点
-	void showSphere(QOpenGLShaderProgram* shader);
+	void showSphereAndLine(QOpenGLShaderProgram* shader);
 	
 
 	// 加载网格(绘制网格)
@@ -50,6 +56,7 @@ private:
 
 private:
 	bool m_isVisible;
+
 	Cart3D::OpenTriMesh m_mesh; // 读取出来的网格
 
 	Cart3D::OpenTriMesh m_beCutMesh; 
@@ -60,7 +67,6 @@ private:
 
 	std::vector<sptr_FoxMesh> m_cuttingFoxMeshs;
 	std::vector<Cart3D::OpenTriMesh> m_cuttingMeshs;
-
 
 	QOpenGLShaderProgram* m_shaderProgram;
 };

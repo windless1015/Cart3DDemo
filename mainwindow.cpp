@@ -41,7 +41,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actionUseTexture, &QAction::triggered, this, &MainWindow::slotsUseTexture);
     // 打开病例
     connect(ui->actionCaseTest1, &QAction::triggered,this,&MainWindow::slotsOpenCaseData);
-    // 显示小球
+    // 显示小球和边界线
     connect(ui->actionShowSphere, &QAction::triggered, this, &MainWindow::slotsShowSphere);
 }
 
@@ -132,6 +132,7 @@ void MainWindow::slotsOpenCaseData()
 void MainWindow::slotsShowSphere()
 {
 
-    m_foxOpenGLWidget->showSphere();
+    m_foxOpenGLWidget->showSphereAndLine();
 
 }
+

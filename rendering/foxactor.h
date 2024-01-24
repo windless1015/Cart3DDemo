@@ -19,7 +19,8 @@ public:
 	~FoxActor();
 	// 设置映射的mapper
 	void setPolyDataMapper(std::shared_ptr<FoxOpenGLPolyDataMapper> polyDataMapper);
-	
+	std::shared_ptr<FoxOpenGLPolyDataMapper> getPolyDataMapper();
+
 	// 设置颜色
 	void setColor(float r, float g, float b);
 
@@ -30,18 +31,22 @@ public:
 	void setVisibility(bool visibility);
 
 	// 设置投影矩阵
+	void setProjection(const QMatrix4x4& projection);
 	void setProjection(float zoom, float width, float hight, float nearPlane, float farPlane);
+	QMatrix4x4& getProjection();
 
 	// 设置模型矩阵 变换 缩放 旋转
+	void setModel(const QMatrix4x4& model);
 	void setModelTranslation(QVector3D& position);
 	void setModelScale(float factor);
 	void setModelRotate(QQuaternion& rotateQuat);
+	QMatrix4x4& getModel();
 
-	// 设置视图矩阵
+	// 设置视图矩阵 旋转视图矩阵
+	void setView(const QMatrix4x4& view);
 	void setView(std::shared_ptr<FoxCamera> camera);
-	// 旋转视图矩阵
 	void setViewRotate(QQuaternion& rotateQuat);
-
+	QMatrix4x4& getView();
 
 	// 更新actor的着色器数据
 	void updataShaderProgram();

@@ -8,10 +8,14 @@
 
 FoxActor::FoxActor(QObject* parent):m_zoom(45.0f),m_nearPlane(0.1f),m_farPlane(100.0f)
 {
+	
 	// 屏占比默认
 	m_aspectRatio = (float)800 / (float)600;
 	m_shaderProgarm = std::make_shared<FoxShaderProgram>(parent);
 	// 设置模型矩阵和投影矩阵
+	//QVector3D viewPos = QVector3D(0.0, 0.0, -40.0f);
+	//m_view.translate(viewPos);
+	//m_view.scale(0.4);
 	m_model.translate(QVector3D(0.0, 0.0, -30.0f));
 	m_model.scale(0.3f);
 	m_projection.perspective(m_zoom, m_aspectRatio, m_nearPlane, m_farPlane);
@@ -34,6 +38,11 @@ void FoxActor::setPolyDataMapper(std::shared_ptr<FoxOpenGLPolyDataMapper> polyDa
 	m_polyDataMapper->bindVertexBuffObject(m_shaderProgarm);
 }
 
+std::shared_ptr<FoxOpenGLPolyDataMapper> FoxActor::getPolyDataMapper()
+{
+	return m_polyDataMapper;
+}
+
 void FoxActor::setColor(float r, float g, float b)
 {
 	m_shaderProgarm->shaderBind();
@@ -50,6 +59,11 @@ void FoxActor::setVisibility(bool visibility)
 	m_actorVisibility = visibility;
 }
 
+void FoxActor::setProjection(const QMatrix4x4& projection)
+{
+	m_projection = projection;
+}
+
 void FoxActor::setProjection(float zoom, float width, float hight, float nearPlane, float farPlane)
 {
 	float aspectRatio = width / hight;
@@ -58,6 +72,17 @@ void FoxActor::setProjection(float zoom, float width, float hight, float nearPla
 	projection.perspective(m_zoom, aspectRatio, nearPlane, farPlane);
 	m_projection = projection;
 	updataShaderProgram();
+}
+
+QMatrix4x4& FoxActor::getProjection()
+{
+	// TODO: 在此处插入 return 语句
+	return m_projection;
+}
+
+void FoxActor::setModel(const QMatrix4x4& model)
+{
+	m_model = model;
 }
 
 void FoxActor::setModelTranslation(QVector3D& position)
@@ -78,6 +103,18 @@ void FoxActor::setModelRotate(QQuaternion& rotateQuat)
 	updataShaderProgram();
 }
 
+QMatrix4x4& FoxActor::getModel()
+{
+	// TODO: 在此处插入 return 语句
+	return m_model;
+}
+
+void FoxActor::setView(const QMatrix4x4& view)
+{
+	m_view = view;
+	updataShaderProgram();
+}
+
 void FoxActor::setView(std::shared_ptr<FoxCamera> camera)
 {
 	m_view = camera->getViewMatrix();
@@ -88,6 +125,12 @@ void FoxActor::setViewRotate(QQuaternion& rotateQuat)
 {
 	m_view.rotate(rotateQuat);
 	updataShaderProgram();
+}
+
+QMatrix4x4& FoxActor::getView()
+{
+	// TODO: 在此处插入 return 语句
+	return m_view;
 }
 
 
@@ -109,7 +152,7 @@ void FoxActor::setVertexBuffe()
 {
 	m_shaderProgarm->setVertexAttributeBuffe("aPos", 0, 3, 8 * sizeof(float));
 	m_shaderProgarm->setVertexAttributeBuffe("aNormal", sizeof(float) * 3, 3, 8 * sizeof(float));
-	m_shaderProgarm->setVertexAttributeBuffe("aPos", 0, 3, 8 * sizeof(float));
+	m_shaderProgarm->setVertexAttributeBuffe("aTexCoords", sizeof(float) * 6, 2, 8 * sizeof(float));
 }
 
 void FoxActor::draw()

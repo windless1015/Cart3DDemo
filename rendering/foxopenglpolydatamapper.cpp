@@ -18,6 +18,11 @@ void FoxOpenGLPolyDataMapper::setPolyData(std::shared_ptr<FoxPolyData> polyData)
 	m_polydata = polyData;
 }
 
+std::shared_ptr<FoxPolyData> FoxOpenGLPolyDataMapper::getPolyData()
+{
+	return m_polydata;
+}
+
 void FoxOpenGLPolyDataMapper::bindVAO()
 {
 	m_VAO.bind();
@@ -50,5 +55,5 @@ void FoxOpenGLPolyDataMapper::bindVertexBuffObject(std::shared_ptr<FoxShaderProg
 	m_VBO.allocate(vertexData.data(), vertexData.size() * sizeof(float));
 	shaderProgram->setVertexAttributeBuffe("aPos", 0, 3, 8 * sizeof(float));
 	shaderProgram->setVertexAttributeBuffe("aNormal", sizeof(float) * 3, 3, 8 * sizeof(float));
-	shaderProgram->setVertexAttributeBuffe("aPos", 0, 3, 8 * sizeof(float));
+	shaderProgram->setVertexAttributeBuffe("aTexCoords", sizeof(float) * 6, 2, 8 * sizeof(float));
 }

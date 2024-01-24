@@ -79,7 +79,7 @@
   </action>
   <action name="actionShowSphere">
    <property name="text">
-    <string>显示小球</string>
+    <string>显示球体和边界线</string>
    </property>
   </action>
   <action name="actionOpenMeshFolder">
@@ -95,6 +95,11 @@
   <action name="actionCaseTest1">
    <property name="text">
     <string>打开142856病例上下颌</string>
+   </property>
+  </action>
+  <action name="actionShowSpline">
+   <property name="text">
+    <string>显示曲线</string>
    </property>
   </action>
  </widget>

@@ -39,6 +39,11 @@ std::vector<std::shared_ptr<FoxActor>> FoxRenderer::getActors()
 	return m_actors;
 }
 
+void FoxRenderer::clearActors()
+{
+	m_actors.clear();
+}
+
 void FoxRenderer::setCameraZoom(float yoffset)
 {
 	m_camera->wheelScrollEvent(yoffset);

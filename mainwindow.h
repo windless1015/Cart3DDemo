@@ -36,6 +36,7 @@ private slots:
     // œ‘ æ–°«Ú
     void slotsShowSphere();
 
+
 private:
    Ui::MainWindow *ui;
    FoxOpenGLWidget* m_foxOpenGLWidget;

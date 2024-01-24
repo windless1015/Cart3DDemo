@@ -30,6 +30,7 @@ class FoxCamera;
 class FoxLighting;
 class FoxMeshModel;
 class FoxShaderProgram;
+class FoxLineRenderer;
 class FoxOpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
 
@@ -53,7 +54,7 @@ public:
     // 切割
     void cuttingMesh();
     // 显示小球
-    void showSphere();
+    void showSphereAndLine();
 
     // 窗口的OpenGL事件
 protected:
@@ -74,6 +75,7 @@ protected:
 private:
     //---------test------------
     std::shared_ptr<FoxRenderer> m_renderer;
+    std::vector<std::shared_ptr<FoxLineRenderer>> m_lineRenderer;
     //------------------------
 
     bool m_meshIsVisible;

@@ -15,7 +15,9 @@
 class FoxPolyData
 {
 public:
-	FoxPolyData(Cart3D::OpenTriMesh mesh);
+	FoxPolyData(Cart3D::OpenTriMesh& mesh);
+	// 获取网格
+	Cart3D::OpenTriMesh getMesh();
 
 	// 获取网格完整的顶点数据
 	std::vector<float>&  getMeshVertexData();

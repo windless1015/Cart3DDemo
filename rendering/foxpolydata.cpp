@@ -4,12 +4,17 @@
 
 #include <qmath.h>
 
-FoxPolyData::FoxPolyData(Cart3D::OpenTriMesh mesh):m_mesh(mesh)
+FoxPolyData::FoxPolyData(Cart3D::OpenTriMesh& mesh):m_mesh(mesh)
 {
     // 计算法向量确保获取法向量时能正确获取
     calcuatingNormal();
 	// 将网格转化顶点数据
 	meshToVertexData();
+}
+
+Cart3D::OpenTriMesh FoxPolyData::getMesh()
+{
+	return m_mesh;
 }
 
 std::vector<float>& FoxPolyData::getMeshVertexData()

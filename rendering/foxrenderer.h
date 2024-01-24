@@ -22,7 +22,8 @@ public:
 	void renderer();
 	// 获取所有actor
 	std::vector<std::shared_ptr<FoxActor>> getActors();
-
+	// 清空
+	void clearActors();
 	// 触发相机缩放zoom
 	void setCameraZoom(float yoffset);
 	float getCameraZoom();

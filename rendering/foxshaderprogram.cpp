@@ -23,7 +23,7 @@ void main()
     FragPos = vec3(model * vec4(aPos, 1.0));
     Normal = mat3(transpose(inverse(model))) * aNormal;
     TexCoords = aTexCoords;
-    gl_Position = projection * view* vec4(FragPos, 1.0);
+    gl_Position = projection * view * vec4(FragPos, 1.0);
 }
 )";
 
@@ -57,9 +57,6 @@ uniform bool useMaterial;
 uniform vec3 objectColor;
 void main()
 {
-    //vec3 lightColor = vec3(1.0, 1.0, 1.0);
-    //vec3 objectColor = vec3(0.5, 0.5, 0.5);
-   
     vec3 ambient;
     if(useMaterial){
         ambient = light.ambient * texture(material.diffuse, TexCoords).rgb;

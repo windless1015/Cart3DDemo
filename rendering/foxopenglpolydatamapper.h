@@ -21,7 +21,7 @@ public:
 
 	// 设置顶点数据
 	void setPolyData(std::shared_ptr<FoxPolyData> polyData);
-
+	std::shared_ptr<FoxPolyData> getPolyData();
 	// 绑定VAO 绘制时需要bind VAO
 	void bindVAO();
 	// 释放VAO
