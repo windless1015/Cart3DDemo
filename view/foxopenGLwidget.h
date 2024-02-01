@@ -25,6 +25,8 @@
 
 // test
 class FoxRenderer;
+class FoxPipeSource;
+//======
 
 class FoxCamera;
 class FoxLighting;
@@ -72,10 +74,21 @@ protected:
     void wheelEvent(QWheelEvent* event) override;
     void mouseReleaseEvent(QMouseEvent* event) override;
 
+
+    //---------------------- test
+    QVector<QVector3D> buildSpiralPath(float r1, float r2, float h1, float h2,
+        float turns, int points);
+    QVector<QVector3D> buildCircle(float radius, int steps);
+
+
 private:
     //---------test------------
     std::shared_ptr<FoxRenderer> m_renderer;
     std::vector<std::shared_ptr<FoxLineRenderer>> m_lineRenderer;
+
+    std::shared_ptr<FoxPipeSource> m_foxPipeSource;
+    QVector<QVector3D> m_path;
+    QVector<QVector3D> m_circle;
     //------------------------
 
     bool m_meshIsVisible;

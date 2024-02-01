@@ -59,7 +59,9 @@ set(PROJECT_SOURCES
 "geometry/foxspheresource.h"
 "geometry/foxspheresource.cpp"
  "rendering/foxlinerenderer.h" 
- "rendering/foxlinerenderer.cpp")
+ "rendering/foxlinerenderer.cpp" 
+ "geometry/foxpipesource.h" 
+ "geometry/foxpipesource.cpp" "geometry/foxline.h" "geometry/foxplane.h")
 
 
 

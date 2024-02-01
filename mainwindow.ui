@@ -45,6 +45,7 @@
     <addaction name="actionVisibleTooth"/>
     <addaction name="actionVisibleGingiva"/>
     <addaction name="actionShowSphere"/>
+    <addaction name="actionTest"/>
    </widget>
    <widget class="QMenu" name="menuRendering">
     <property name="title">
@@ -100,6 +101,11 @@
   <action name="actionShowSpline">
    <property name="text">
     <string>显示曲线</string>
+   </property>
+  </action>
+  <action name="actionTest">
+   <property name="text">
+    <string>Test</string>
    </property>
   </action>
  </widget>

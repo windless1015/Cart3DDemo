@@ -43,7 +43,7 @@ void FoxLineRenderer::render()
 {
     if (!m_visiblity) return;
     glLineWidth(5.0f);
-    glColor3f(1.0f, 1.0f, 1.0f);
+    //glColor3f(1.0f, 1.0f, 1.0f);
 
     m_VAO.bind();
     glDrawArrays(GL_LINE_STRIP, 0, m_controlPoints.size());

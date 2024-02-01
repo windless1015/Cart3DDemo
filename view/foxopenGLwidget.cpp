@@ -9,7 +9,7 @@
 
 #include <QKeyEvent>
 #include <QMatrix4x4>
-
+#include <QVector>
 #include <QtOpenGL/qgl.h>
 
 //----------------test----------------
@@ -19,6 +19,7 @@
 #include "../rendering/foxrenderer.h"
 #include "../rendering/foxlinerenderer.h"
 #include "../geometry/foxspheresource.h"
+#include "../geometry/foxpipesource.h"
 //----------------test----------------
 
 using namespace OpenMesh;
@@ -34,7 +35,7 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent):QOpenGLWidget(parent)
     m_angle = 0.0f;
     /// test
     m_renderer = std::make_shared<FoxRenderer>();
-
+    m_foxPipeSource = std::make_shared<FoxPipeSource>();
 
     m_rotateQuat = QQuaternion::fromAxisAndAngle(1.0f, 0.0f, 0.0f, 30.0f);
     m_rotateQuat *= QQuaternion::fromAxisAndAngle(0.0f, 1.0f, 0.0f, -10.0f);
@@ -167,8 +168,8 @@ void FoxOpenGLWidget::showSphereAndLine()
 
     // 获取边界线顶点数据
     std::vector<std::vector<QVector3D>> dataList = m_toothMeshModel->getBoundaryVertex();
-    for(auto &cpts: dataList){
-        for(auto& point:cpts){
+    for(auto & vertex : dataList){
+        for(auto& point: vertex){
             // 创建球体
             FoxSphereSource sphere;
             sphere.setRadius(0.5f);
@@ -184,7 +185,29 @@ void FoxOpenGLWidget::showSphereAndLine()
         }
     }
 
-
+    m_circle = this->buildCircle(0.5f, 48);
+    
+    for(auto& vertex:dataList){
+        m_path = QVector<QVector3D>::fromStdVector(vertex);
+        QVector<QVector3D> p;
+        // 管道
+        FoxPipeSource pipe;
+        // 将路径添加至管道中
+        for (auto& point : m_path) {
+            p.push_back(point);
+            pipe.set(p, m_circle);
+            pipe.addPathPoint(point);
+        }
+        // 添加至渲染当中
+        std::shared_ptr<FoxOpenGLPolyDataMapper> mapper = std::make_shared<FoxOpenGLPolyDataMapper>();
+        mapper->setPolyData(pipe.getOutputPolyData());
+        std::shared_ptr<FoxActor> actor = std::make_shared<FoxActor>(this);
+        actor->setPolyDataMapper(mapper);
+        actor->setModelScale(0.3f);
+        // 设置颜色
+        actor->setColor(1.0f, 1.0f, 0.0f);
+        m_renderer->addActor(actor);
+    }
     for(auto& vertex: dataList){
         QVector<QVector3D> controlPoints = QVector<QVector3D>::fromStdVector(vertex);
         std::shared_ptr<FoxLineRenderer> lineRenderer = std::make_shared<FoxLineRenderer>();
@@ -232,6 +255,24 @@ void FoxOpenGLWidget::initializeGL()
     // 设置观察向量
     m_viewPos = m_camera->getPosition();
 
+    //m_path = this->buildSpiralPath(4, 1, -3, 3, 3.5, 200);
+    m_circle = this->buildCircle(0.5f, 48);
+    // 路径
+    /*m_path = QVector<QVector3D>::fromStdVector(m_toothMeshModel->getBoundaryVertex()[0]);
+    
+    QVector<QVector3D> p;
+
+    for (auto& point : m_path) {
+        p.push_back(point);
+        m_foxPipeSource->set(p, m_circle);
+        m_foxPipeSource->addPathPoint(point);
+    }
+    
+
+    Cart3D::OpenTriMesh mesh = m_foxPipeSource->createPipeMesh();
+    OpenMesh::IO::write_mesh(mesh, "E:\\3D\\TestData\\testData\\test\\pipe.stl");*/
+
+
 }
 
 // 窗口改变时执行
@@ -268,6 +309,28 @@ void FoxOpenGLWidget::paintGL()
         line->render();
     }
 
+    //int count = m_foxPipeSource->getContourCount();
+    //for (int i = 0; i < count - 1; ++i)
+    //{
+    //    QVector<QVector3D> c1 = m_foxPipeSource->getContour(i);
+    //    QVector<QVector3D> c2 = m_foxPipeSource->getContour(i + 1);
+    //    QVector<QVector3D> n1 = m_foxPipeSource->getNormal(i);
+    //    QVector<QVector3D>  n2 = m_foxPipeSource->getNormal(i + 1);
+    //    glBegin(GL_TRIANGLE_STRIP);
+    //    for (int j = 0; j < (int)c1.size(); ++j)
+    //    {
+    //        //float n1x = n1[j].x();
+    //        //float c1x = c1[j].x();
+    //        //float c1y = c1[j].y();
+    //        //float c1z = c1[j].z();
+    //        glColor3f(n1[j].x(), n1[j].y(), n1[j].z());
+    //        glNormal3f(n2[j].x(), n2[j].y(), n2[j].z());
+    //        glVertex3f(c2[j].x(), c2[j].y(), c2[j].z());
+    //        glNormal3f(n1[j].x(), n1[j].y(), n1[j].z());
+    //        glVertex3f(c1[j].x(), c1[j].y(), c1[j].z());
+    //    }
+    //    glEnd();
+    //}
 }
 
 void FoxOpenGLWidget::mousePressEvent(QMouseEvent* event)
@@ -370,6 +433,50 @@ void FoxOpenGLWidget::mouseReleaseEvent(QMouseEvent* event)
 
     
 
+}
+
+QVector<QVector3D> FoxOpenGLWidget::buildSpiralPath(float r1, float r2, float h1, float h2, float turns, int points)
+{
+
+    const float PI = acos(-1);
+    QVector<QVector3D> vertices;
+    QVector3D vertex;
+    float r = r1;
+    float rStep = (r2 - r1) / (points - 1);
+    float y = h1;
+    float yStep = (h2 - h1) / (points - 1);
+    float a = 0;
+    float aStep = (turns * 2 * PI) / (points - 1);
+    for (int i = 0; i < points; ++i)
+    {
+        vertex.setX(r* cos(a));
+        vertex.setZ(r * sin(a));
+        vertex.setY(y);
+        vertices.push_back(vertex);
+        // next
+        r += rStep;
+        y += yStep;
+        a += aStep;
+    }
+    return vertices;
+}
+
+QVector<QVector3D> FoxOpenGLWidget::buildCircle(float radius, int steps)
+{
+    QVector<QVector3D> points;
+    if (steps < 2) return points;
+
+    const float PI2 = acos(-1) * 2.0f;
+    float x, y, a;
+    for (int i = 0; i <= steps; ++i)
+    {
+        // 这个相当于θ
+        a = PI2 / steps * i;
+        x = radius * cosf(a);
+        y = radius * sinf(a);
+        points.push_back(QVector3D(x, y, 0));
+    }
+    return points;
 }
 
 

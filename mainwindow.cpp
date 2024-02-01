@@ -43,6 +43,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actionCaseTest1, &QAction::triggered,this,&MainWindow::slotsOpenCaseData);
     // 显示小球和边界线
     connect(ui->actionShowSphere, &QAction::triggered, this, &MainWindow::slotsShowSphere);
+    // 测试
+    connect(ui->actionTest, &QAction::triggered, this, &MainWindow::slotsTest);
 }
 
 MainWindow::~MainWindow()
@@ -136,3 +138,7 @@ void MainWindow::slotsShowSphere()
 
 }
 
+
+void MainWindow::slotsTest()
+{
+}

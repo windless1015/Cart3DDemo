@@ -35,7 +35,8 @@ private slots:
     void slotsOpenCaseData();
     // 显示小球
     void slotsShowSphere();
-
+    // 用于测试的
+    void slotsTest();
 
 private:
    Ui::MainWindow *ui;

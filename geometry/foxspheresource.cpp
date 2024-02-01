@@ -123,9 +123,7 @@ bool FoxSphereSource::getSphereMesh(Cart3D::OpenTriMesh& mesh)
     face_vhandles.push_back(vhandle[k - m_longitude]);
     face_vhandles.push_back(vhandle[k - 1]);
     mesh.add_face(face_vhandles);
-
-
-
+  
 	return true;
 }
 
