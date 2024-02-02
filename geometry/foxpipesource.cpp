@@ -78,53 +78,24 @@ Cart3D::OpenTriMesh FoxPipeSource::createPipeMesh()
     std::vector<Cart3D::OpenTriMesh::VertexHandle> vh1;
     std::vector<Cart3D::OpenTriMesh::VertexHandle> vh2;
     std::vector<Cart3D::OpenTriMesh::VertexHandle> face_vhandles;
-    //qDebug() << "coutours number:" << m_contours.size();
-    //for (auto& point : m_contour) {
-    //    qDebug() << "point" << point;
-    //}
-
-
-    //for (int i = 0; i < 5; ++i) {
-    //    qDebug() << "m_contours i:" << m_contours[0][i];
-    //    qDebug() << "m_contours i+1:" << m_contours[0][i + 1];
-    //    qDebug() << "======================";
-    //}
-    //
-    //for (int i = 0; i < 5; ++i) {
-    //    qDebug() << "contours i:"<<contours[0][i];
-    //    qDebug() << "contours i+1:" << contours[0][i+1];
-    //    qDebug() << "======================";
-    //}
-  
-    for(int j = 0;j<count - 1;++j){
-        for (auto& i : m_contours.at(j))
-        {
-            
-            vh1.push_back(m_mesh.add_vertex(Cart3D::OpenTriMesh::Point(i.x(), i.y(), i.z())));
-        }
-        // 计数器防止访问空坐标
-        int counter = j + 1;
-        // 如果已经是最后的坐标则将头部添加保证头尾连接
-        if (counter == (count - 1)) {
-            for (auto& i : m_contours.at(0))
-            {
-                vh2.push_back(m_mesh.add_vertex(Cart3D::OpenTriMesh::Point(i.x(), i.y(), i.z())));
-            }
-        }else{
-            for (auto& i : m_contours.at(j + 1))
-            {
-                vh2.push_back(m_mesh.add_vertex(Cart3D::OpenTriMesh::Point(i.x(), i.y(), i.z())));
-            }
+    
+    for (int i = 0; i < count - 1; i++) {
+        auto& begin = m_contours.at(i);
+        auto& next = m_contours.at(i + 1);
+        for (int j = 0; j < next.size(); j++) {
+            vh1.push_back(m_mesh.add_vertex(Cart3D::OpenTriMesh::Point(begin[j].x(), begin[j].y(), begin[j].z())));
+            vh2.push_back(m_mesh.add_vertex(Cart3D::OpenTriMesh::Point(next[j].x(), next[j].y(), next[j].z())));
         }
     }
 
-    //qDebug() << "vh1 size:" << vh1.size();
-    for (int i = 0; i < vh1.size() - 1; i++) {
+
+
+    for (int i = 0; i < vh2.size()-1; i++) {
         face_vhandles.clear();
-        face_vhandles.push_back(vh2[i]);
-        face_vhandles.push_back(vh1[i]);
-        face_vhandles.push_back(vh1[i + 1]);
-        face_vhandles.push_back(vh2[i + 1]);
+        face_vhandles.push_back(vh2.at(i));
+        face_vhandles.push_back(vh1.at(i));
+        face_vhandles.push_back(vh1.at(i + 1));
+        face_vhandles.push_back(vh2.at(i + 1));
         m_mesh.add_face(face_vhandles);
     }
 
@@ -172,16 +143,14 @@ void FoxPipeSource::transformFirstContour()
     int pathCount = (int)m_path.size();
     int vertexCount = (int)m_contour.size();
     QMatrix4x4 matrix;
-
     if (pathCount > 0)
     {
-        // transform matrix
-        if (pathCount > 1)
-            matrix.lookAt(m_path[1] - m_path[0],QVector3D(1,0,0), QVector3D(0, 1, 0));
 
         matrix.translate(m_path[0]);
-
-        //将矩阵与等高线相乘注意:这里是等值线顶点的变换如果路径被重置为0，必须重新提交轮廓线数据吗
+        matrix.scale(0.6f);
+        //if (pathCount > 1)
+        //    matrix.rotate(67.0f, m_path[0]);
+        //将矩阵与等高线相乘注意:这里是等值线顶点的变换如果路径被重置为0，必须重新提交轮廓线数据
         for (int i = 0; i < vertexCount; ++i)
         {
             m_contour[i] = matrix * m_contour[i];
@@ -201,21 +170,20 @@ QVector<QVector3D> FoxPipeSource::projectContour(int fromIndex, int toIndex)
     else
         dir2 = m_path[toIndex + 1] - m_path[toIndex];
 
-    normal = dir1 + dir2;               // normal vector of plane at toIndex 平面在顶点处的法向量
+    normal = dir1 + dir2;               // 平面在顶点处的法向量
     FoxPlane plane(normal, m_path[toIndex]);
 
-    // project each vertex of contour to the plane
     // 将等高线的每个顶点投影到平面上
     QVector3D v;
-     QVector<QVector3D>& fromContour = m_contours[fromIndex];
+    QVector<QVector3D>& fromContour = m_contours[fromIndex];
     QVector<QVector3D> toContour;
+
     int count = (int)fromContour.size();
     for (int i = 0; i < count; ++i)
     {
         line.set(dir1, fromContour[i]);
         toContour.push_back(plane.intersect(line));
     }
-
     return toContour;
 }
 

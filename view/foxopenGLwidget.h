@@ -78,6 +78,8 @@ protected:
     //---------------------- test
     QVector<QVector3D> buildSpiralPath(float r1, float r2, float h1, float h2,
         float turns, int points);
+    QVector<QVector3D> buildSpiralPath(QVector3D r1, QVector3D r2, float h1, float h2,
+        float turns, int points);
     QVector<QVector3D> buildCircle(float radius, int steps);
 
 
