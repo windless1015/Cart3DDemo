@@ -349,8 +349,9 @@ void FoxOpenGLWidget::paintGL()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	//Z缓冲(Z-buffer)，也被称为深度缓冲(Depth Buffer)
 	glEnable(GL_DEPTH_TEST); 
-	glEnable(GL_BLEND);
 	// 开启混合模式
+	glEnable(GL_BLEND);
+	// 混合因子设置，如果不设置，透明度渲染就没法进行
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	m_renderer->renderer();
 
