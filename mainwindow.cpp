@@ -20,6 +20,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     m_foxOpenGLWidget = new FoxOpenGLWidget(this);
+    initAlphaSlider();
     // 默认是不使用纹理
     m_actionUseTextureStatus = false;
     // 默认是不隐藏
@@ -45,6 +46,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actionShowSphere, &QAction::triggered, this, &MainWindow::slotsShowSphere);
     // 测试
     connect(ui->actionTest, &QAction::triggered, this, &MainWindow::slotsTest);
+    // 设置透明度
+    connect(m_setAlphaSlider, &QSlider::sliderMoved, this, &MainWindow::slotsSetAlpha);
 }
 
 MainWindow::~MainWindow()
@@ -129,6 +132,9 @@ void MainWindow::slotsOpenCaseData()
     QString fileName_upper = ".\\caseData\\100642730142856\\upper.stl";
     //m_foxOpenGLWidget->openMeshFilePath(fileName);
     m_foxOpenGLWidget->openMeshFilePath(fileName_upper, fileName_lower);
+    m_setAlphaSlider->setValue(100);
+    QString text = "value: 100";
+    m_sliderValue->setText(text);
 }
 
 void MainWindow::slotsShowSphere()
@@ -141,4 +147,36 @@ void MainWindow::slotsShowSphere()
 
 void MainWindow::slotsTest()
 {
+}
+
+void MainWindow::slotsSetAlpha(int value)
+{
+    float alpha = (float)(value)/100;
+    QString text = "value: " + QString::number(alpha, 'f', 2);
+    m_sliderValue->setText(text);
+    m_foxOpenGLWidget->setActorAlpha(alpha);
+}
+
+void MainWindow::initAlphaSlider()
+{
+    m_sliderValue = new QLabel(this);
+    m_sliderValue->setText("value: 0");
+    m_sliderValue->setGeometry(width() - 300, 35, 100, 15);
+
+
+    m_setAlphaSlider = new QSlider(Qt::Horizontal,this);
+    // 设置最大值 最小值 步长
+    int max = 100;
+    int min = 0;
+    int step = 10;
+    m_setAlphaSlider->setMaximum(max);
+    m_setAlphaSlider->setMinimum(min);
+    m_setAlphaSlider->setSingleStep(step);
+
+    // 设置位置 高宽
+    m_setAlphaSlider->setGeometry(width() - 170, 35, 150, 15);
+
+    // 设置显示最上层
+    m_setAlphaSlider->raise();
+
 }

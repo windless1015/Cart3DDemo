@@ -43,10 +43,16 @@ std::shared_ptr<FoxOpenGLPolyDataMapper> FoxActor::getPolyDataMapper()
 	return m_polyDataMapper;
 }
 
-void FoxActor::setColor(float r, float g, float b)
+void FoxActor::setColor(float r, float g, float b, float alpha)
 {
 	m_shaderProgarm->shaderBind();
-	m_shaderProgarm->setObjectColor(r, g, b);
+	m_color = QVector3D(r, g, b);
+	m_shaderProgarm->setObjectColor(r, g, b, alpha);
+}
+
+QVector3D FoxActor::getColor()
+{
+	return m_color;
 }
 
 void FoxActor::setActorPosition(QVector3D& position)

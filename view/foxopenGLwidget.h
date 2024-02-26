@@ -57,6 +57,8 @@ public:
     void cuttingMesh();
     // 显示小球
     void showSphereAndLine();
+    // 设置场景中模型的透明度
+    void setActorAlpha(float alpha);
 
     // 窗口的OpenGL事件
 protected:

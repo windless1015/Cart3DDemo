@@ -21,7 +21,7 @@ public:
 	// 释放着色器
 	void shaderRelease();
 	// 设置物体颜色
-	void setObjectColor(float r,float g,float b);
+	void setObjectColor(float r,float g,float b,float alpha=1.0f);
 	// 设置矩阵
 	void setMatrix4x4(QMatrix4x4& projection, QMatrix4x4& view, QMatrix4x4& model);
 	// 是否使用材质 true 使用  false 不使用
@@ -49,7 +49,7 @@ private:
 	// 着色器程序
 	QOpenGLShaderProgram* m_shaderProgram;
 	// 物体颜色
-	float m_objectColor[3];
+	float m_objectColor[4];
 
 };
 

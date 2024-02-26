@@ -2,7 +2,8 @@
 
 #include <memory>
 #include <QMainWindow>
-
+#include <QLabel>
+#include <QSlider>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -37,6 +38,12 @@ private slots:
     void slotsShowSphere();
     // 用于测试的
     void slotsTest();
+    // 设置透明度
+    void slotsSetAlpha(int value);
+
+private:
+    // 初始化滑块
+    void initAlphaSlider();
 
 private:
    Ui::MainWindow *ui;
@@ -44,5 +51,7 @@ private:
    // 纹理开个状态  true:开   false:关
    bool m_actionUseTextureStatus;
    bool m_actionShowToothStatus;
+   QSlider* m_setAlphaSlider;
+   QLabel* m_sliderValue;
 };
 

@@ -121,7 +121,6 @@ void FoxPipeSource::generateContours()
     if (m_path.size() < 1)
         return;
 
-    // rotate and translate the contour to the first path point
     // 旋转并平移轮廓到第一个路径点 
     transformFirstContour();
     m_contours.push_back(this->m_contour);
@@ -143,13 +142,22 @@ void FoxPipeSource::transformFirstContour()
     int pathCount = (int)m_path.size();
     int vertexCount = (int)m_contour.size();
     QMatrix4x4 matrix;
+    const float EPSILON = 0.00001f;
     if (pathCount > 0)
     {
-
         matrix.translate(m_path[0]);
-        matrix.scale(0.6f);
-        //if (pathCount > 1)
-        //    matrix.rotate(67.0f, m_path[0]);
+        matrix.scale(0.3f);
+        qDebug() << "pathCount" << pathCount;
+        if (pathCount > 0){
+            QVector3D forward = m_path[1] - m_path[0];
+            //qDebug() << "-----------------------------";
+            //qDebug() << "m_path[0]" << m_path[0];
+            //qDebug() << "m_path[1]" << m_path[1];
+            //qDebug() <<"forward" << forward;
+            //qDebug() << "-----------------------------";
+            //matrix.rotate(90.0f,m_path[0]);
+            //matrix.lookAt(m_path[1] - m_path[0], QVector3D(0, 0, 0), QVector3D(0, 1, 0));
+        }
         //将矩阵与等高线相乘注意:这里是等值线顶点的变换如果路径被重置为0，必须重新提交轮廓线数据
         for (int i = 0; i < vertexCount; ++i)
         {

@@ -10,11 +10,11 @@ const char* vertexShaderCode = R"(#version 330 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexCoords;
-            
+          
 out vec3 FragPos;
 out vec3 Normal;
 out vec2 TexCoords;
-            
+
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
@@ -49,12 +49,13 @@ struct Light
 in vec3 FragPos;
 in vec3 Normal;
 in vec2 TexCoords;
-  
+
 uniform vec3 viewPos;
 uniform Material material;
 uniform Light light;
 uniform bool useMaterial;
-uniform vec3 objectColor;
+//uniform vec3 objectColor;
+uniform vec4 objectColor;
 void main()
 {
     vec3 ambient;
@@ -83,6 +84,9 @@ void main()
     float spec;
     vec3 specular;
     vec3 result;
+    vec4 fObjectColor;
+    vec4 lightColor;
+    vec4 vecResult;
     if(useMaterial){
         spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
         specular = light.specular * spec * texture(material.specular, TexCoords).rgb;
@@ -91,10 +95,15 @@ void main()
     else{
         spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
         specular = light.specular * spec * light.color;
-        result = (ambient + diffuse + specular) * objectColor;
+        //result = (ambient + diffuse + specular) * objectColor;
+        fObjectColor = objectColor;
+        //fObjectColor = vec4(0.5, 0.5, 0.5, 0.8);
+        lightColor = vec4((ambient + diffuse + specular), 1.0);
+        vecResult = lightColor * fObjectColor;
     }
-
-    FragColor = vec4(result, 1.0);
+    
+    //FragColor = vec4(result, 0.5);
+    FragColor = vecResult;
 }
 )";
 
@@ -107,9 +116,10 @@ FoxShaderProgram::FoxShaderProgram(QObject* parent)
     m_shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderCode);
     m_shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShadeCode);
     m_shaderProgram->link();
-    m_objectColor[0] = { 0.5f };
-    m_objectColor[1] = { 0.5f };
-    m_objectColor[2] = { 0.5f };
+    m_objectColor[0] = { 0.5f }; // r
+    m_objectColor[1] = { 0.5f }; // g
+    m_objectColor[2] = { 0.5f }; // b
+    m_objectColor[3] = { 1.0f }; // a
 }
 
 FoxShaderProgram::~FoxShaderProgram(){}
@@ -124,11 +134,12 @@ void FoxShaderProgram::shaderRelease()
     m_shaderProgram->release();
 }
 
-void FoxShaderProgram::setObjectColor(float r, float g, float b)
+void FoxShaderProgram::setObjectColor(float r, float g, float b, float alpha)
 {
     m_shaderProgram->bind();
     // 设置模型颜色
-    m_shaderProgram->setUniformValue("objectColor", r, g, b);
+    m_shaderProgram->setUniformValue("objectColor", r, g, b, alpha);
+    
 }
 
 void FoxShaderProgram::setMatrix4x4(QMatrix4x4& projection, QMatrix4x4& view, QMatrix4x4& model)
@@ -181,7 +192,7 @@ void FoxShaderProgram::useShaderProgram(bool useMaterial,QVector3D& viewPosition
     m_shaderProgram->bind();
     m_shaderProgram->setUniformValue("useMaterial", useMaterial);
     // 物体颜色
-    m_shaderProgram->setUniformValue("objectColor", m_objectColor[0], m_objectColor[1], m_objectColor[2]);
+    m_shaderProgram->setUniformValue("objectColor", m_objectColor[0], m_objectColor[1], m_objectColor[2], m_objectColor[3]);
 
     // ------------------------------------------------
     // 2024-01-16

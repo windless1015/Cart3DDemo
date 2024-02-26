@@ -22,7 +22,8 @@ public:
 	std::shared_ptr<FoxOpenGLPolyDataMapper> getPolyDataMapper();
 
 	// 设置颜色
-	void setColor(float r, float g, float b);
+	void setColor(float r, float g, float b,float alpha=1.0f);
+	QVector3D getColor();
 
 	// 设置位置
 	void setActorPosition(QVector3D& position);
@@ -72,4 +73,5 @@ private:
 	float m_farPlane;
 	bool m_useTexture; // 是否使用材质
 	bool m_actorVisibility; // 可见性
+	QVector3D m_color; //颜色
 };
