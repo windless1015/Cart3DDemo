@@ -2,6 +2,8 @@
 #include "./ui_mainwindow.h"
 
 #include "view/foxopenGLwidget.h"
+#include "view/fox2dcrosssectionwidget.h"
+
 #include "model/foxmeshmodel.h"
 
 #include "geometry/foxspheresource.h"
@@ -10,8 +12,8 @@
 #include <QVBoxLayout>
 #include <QFileDialog>
 #include <QDesktopServices>
-
-
+#include <QIcon>
+#include <QSpacerItem>
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -20,12 +22,19 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     m_foxOpenGLWidget = new FoxOpenGLWidget(this);
+
+    m_fox2DCrossSectionWidget = new Fox2DCrossSectionWidget();
+
+    QAction* actionCrossSection = new QAction(QIcon(".\\res\\icon\\2d_cross_section24x24.png"),tr("2D Cross Section"), this);
+    ui->toolBar->addAction(actionCrossSection);
+
     initAlphaSlider();
     // 默认是不使用纹理
     m_actionUseTextureStatus = false;
     // 默认是不隐藏
     m_actionShowToothStatus = false;
     setCentralWidget(m_foxOpenGLWidget);
+    
     this->setWindowTitle("Cart3D_Demo");
 
     // 切割
@@ -33,6 +42,7 @@ MainWindow::MainWindow(QWidget *parent)
     // 显示
     connect(ui->actionVisibleTooth, &QAction::triggered, this, &MainWindow::slotsSetVisibleTooth);
     connect(ui->actionVisibleGingiva, &QAction::triggered, this, &MainWindow::slotsSetVisibleGingiva);
+    connect(actionCrossSection, &QAction::triggered, this, &MainWindow::slotsShow2DCrossSectionWidget);
 
     // 打开文件夹
     connect(ui->actionOpenMeshFolder, &QAction::triggered, this, &MainWindow::slotsOpenMeshFolder);
@@ -48,11 +58,13 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actionTest, &QAction::triggered, this, &MainWindow::slotsTest);
     // 设置透明度
     connect(m_setAlphaSlider, &QSlider::sliderMoved, this, &MainWindow::slotsSetAlpha);
+
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+    delete m_fox2DCrossSectionWidget;
 }
 
 
@@ -157,11 +169,22 @@ void MainWindow::slotsSetAlpha(int value)
     m_foxOpenGLWidget->setActorAlpha(alpha);
 }
 
+void MainWindow::slotsShow2DCrossSectionWidget()
+{
+
+    m_fox2DCrossSectionWidget->setWindowModality(Qt::NonModal);
+    m_fox2DCrossSectionWidget->setWindowTitle("2D Cross Section");
+    m_fox2DCrossSectionWidget->setWindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint);
+    m_fox2DCrossSectionWidget->show();
+
+
+}
+
 void MainWindow::initAlphaSlider()
 {
     m_sliderValue = new QLabel(this);
-    m_sliderValue->setText("value: 0");
-    m_sliderValue->setGeometry(width() - 300, 35, 100, 15);
+    m_sliderValue->setText("value: 0.00");
+    m_sliderValue->setGeometry(width() - 255, 60, 100, 15);
 
 
     m_setAlphaSlider = new QSlider(Qt::Horizontal,this);
@@ -174,7 +197,7 @@ void MainWindow::initAlphaSlider()
     m_setAlphaSlider->setSingleStep(step);
 
     // 设置位置 高宽
-    m_setAlphaSlider->setGeometry(width() - 170, 35, 150, 15);
+    m_setAlphaSlider->setGeometry(width() - 170, 60, 150, 15);
 
     // 设置显示最上层
     m_setAlphaSlider->raise();

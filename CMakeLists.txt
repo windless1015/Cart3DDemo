@@ -36,6 +36,9 @@ set(PROJECT_SOURCES
 "view/foxopenGLwidget.h"
 "view/foxopenGLwidget.cpp"
 
+"view/fox2Dcrosssectionwidget.h"
+"view/fox2Dcrosssectionwidget.cpp"
+
 "model/foxmeshmodel.h"
 "model/foxmeshmodel.cpp"
 "model/foxmesh.h"	
@@ -61,7 +64,10 @@ set(PROJECT_SOURCES
  "rendering/foxlinerenderer.h" 
  "rendering/foxlinerenderer.cpp" 
  "geometry/foxpipesource.h" 
- "geometry/foxpipesource.cpp" "geometry/foxline.h" "geometry/foxplane.h")
+ "geometry/foxpipesource.cpp" 
+ "geometry/foxline.h" 
+ "geometry/foxplane.h"
+)
 
 
 

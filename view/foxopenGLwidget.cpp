@@ -351,14 +351,16 @@ void FoxOpenGLWidget::paintGL()
 	glEnable(GL_DEPTH_TEST); 
 	// 开启混合模式
 	glEnable(GL_BLEND);
-	// 混合因子设置，如果不设置，透明度渲染就没法进行
+	// 混合方程设置透明度
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	m_renderer->renderer();
 
+ 
 }
 
 void FoxOpenGLWidget::mousePressEvent(QMouseEvent* event)
 {
+	//qDebug() << " FoxOpenGLWidget::mousePressEvent";
 	if (m_renderer->getActors().size() == 0) return;
 	// std::cout << "点击事件\n";
 	if (event->button() == Qt::LeftButton) {
@@ -373,6 +375,7 @@ void FoxOpenGLWidget::mousePressEvent(QMouseEvent* event)
 
 void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 {
+	//qDebug() << "FoxOpenGLWidget::mouseMoveEvent";
 	if (m_renderer->getActors().size() == 0) return;
 
 	event->accept();
@@ -396,14 +399,12 @@ void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 	if (m_isPressMouseMiddle) {
 		if (m_firstMouse) {
 			// 如果是第一次按下记录当前的位置
-			m_middleMoveMousePos.setX(event->pos().x());
-			m_middleMoveMousePos.setY(event->pos().y());
+			m_middleMoveMousePos = event->pos();
 			m_firstMouse = false;
 		}
 		float xoffset = m_middleMoveMousePos.x() - event->pos().x();
 		float yoffset = m_middleMoveMousePos.y() - event->pos().y();
-		m_middleMoveMousePos.setX(event->pos().x());
-		m_middleMoveMousePos.setY(event->pos().y());
+		m_middleMoveMousePos = event->pos();
 		float sensitivity = 0.2;
 		xoffset *= sensitivity;
 		yoffset *= sensitivity;
@@ -419,6 +420,7 @@ void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 
 void FoxOpenGLWidget::wheelEvent(QWheelEvent* event)
 {
+	//qDebug() << "FoxOpenGLWidget::wheelEvent";
 	if (m_renderer->getActors().size() == 0) return;
 	// 滚动的速度
 	float speed = 1;

@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QLabel>
 #include <QSlider>
+#include <QLayout>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -11,6 +12,7 @@ QT_END_NAMESPACE
 
 class FoxOpenGLWidget;
 class FoxMeshModel;
+class Fox2DCrossSectionWidget;
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -40,14 +42,17 @@ private slots:
     void slotsTest();
     // 设置透明度
     void slotsSetAlpha(int value);
+    // 显示横截面窗口
+    void slotsShow2DCrossSectionWidget();
 
 private:
     // 初始化滑块
     void initAlphaSlider();
-
+    
 private:
    Ui::MainWindow *ui;
    FoxOpenGLWidget* m_foxOpenGLWidget;
+   Fox2DCrossSectionWidget* m_fox2DCrossSectionWidget;
    // 纹理开个状态  true:开   false:关
    bool m_actionUseTextureStatus;
    bool m_actionShowToothStatus;
