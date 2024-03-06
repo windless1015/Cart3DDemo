@@ -9,6 +9,8 @@
 #include <QVector2D>
 #include <QWheelEvent>
 #include <QResizeEvent>
+#include <QPainter>
+#include <QFont>
 
 Fox2DCrossSectionWidget::Fox2DCrossSectionWidget(QWidget*parent)
 	: QOpenGLWidget(parent)
@@ -117,23 +119,25 @@ void Fox2DCrossSectionWidget::paintGL()
 	m_midLine->render();
 	m_border->render();
 	//m_testLine->render();
-
+	glPointSize(7.0f);
+	glEnable(GL_POINT_SMOOTH);
 	if(m_mouseLeftButton){
-		float radius = 0.03f;
-		int segments = 50;
-		glBegin(GL_TRIANGLE_FAN);
-		glColor3f(1.0f, 1.0f, 1.0f);
+		glBegin(GL_POINTS);
+		glColor3f(0.0f, 0.0f, 0.0f);
 		glVertex2f(m_mouseLeftClickPos.x(), m_mouseLeftClickPos.y()); // 圆心
-		const float M_PI = 3.1415;
-		for (int i = 0; i <= segments; ++i)
-		{
-			float angle = 2.0f * M_PI * i / segments;
-			float x = m_mouseLeftClickPos.x()+radius * std::cos(angle);
-			float y = m_mouseLeftClickPos.y()+radius * std::sin(angle);
-			glVertex2f(x, y);
-		}
 		glEnd();
+		QPainter painter(this);
+		painter.setFont(QFont("Arial", 10));
+		painter.setPen(Qt::black);
+		//qDebug() << m_mouseLeftClickPos.x() << " " << m_mouseLeftClickPos.y();
+		painter.translate(m_textPos.x() + 10, m_textPos.y()+20);
+		//painter.rotate(90);
+		QString text = "X:"+QString::number(m_mouseLeftClickPos.x())+" Y: "+QString::number(m_mouseLeftClickPos.y());
+		painter.drawText(0, 0, text);
+		painter.end();
 	}
+
+
 }
 
 void Fox2DCrossSectionWidget::mousePressEvent(QMouseEvent* event)
@@ -150,6 +154,7 @@ void Fox2DCrossSectionWidget::mousePressEvent(QMouseEvent* event)
 		// 鼠标点击的点
 		m_mouseLeftClickPos.setX(x);
 		m_mouseLeftClickPos.setY(y);
+		m_textPos = event->pos();
 		m_mouseLeftButton = true;
 		update();
 	}

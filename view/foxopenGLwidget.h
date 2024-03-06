@@ -84,6 +84,23 @@ protected:
         float turns, int points);
     QVector<QVector3D> buildCircle(float radius, int steps);
 
+    QVector<QPointF> m_points;
+
+    QPointF calculateCircleCenter(const QPointF& p1, const QPointF& p2, const QPointF& p3)
+    {
+        float x1 = p1.x(), y1 = p1.y();
+        float x2 = p2.x(), y2 = p2.y();
+        float x3 = p3.x(), y3 = p3.y();
+
+        float ma = (y2 - y1) / (x2 - x1);
+        float mb = (y3 - y2) / (x3 - x2);
+
+        float centerX = (ma * mb * (y1 - y3) + mb * (x1 + x2) - ma * (x2 + x3)) / (2 * (mb - ma));
+        float centerY = -1 * (centerX - (x1 + x2) / 2) / ma + (y1 + y2) / 2;
+
+        return QPointF(centerX, centerY);
+    }
+
 
 private:
     //---------test------------

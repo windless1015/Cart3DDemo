@@ -11,7 +11,7 @@
 #include <QMatrix4x4>
 #include <QVector>
 #include <QtOpenGL/qgl.h>
-
+#include <gl/GLU.h>
 //----------------test----------------
 #include "../rendering/foxactor.h"
 #include "../rendering/foxpolydata.h"
@@ -336,8 +336,9 @@ void FoxOpenGLWidget::resizeGL(int w, int h)
 	{
 		actor->setProjection(zoom, (float)width(), (float)height(), 0.1f, 100.0f);
 	}
-
 	update();
+
+
 }
 
 
@@ -354,15 +355,11 @@ void FoxOpenGLWidget::paintGL()
 	// 混合方程设置透明度
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	m_renderer->renderer();
-
- 
 }
 
 void FoxOpenGLWidget::mousePressEvent(QMouseEvent* event)
 {
-	//qDebug() << " FoxOpenGLWidget::mousePressEvent";
 	if (m_renderer->getActors().size() == 0) return;
-	// std::cout << "点击事件\n";
 	if (event->button() == Qt::LeftButton) {
 		m_leftMoveMousePos = event->pos();
 		m_isPressMouseLeft = true;
@@ -371,13 +368,12 @@ void FoxOpenGLWidget::mousePressEvent(QMouseEvent* event)
 		m_middleMoveMousePos = event->pos();
 		m_isPressMouseMiddle = true;
 	}
+
 }
 
 void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 {
-	//qDebug() << "FoxOpenGLWidget::mouseMoveEvent";
 	if (m_renderer->getActors().size() == 0) return;
-
 	event->accept();
 	// 如果按下的是左键就移动
 	if (m_isPressMouseLeft) {

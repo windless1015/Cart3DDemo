@@ -43,4 +43,5 @@ private:
     bool m_mouseRigthButton; // ÊÇ·ñÊÇÓÒ¼ü
     bool m_mouseLeftButton; // ÊÇ·ñµã»÷×ó¼ü
     QPointF m_mouseLeftClickPos; // µã»÷×ó¼ü
+    QPoint m_textPos;
 };
