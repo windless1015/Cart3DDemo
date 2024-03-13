@@ -1,4 +1,4 @@
-#include "foxopenGLwidget.h"
+ï»¿#include "foxopenGLwidget.h"
 
 #include  "../rendering/foxcamera.h"
 #include  "../rendering/foxlighting.h"
@@ -43,7 +43,7 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) :QOpenGLWidget(parent)
 
 FoxOpenGLWidget::~FoxOpenGLWidget()
 {
-	// È·±£ÊÍ·Åopengl×ÊÔ´Ê±ÉÏÏÂÎÄÕıÈ·
+	// ç¡®ä¿é‡Šæ”¾openglèµ„æºæ—¶ä¸Šä¸‹æ–‡æ­£ç¡®
 	makeCurrent();
 	delete m_camera;
 	//doneCurrent();
@@ -63,11 +63,47 @@ void FoxOpenGLWidget::openMeshFolderPath(const QString& path)
 	m_shaderProgram->shaderRelease();
 }
 
+//QVector3D(8.6045361, -1.9544933, 19.358801)
+void FoxOpenGLWidget::openAttachmentFilePath(const QString& path, QVector3D& qv3d)
+{
+	//æˆ‘æ­£åœ¨å°è¯•æ‰“å¼€é™„ä»¶æ–‡ä»¶...
+	//QMessageBox::information(nullptr, QString::fromLocal8Bit("æç¤º"), QString::fromLocal8Bit("æˆ‘æ­£åœ¨å°è¯•æ‰“å¼€é™„ä»¶æ–‡ä»¶..."));
+	//qDebug() << QString::fromLocal8Bit("æ‰“å¼€çš„é™„ä»¶æ–‡ä»¶è·¯å¾„ä¸º:[")<< path<<"]";
+	//qDebug() << QString::fromLocal8Bit("æ‰“å¼€çš„é™„ä»¶æ–‡ä»¶è·¯å¾„ä¸º:[%1]").arg(path);
+
+	makeCurrent();
+
+	// ä¸‹é¢çš„ä»£ç æ˜¯æµ‹è¯•å°è£…çš„æ¸²æŸ“ç±»
+	std::string fileName = path.toStdString();//åº”è¯¥æ˜¯å°†const QString&è½¬åŒ–ä¸ºstringå§
+	Cart3D::OpenTriMesh mesh;//cart3dçš„ç½‘æ ¼//////////////////////////////////////////////////////////////////
+	IO::read_mesh(mesh, fileName);//çº¯c++æ¥è¯»å–æ–‡ä»¶
+
+	std::shared_ptr<FoxPolyData> polydata = std::make_shared<FoxPolyData>(mesh);//è·å–ç½‘æ ¼çš„æ•°æ®ç»“æ„,ä»€ä¹ˆé¡¶ç‚¹,é¢,æ³•å‘é‡,çº¹ç†åæ ‡,ç‚¹æ•°æ®ä¹‹ç±»çš„...
+	std::shared_ptr<FoxOpenGLPolyDataMapper> mapper = std::make_shared<FoxOpenGLPolyDataMapper>();
+	mapper->setPolyData(polydata);//OpenGLPolyDataMapperæ˜¯polydataçš„æ•°æ®æ˜ å°„
+	std::shared_ptr<FoxActor> actor = std::make_shared<FoxActor>(this);
+	actor->setPolyDataMapper(mapper);//æ¼”å‘˜
+	actor->setColor(0.5f, 0.5f, 0.5f);
+
+	
+
+	// åº”ç”¨çŸ©é˜µå˜æ¢
+	QMatrix4x4 transformMatrix;
+	transformMatrix.setToIdentity(); // å…ˆå°†å˜æ¢çŸ©é˜µé‡ç½®ä¸ºå•ä½çŸ©é˜µ
+	transformMatrix.translate(qv3d); // è¿›è¡Œå¹³ç§»å˜æ¢ï¼Œå°†ç½‘æ ¼åœ¨ x è½´ä¸Šç§»åŠ¨ 1.0 å•ä½
+	
+	actor->setTransform(transformMatrix,qv3d);
+
+	m_renderer->addActor(actor);
+	update();
+
+}
+
 void FoxOpenGLWidget::openMeshFilePath(const QString& path)
 {
 	std::string fileName = path.toStdString();
 	m_shaderProgram->shaderBind();
-	//ÏÂÃæÊÇÖ®Ç°µÄ´úÂë
+	//ä¸‹é¢æ˜¯ä¹‹å‰çš„ä»£ç 
 	m_toothMeshModel->setMeshFileName(fileName);
 	m_toothMeshModel->addMesh(m_shaderProgram->getShaderProgram());
 	update();
@@ -78,9 +114,9 @@ void FoxOpenGLWidget::openMeshFilePath(const QString& upper, const QString& lowe
 {
 	makeCurrent();
 
-	//-------------------²âÊÔäÖÈ¾Àà-------------------
-	// ±±¾©Ê±¼ä : 2024-01-18 17:42  
-	// ÏÂÃæµÄ´úÂëÊÇ²âÊÔ·â×°µÄäÖÈ¾Àà
+	//-------------------æµ‹è¯•æ¸²æŸ“ç±»-------------------
+	// åŒ—äº¬æ—¶é—´ : 2024-01-18 17:42  
+	// ä¸‹é¢çš„ä»£ç æ˜¯æµ‹è¯•å°è£…çš„æ¸²æŸ“ç±»
 	std::string fileName = lower.toStdString();
 	Cart3D::OpenTriMesh mesh;
 	IO::read_mesh(mesh, fileName);
@@ -92,18 +128,18 @@ void FoxOpenGLWidget::openMeshFilePath(const QString& upper, const QString& lowe
 	actor->setPolyDataMapper(mapper);
 	actor->setColor(0.5f, 0.5f, 0.5f);
 
-	//// ÉÏò¢
+	//// ä¸Šé¢Œ
 	//std::string fileName1 = upper.toStdString();
-	//// openmesh ¶ÁÈ¡³ÉÍø¸ñÊı¾İ
+	//// openmesh è¯»å–æˆç½‘æ ¼æ•°æ®
 	//Cart3D::OpenTriMesh mesh1;
 	//IO::read_mesh(mesh1, fileName1);
-	//// ½»¸øpolydata ×ª»¯³É¶¥µãÊı¾İ
+	//// äº¤ç»™polydata è½¬åŒ–æˆé¡¶ç‚¹æ•°æ®
 	//std::shared_ptr<FoxPolyData> polydata1 = std::make_shared<FoxPolyData>(mesh1);
 	//std::shared_ptr<FoxOpenGLPolyDataMapper> mapper1 = std::make_shared<FoxOpenGLPolyDataMapper>();
 	//mapper1->setPolyData(polydata1);
 	//std::shared_ptr<FoxActor> actor1 = std::make_shared<FoxActor>(this);
 	//actor1->setPolyDataMapper(mapper1);
-	//// ÉèÖÃÀ¶É«
+	//// è®¾ç½®è“è‰²
 	//actor1->setColor(0.5f, 0.5f, 0.5f);
 
 	m_renderer->addActor(actor);
@@ -140,14 +176,14 @@ void FoxOpenGLWidget::cuttingMesh()
 {
 	if (m_renderer->getActors().size() == 0) return;
 	makeCurrent();
-	// »ñÈ¡µ±Ç°²¡Àı
+	// è·å–å½“å‰ç—…ä¾‹
 	std::shared_ptr<FoxActor> actor = m_renderer->getActors()[0];
-	// µ÷ÓÃÇĞ¸îËã·¨²¢»ñÈ¡¶à¸öpolydata
+	// è°ƒç”¨åˆ‡å‰²ç®—æ³•å¹¶è·å–å¤šä¸ªpolydata
 	std::vector<std::shared_ptr<FoxPolyData>> polyDataList;
 	std::shared_ptr<FoxPolyData> polydata = actor->getPolyDataMapper()->getPolyData();
 	polyDataList = m_toothMeshModel->cuttingMesh(polydata->getMesh());
-	// ¼ÓÔØ¶à¸öpolydataÊı¾İ
-	m_renderer->clearActors(); // ¼ÓÔØÖ®Ç°Çå¿ÕÖ®Ç°µÄÊı¾İ
+	// åŠ è½½å¤šä¸ªpolydataæ•°æ®
+	m_renderer->clearActors(); // åŠ è½½ä¹‹å‰æ¸…ç©ºä¹‹å‰çš„æ•°æ®
 	for (auto& data : polyDataList) {
 		std::shared_ptr<FoxOpenGLPolyDataMapper> cuttingMapper = std::make_shared<FoxOpenGLPolyDataMapper>();
 		cuttingMapper->setPolyData(data);
@@ -163,20 +199,20 @@ void FoxOpenGLWidget::showSphereAndLine()
 	if (m_renderer->getActors().size() == 0) return;
 	makeCurrent();
 
-	// »ñÈ¡±ß½çÏß¶¥µãÊı¾İ
+	// è·å–è¾¹ç•Œçº¿é¡¶ç‚¹æ•°æ®
 	std::vector<std::vector<QVector3D>> dataList = m_toothMeshModel->getBoundaryVertex();
 	for (auto& vertex : dataList) {
 		for (auto& point : vertex) {
-			// ´´½¨ÇòÌå
+			// åˆ›å»ºçƒä½“
 			FoxSphereSource sphere;
 			sphere.setRadius(0.5f);
-			// ÉèÖÃÔ²ĞÄ
+			// è®¾ç½®åœ†å¿ƒ
 			sphere.setCenter(point.x(), point.y(), point.z());
 			std::shared_ptr<FoxOpenGLPolyDataMapper> mapper = std::make_shared<FoxOpenGLPolyDataMapper>();
 			mapper->setPolyData(sphere.getOutputPolyData());
 			std::shared_ptr<FoxActor> actor = std::make_shared<FoxActor>(this);
 			actor->setPolyDataMapper(mapper);
-			// ÉèÖÃÇòÌåÑÕÉ«
+			// è®¾ç½®çƒä½“é¢œè‰²
 			actor->setColor(0.0f, 1.0f, 0.0f);
 			m_renderer->addActor(actor);
 		}
@@ -187,16 +223,16 @@ void FoxOpenGLWidget::showSphereAndLine()
 	for (auto& vertex : dataList) {
 		m_path.clear();
 		m_path = QVector<QVector3D>::fromStdVector(vertex);
-		// ¹ÜµÀ
+		// ç®¡é“
 		FoxPipeSource pipe;
 		pipe.set(m_path, m_circle);
 
-		// Ìí¼ÓÖÁäÖÈ¾µ±ÖĞ
+		// æ·»åŠ è‡³æ¸²æŸ“å½“ä¸­
 		std::shared_ptr<FoxOpenGLPolyDataMapper> mapper = std::make_shared<FoxOpenGLPolyDataMapper>();
 		mapper->setPolyData(pipe.getOutputPolyData());
 		std::shared_ptr<FoxActor> actor = std::make_shared<FoxActor>(this);
 		actor->setPolyDataMapper(mapper);
-		// ÉèÖÃÑÕÉ«
+		// è®¾ç½®é¢œè‰²
 		actor->setColor(1.0f, 1.0f, 0.0f);
 		m_renderer->addActor(actor);
 	}
@@ -211,7 +247,7 @@ void FoxOpenGLWidget::setActorAlpha(float alpha)
 	makeCurrent();
 
 	for (auto& actor : m_renderer->getActors()) {
-		QVector3D color = actor->getColor(); // »ñÈ¡ÑÕÉ«
+		QVector3D color = actor->getColor(); // è·å–é¢œè‰²
 		float r = color.x();
 		float g = color.y();
 		float b = color.z();
@@ -227,24 +263,24 @@ void FoxOpenGLWidget::initializeGL()
 {
 	initializeOpenGLFunctions();
 	m_camera = new FoxCamera(QVector3D(0.0f, 0.0f, 6.0f));
-	// ÉèÖÃÑÀ³İÎÆÀíÍ¼Æ¬ÎÄ¼ş
+	// è®¾ç½®ç‰™é½¿çº¹ç†å›¾ç‰‡æ–‡ä»¶
 	m_toothTexture = new QOpenGLTexture(QImage(".\\res\\texture\\ToothTexture.png").mirrored());
 	m_toothTexture->setMinMagFilters(QOpenGLTexture::LinearMipMapLinear, QOpenGLTexture::Linear);
 	m_toothTexture->setWrapMode(QOpenGLTexture::DirectionS, QOpenGLTexture::Repeat);
 	m_toothTexture->setWrapMode(QOpenGLTexture::DirectionT, QOpenGLTexture::Repeat);
-	// ÉèÖÃÑÀö¸ÎÆÀíÍ¼Æ¬ÎÄ¼ş
+	// è®¾ç½®ç‰™é¾ˆçº¹ç†å›¾ç‰‡æ–‡ä»¶
 	m_gingivaTexture = new QOpenGLTexture(QImage(".\\res\\texture\\GingivaTexture.png").mirrored());
 	m_gingivaTexture->setMinMagFilters(QOpenGLTexture::LinearMipMapLinear, QOpenGLTexture::Linear);
 	m_gingivaTexture->setWrapMode(QOpenGLTexture::DirectionS, QOpenGLTexture::Repeat);
 	m_gingivaTexture->setWrapMode(QOpenGLTexture::DirectionT, QOpenGLTexture::Repeat);
 
-	// ´´½¨×ÅÉ«Æ÷³ÌĞò
+	// åˆ›å»ºç€è‰²å™¨ç¨‹åº
 	m_shaderProgram = new FoxShaderProgram(this);
 
 	// ------------------------------------------------
 	// 2024-01-16
-	// ÏÂÃæµÄÕâĞ©´úÂëÖ±½Ó½»¸øFoxRendererÀàÀ´¹ÜÀí
-	// ÔÚÕâ¸öÈıÎ¬ÏÔÊ¾´°¿ÚÖ»ĞèÒªµ÷ÓÃ read->draw();
+	// ä¸‹é¢çš„è¿™äº›ä»£ç ç›´æ¥äº¤ç»™FoxRendererç±»æ¥ç®¡ç†
+	// åœ¨è¿™ä¸ªä¸‰ç»´æ˜¾ç¤ºçª—å£åªéœ€è¦è°ƒç”¨ read->draw();
 	// ------------------------------------------------
 	m_meshPosition = QVector3D(0.0f, 0.0f, -30.0f);
 	m_shaderProgram->shaderRelease();
@@ -253,14 +289,14 @@ void FoxOpenGLWidget::initializeGL()
 	m_view = m_camera->getViewMatrix();
 	m_model.translate(m_meshPosition);
 	m_model.scale(0.3f);
-	// ÉèÖÃ¹Û²ìÏòÁ¿
+	// è®¾ç½®è§‚å¯Ÿå‘é‡
 	m_viewPos = m_camera->getPosition();
 	m_circle = this->buildCircle(0.5f, 48);
 
 	std::vector<std::vector<QVector3D>> dataList = m_toothMeshModel->getBoundaryVertex();
 	// -------------------bug---------------------
-	// 2024Äê2ÔÂ2ÈÕ 17:16
-	// ²âÊÔ³öÀ´µÄÔ­ÒòÊÇÒòÎªÉÏÒ»¸öµãÓ³Éä³öÀ´µÄÃæÉÏµÄµãºÍÒ»¸öµã´¹Ö±
+	// 2024å¹´2æœˆ2æ—¥ 17:16
+	// æµ‹è¯•å‡ºæ¥çš„åŸå› æ˜¯å› ä¸ºä¸Šä¸€ä¸ªç‚¹æ˜ å°„å‡ºæ¥çš„é¢ä¸Šçš„ç‚¹å’Œä¸€ä¸ªç‚¹å‚ç›´
 	//qDebug() << QVector<QVector3D>::fromStdVector(dataList[5]);
 	//m_path = QVector<QVector3D>::fromStdVector(dataList[5]);
 	//m_path.push_back(dataList[5][0]);
@@ -322,15 +358,15 @@ void FoxOpenGLWidget::initializeGL()
 
 }
 
-// ´°¿Ú¸Ä±äÊ±Ö´ĞĞ
+// çª—å£æ”¹å˜æ—¶æ‰§è¡Œ
 void FoxOpenGLWidget::resizeGL(int w, int h)
 {
 	glViewport(0, 0, w, h);
 	// -------------------------------------------
 	// 2024-01-19 
-	// ÏÂÃæµÄ¶«Î÷ÎÒÔÚÏëÊÇ·ñÓ¦¸Ã½»¸øÊ²Ã´ÀàÀ´×÷ÎªActorµÄ¸üĞÂ
+	// ä¸‹é¢çš„ä¸œè¥¿æˆ‘åœ¨æƒ³æ˜¯å¦åº”è¯¥äº¤ç»™ä»€ä¹ˆç±»æ¥ä½œä¸ºActorçš„æ›´æ–°
 
-	// ¸Ä±äËùÓĞÄ£ĞÍµÄÍ¶Ó°¾ØÕó±£Ö¤Ä£ĞÍ²»»á±äĞÎ
+	// æ”¹å˜æ‰€æœ‰æ¨¡å‹çš„æŠ•å½±çŸ©é˜µä¿è¯æ¨¡å‹ä¸ä¼šå˜å½¢
 	float zoom = 45.0;
 	for (auto& actor : m_renderer->getActors())
 	{
@@ -348,21 +384,23 @@ void FoxOpenGLWidget::paintGL()
 {
 	glClearColor(0.85f, 0.85f, 0.85f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	//Z»º³å(Z-buffer)£¬Ò²±»³ÆÎªÉî¶È»º³å(Depth Buffer)
+	//Zç¼“å†²(Z-buffer)ï¼Œä¹Ÿè¢«ç§°ä¸ºæ·±åº¦ç¼“å†²(Depth Buffer)
 	glEnable(GL_DEPTH_TEST); 
-	// ¿ªÆô»ìºÏÄ£Ê½
+	// å¼€å¯æ··åˆæ¨¡å¼
 	glEnable(GL_BLEND);
-	// »ìºÏ·½³ÌÉèÖÃÍ¸Ã÷¶È
+	// æ··åˆæ–¹ç¨‹è®¾ç½®é€æ˜åº¦
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	m_renderer->renderer();
 }
 
 void FoxOpenGLWidget::mousePressEvent(QMouseEvent* event)
 {
+	qDebug() << "mousePressEvent";
 	if (m_renderer->getActors().size() == 0) return;
 	if (event->button() == Qt::LeftButton) {
 		m_leftMoveMousePos = event->pos();
 		m_isPressMouseLeft = true;
+		qDebug() << "mousePressEvent:[" << m_leftMoveMousePos<<"]";
 	}
 	if (event->button() == Qt::MiddleButton) {
 		m_middleMoveMousePos = event->pos();
@@ -373,56 +411,59 @@ void FoxOpenGLWidget::mousePressEvent(QMouseEvent* event)
 
 void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 {
+	qDebug() << "mouseMoveEvent";
 	if (m_renderer->getActors().size() == 0) return;
 	event->accept();
-	// Èç¹û°´ÏÂµÄÊÇ×ó¼ü¾ÍÒÆ¶¯
+	// å¦‚æœæŒ‰ä¸‹çš„æ˜¯å·¦é”®å°±ç§»åŠ¨
 	if (m_isPressMouseLeft) {
-
-		float angle = 1.5f;
+		qDebug() << "mouseMoveEvent--m_leftMoveMousePos:[" << m_leftMoveMousePos << "]";
+		float angle = 2.0f;
 		QVector2D diff = QVector2D(event->pos()) - QVector2D(m_leftMoveMousePos);
 		m_leftMoveMousePos = event->pos();
-		QVector3D n;
-		n = QVector3D(diff.y(), diff.x(), 0.0f).normalized();
+		QVector3D n = QVector3D(diff.y(), diff.x(), 0.0f).normalized();
 		m_rotateAxis = (m_rotateAxis + n).normalized();
-		m_rotateQuat = QQuaternion::fromAxisAndAngle(m_rotateAxis, angle);
+		m_rotateQuat = QQuaternion::fromAxisAndAngle(m_rotateAxis, angle)* m_rotateQuat;
 		for (auto& actor : m_renderer->getActors()) {
 			actor->setModelRotate(m_rotateQuat);
 		}
-		update();
-
+		//qDebug() << "begin-----";
+		//m_renderer->renderer();
+		//qDebug() << "end-----";
+		//update(); // è§¦å‘é‡ç»˜
+		this->repaint();
 	}
-	// ÅĞ¶ÏÊÇ·ñ°´ÏÂµÄÊÇÖĞ¼ü
-	if (m_isPressMouseMiddle) {
-		if (m_firstMouse) {
-			// Èç¹ûÊÇµÚÒ»´Î°´ÏÂ¼ÇÂ¼µ±Ç°µÄÎ»ÖÃ
-			m_middleMoveMousePos = event->pos();
-			m_firstMouse = false;
-		}
-		float xoffset = m_middleMoveMousePos.x() - event->pos().x();
-		float yoffset = m_middleMoveMousePos.y() - event->pos().y();
-		m_middleMoveMousePos = event->pos();
-		float sensitivity = 0.2;
-		xoffset *= sensitivity;
-		yoffset *= sensitivity;
-		// Æ½ÒÆÄ£ĞÍ
-		//m_model.translate(QVector3D(-xoffset, yoffset, 0));
-		for (auto& actor : m_renderer->getActors()) {
-			actor->setModelTranslation(QVector3D(-xoffset, yoffset, 0));
-		}
-	}
-
-	update(); // ´¥·¢ÖØ»æ
+	//// åˆ¤æ–­æ˜¯å¦æŒ‰ä¸‹çš„æ˜¯ä¸­é”®
+	//if (m_isPressMouseMiddle) {
+	//	if (m_firstMouse) {
+	//		// å¦‚æœæ˜¯ç¬¬ä¸€æ¬¡æŒ‰ä¸‹è®°å½•å½“å‰çš„ä½ç½®
+	//		m_middleMoveMousePos = event->pos();
+	//		m_firstMouse = false;
+	//	}
+	//	float xoffset = m_middleMoveMousePos.x() - event->pos().x();
+	//	float yoffset = m_middleMoveMousePos.y() - event->pos().y();
+	//	m_middleMoveMousePos = event->pos();
+	//	float sensitivity = 0.2;
+	//	xoffset *= sensitivity;
+	//	yoffset *= sensitivity;
+	//	// å¹³ç§»æ¨¡å‹
+	//	//m_model.translate(QVector3D(-xoffset, yoffset, 0));
+	//	for (auto& actor : m_renderer->getActors()) {
+	//		actor->setModelTranslation(QVector3D(-xoffset, yoffset, 0));
+	//	}
+	//	update(); // è§¦å‘é‡ç»˜
+	//}
 }
 
 void FoxOpenGLWidget::wheelEvent(QWheelEvent* event)
 {
+	qDebug() << "wheelEvent";
 	//qDebug() << "FoxOpenGLWidget::wheelEvent";
 	if (m_renderer->getActors().size() == 0) return;
-	// ¹ö¶¯µÄËÙ¶È
+	// æ»šåŠ¨çš„é€Ÿåº¦
 	float speed = 1;
-	// »ñÈ¡¹öÂÖµÄ·µ»ØÖµ¹öÂÖÍùÇ°¹öÊÇÕıÍùºóÊÇ¸º
+	// è·å–æ»šè½®çš„è¿”å›å€¼æ»šè½®å¾€å‰æ»šæ˜¯æ­£å¾€åæ˜¯è´Ÿ
 	float yoffset = event->angleDelta().y();
-	// ÅĞ¶Ï¹öÂÖ¹ö¶¯µÄ·½Ïò
+	// åˆ¤æ–­æ»šè½®æ»šåŠ¨çš„æ–¹å‘
 	if (yoffset > 0)
 		yoffset = speed;
 	if (yoffset < 0)
@@ -444,9 +485,10 @@ void FoxOpenGLWidget::wheelEvent(QWheelEvent* event)
 
 void FoxOpenGLWidget::mouseReleaseEvent(QMouseEvent* event)
 {
+	qDebug() << "mouseReleaseEvent";
 	if (m_renderer->getActors().size() == 0) return;
 	if (event->button() == Qt::LeftButton) {
-		// ËÉ¿ª×ó¼üºóÉèÖÃÎªfalse;
+		// æ¾å¼€å·¦é”®åè®¾ç½®ä¸ºfalse;
 		m_isPressMouseLeft = false;
 	}
 	if (event->button() == Qt::MiddleButton) {
@@ -517,7 +559,7 @@ QVector<QVector3D> FoxOpenGLWidget::buildCircle(float radius, int steps)
 	float x, y, a;
 	for (int i = 0; i <= steps; ++i)
 	{
-		// Õâ¸öÏàµ±ÓÚ¦È
+		// è¿™ä¸ªç›¸å½“äºÎ¸
 		a = PI2 / steps * i;
 		x = radius * cosf(a);
 		y = radius * sinf(a);

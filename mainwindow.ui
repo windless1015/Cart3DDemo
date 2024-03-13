@@ -20,7 +20,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>22</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -53,9 +53,16 @@
     </property>
     <addaction name="actionUseTexture"/>
    </widget>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>其他</string>
+    </property>
+    <addaction name="actionAddAttachment"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuMesh"/>
    <addaction name="menuRendering"/>
+   <addaction name="menu"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
@@ -117,6 +124,11 @@
   <action name="actionTest">
    <property name="text">
     <string>Test</string>
+   </property>
+  </action>
+  <action name="actionAddAttachment">
+   <property name="text">
+    <string>AddAttachment</string>
    </property>
   </action>
  </widget>

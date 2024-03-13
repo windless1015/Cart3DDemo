@@ -1,4 +1,4 @@
-#include "mainwindow.h"
+ï»¿#include "mainwindow.h"
 #include "./ui_mainwindow.h"
 
 #include "view/foxopenGLwidget.h"
@@ -16,7 +16,9 @@
 #include <QSpacerItem>
 
 
-MainWindow::MainWindow(QWidget *parent)
+
+
+MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
@@ -25,38 +27,42 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_fox2DCrossSectionWidget = new Fox2DCrossSectionWidget();
 
-    QAction* actionCrossSection = new QAction(QIcon(".\\res\\icon\\2d_cross_section24x24.png"),tr("2D Cross Section"), this);
+    QAction* actionCrossSection = new QAction(QIcon(".\\res\\icon\\2d_cross_section24x24.png"), tr("2D Cross Section"), this);
     ui->toolBar->addAction(actionCrossSection);
 
     initAlphaSlider();
-    // Ä¬ÈÏÊÇ²»Ê¹ÓÃÎÆÀí
+    // é»˜è®¤æ˜¯ä¸ä½¿ç”¨çº¹ç†
     m_actionUseTextureStatus = false;
-    // Ä¬ÈÏÊÇ²»Òş²Ø
+    // é»˜è®¤æ˜¯ä¸éšè—
     m_actionShowToothStatus = false;
     setCentralWidget(m_foxOpenGLWidget);
-    
+
     this->setWindowTitle("Cart3D_Demo");
 
-    // ÇĞ¸î
+    // åˆ‡å‰²
     connect(ui->actionCutting, &QAction::triggered, this, &MainWindow::slotsCuttingMesh);
-    // ÏÔÊ¾
+    // æ˜¾ç¤º
     connect(ui->actionVisibleTooth, &QAction::triggered, this, &MainWindow::slotsSetVisibleTooth);
     connect(ui->actionVisibleGingiva, &QAction::triggered, this, &MainWindow::slotsSetVisibleGingiva);
     connect(actionCrossSection, &QAction::triggered, this, &MainWindow::slotsShow2DCrossSectionWidget);
 
-    // ´ò¿ªÎÄ¼ş¼Ğ
+    // æ‰“å¼€æ–‡ä»¶å¤¹
     connect(ui->actionOpenMeshFolder, &QAction::triggered, this, &MainWindow::slotsOpenMeshFolder);
-    // ´ò¿ªÎÄ¼ş
+    // æ‰“å¼€æ–‡ä»¶
     connect(ui->actionOpenMeshFile, &QAction::triggered, this, &MainWindow::slotsOpenMeshFile);
-    // Ê¹ÓÃÎÆÀí
+    // ä½¿ç”¨çº¹ç†
     connect(ui->actionUseTexture, &QAction::triggered, this, &MainWindow::slotsUseTexture);
-    // ´ò¿ª²¡Àı
-    connect(ui->actionCaseTest1, &QAction::triggered,this,&MainWindow::slotsOpenCaseData);
-    // ÏÔÊ¾Ğ¡ÇòºÍ±ß½çÏß
+    // æ‰“å¼€ç—…ä¾‹
+    connect(ui->actionCaseTest1, &QAction::triggered, this, &MainWindow::slotsOpenCaseData);
+    //æ·»åŠ é™„ä»¶
+    connect(ui->actionAddAttachment, &QAction::triggered, this, &MainWindow::slotsAddAttachment);
+
+
+    // æ˜¾ç¤ºå°çƒå’Œè¾¹ç•Œçº¿
     connect(ui->actionShowSphere, &QAction::triggered, this, &MainWindow::slotsShowSphere);
-    // ²âÊÔ
+    // æµ‹è¯•
     connect(ui->actionTest, &QAction::triggered, this, &MainWindow::slotsTest);
-    // ÉèÖÃÍ¸Ã÷¶È
+    // è®¾ç½®é€æ˜åº¦
     connect(m_setAlphaSlider, &QSlider::sliderMoved, this, &MainWindow::slotsSetAlpha);
 
 }
@@ -76,12 +82,12 @@ void MainWindow::slotsCuttingMesh()
 void MainWindow::slotsSetVisibleTooth()
 {
     if (!m_actionShowToothStatus) {
-        ui->actionVisibleTooth->setText(QString::fromLocal8Bit("ÏÔÊ¾ÑÀ³İ"));
+        ui->actionVisibleTooth->setText(QString::fromLocal8Bit("æ˜¾ç¤ºç‰™é½¿"));
         m_foxOpenGLWidget->hiddenMesh();
         m_actionShowToothStatus = true;
     }
     else {
-        ui->actionVisibleTooth->setText(QString::fromLocal8Bit("Òş²ØÑÀ³İ"));
+        ui->actionVisibleTooth->setText(QString::fromLocal8Bit("éšè—ç‰™é½¿"));
         m_foxOpenGLWidget->showMesh();
         m_actionShowToothStatus = false;
     }
@@ -94,10 +100,10 @@ void MainWindow::slotsSetVisibleGingiva()
 
 void MainWindow::slotsOpenMeshFolder()
 {
-    QString folderPath = QFileDialog::getExistingDirectory(this, QString::fromLocal8Bit("Ñ¡ÔñÎÄ¼ş¼Ğ"), QDir::homePath());
+    QString folderPath = QFileDialog::getExistingDirectory(this, QString::fromLocal8Bit("é€‰æ‹©æ–‡ä»¶å¤¹"), QDir::homePath());
 
     if (!folderPath.isEmpty()) {
-        // ´ò¿ªÎÄ¼ş¼Ğ
+        // æ‰“å¼€æ–‡ä»¶å¤¹
         //QDesktopServices::openUrl(QUrl::fromLocalFile(folderPath));
         qDebug() << "path:" << folderPath;
         m_foxOpenGLWidget->openMeshFolderPath(folderPath);
@@ -107,15 +113,15 @@ void MainWindow::slotsOpenMeshFolder()
 
 void MainWindow::slotsOpenMeshFile()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, QString::fromLocal8Bit("Ñ¡ÔñÎÄ¼ş"), "", QString::fromLocal8Bit("stlÎÄ¼ş (*.stl)"));
+    QString fileName = QFileDialog::getOpenFileName(this, QString::fromLocal8Bit("é€‰æ‹©æ–‡ä»¶"), "", QString::fromLocal8Bit("stlæ–‡ä»¶ (*.stl)"));
 
     if (!fileName.isEmpty()) {
-        std::cout << "´ò¿ªµÄÎÄ¼ş:" << fileName.toStdString()<<"\n";
+        std::cout << "æ‰“å¼€çš„æ–‡ä»¶:" << fileName.toStdString() << "\n";
         m_foxOpenGLWidget->openMeshFilePath(fileName);
     }
     else
     {
-        std::cout << "Î´Ñ¡ÔñÎÄ¼ş\n";
+        std::cout << "æœªé€‰æ‹©æ–‡ä»¶\n";
     }
 
 
@@ -125,13 +131,13 @@ void MainWindow::slotsUseTexture()
 {
     if (!m_actionUseTextureStatus)
     {
-        ui->actionUseTexture->setText(QString::fromLocal8Bit("¹Ø±ÕÎÆÀí"));
+        ui->actionUseTexture->setText(QString::fromLocal8Bit("å…³é—­çº¹ç†"));
         m_actionUseTextureStatus = true;
         m_foxOpenGLWidget->setUseTexture(m_actionUseTextureStatus);
     }
     else
     {
-        ui->actionUseTexture->setText(QString::fromLocal8Bit("Ê¹ÓÃÎÆÀí"));
+        ui->actionUseTexture->setText(QString::fromLocal8Bit("ä½¿ç”¨çº¹ç†"));
         m_actionUseTextureStatus = false;
         m_foxOpenGLWidget->setUseTexture(m_actionUseTextureStatus);
     }
@@ -139,7 +145,9 @@ void MainWindow::slotsUseTexture()
 
 void MainWindow::slotsOpenCaseData()
 {
-    // ´ò¿ªÏîÄ¿ÄÚÏÖÓĞµÄÊı¾İ100642730142856
+    isLoading = true;
+
+    // æ‰“å¼€é¡¹ç›®å†…ç°æœ‰çš„æ•°æ®100642730142856
     QString fileName_lower = ".\\caseData\\100642730142856\\lower.stl";
     QString fileName_upper = ".\\caseData\\100642730142856\\upper.stl";
     //m_foxOpenGLWidget->openMeshFilePath(fileName);
@@ -147,6 +155,53 @@ void MainWindow::slotsOpenCaseData()
     m_setAlphaSlider->setValue(100);
     QString text = "value: 100";
     m_sliderValue->setText(text);
+}
+
+
+/*
+    (8.6045361, -1.9544933, 19.358801)
+(13.16833, -3.2849004, 16.512573)
+(3.312443, -1.3500501, 20.896019)
+(-1.4881694, -1.3923264, 20.80794)
+(-5.610785, -1.7306153, 20.031492)
+(-11.10446, -2.4184246, 18.264595)
+(-22.126347, -2.9033034, 7.3613696)
+(-24.320957, -0.48074791, -1.9065716)
+(-28.78474, 0.87899041, -12.942302)
+(17.909452, -4.9347744, 8.9049664)
+(16.049683, -0.60370404, 0.48569041)
+(19.560465, -0.39529461, -7.0728149)
+(24.270132, -1.4246315, -15.168131)
+    */
+void MainWindow::slotsAddAttachment()
+{
+    if (isLoading == false) {
+        QMessageBox::information(nullptr, QString::fromLocal8Bit("æç¤º"), QString::fromLocal8Bit("è¯·å…ˆåŠ è½½ç—…äººç‰™é½¿"));
+    }
+    else {
+        QMessageBox::information(nullptr, QString::fromLocal8Bit("æç¤º"), QString::fromLocal8Bit("æ­£åœ¨æ·»åŠ é™„ä»¶,è¯·ç¨å..."));
+        QVector3D qv3d[13] = { 
+            QVector3D(8.6045361, -1.9544933, 19.358801),
+            QVector3D(13.16833, -3.2849004, 16.512573),
+            QVector3D(3.312443, -1.3500501, 20.896019),
+            QVector3D(-1.4881694, -1.3923264, 20.80794),
+            QVector3D(-5.610785, -1.7306153, 20.031492),
+            QVector3D(-11.10446, -2.4184246, 18.264595),
+            QVector3D(-22.126347, -2.9033034, 7.3613696),
+            QVector3D(-24.320957, -0.48074791, -1.9065716),
+            QVector3D(-28.78474, 0.87899041, -12.942302),
+            QVector3D(17.909452, -4.9347744, 8.9049664),
+            QVector3D(16.049683, -0.60370404, 0.48569041),
+            QVector3D(19.560465, -0.39529461, -7.0728149),
+            QVector3D(24.270132, -1.4246315, -15.168131) };
+;        //åŠ è½½é™„ä»¶,ç„¶åæŠŠé™„ä»¶è´´ä¸Šå»
+        //../a1.stl
+        QString fileName_Attachment = "../a1.stl";
+        //qDebug() << "Test:============================>" << sizeof(qv3d) / sizeof(QVector3D);
+        for(int i = 0 ; i< sizeof(qv3d)/ sizeof(QVector3D);i++){
+            m_foxOpenGLWidget->openAttachmentFilePath(fileName_Attachment, qv3d[i]);
+        }
+    }
 }
 
 void MainWindow::slotsShowSphere()
@@ -163,7 +218,7 @@ void MainWindow::slotsTest()
 
 void MainWindow::slotsSetAlpha(int value)
 {
-    float alpha = (float)(value)/100;
+    float alpha = (float)(value) / 100;
     QString text = "value: " + QString::number(alpha, 'f', 2);
     m_sliderValue->setText(text);
     m_foxOpenGLWidget->setActorAlpha(alpha);
@@ -187,8 +242,8 @@ void MainWindow::initAlphaSlider()
     m_sliderValue->setGeometry(width() - 255, 60, 100, 15);
 
 
-    m_setAlphaSlider = new QSlider(Qt::Horizontal,this);
-    // ÉèÖÃ×î´óÖµ ×îĞ¡Öµ ²½³¤
+    m_setAlphaSlider = new QSlider(Qt::Horizontal, this);
+    // è®¾ç½®æœ€å¤§å€¼ æœ€å°å€¼ æ­¥é•¿
     int max = 100;
     int min = 0;
     int step = 10;
@@ -196,10 +251,10 @@ void MainWindow::initAlphaSlider()
     m_setAlphaSlider->setMinimum(min);
     m_setAlphaSlider->setSingleStep(step);
 
-    // ÉèÖÃÎ»ÖÃ ¸ß¿í
+    // è®¾ç½®ä½ç½® é«˜å®½
     m_setAlphaSlider->setGeometry(width() - 170, 60, 150, 15);
 
-    // ÉèÖÃÏÔÊ¾×îÉÏ²ã
+    // è®¾ç½®æ˜¾ç¤ºæœ€ä¸Šå±‚
     m_setAlphaSlider->raise();
 
 }

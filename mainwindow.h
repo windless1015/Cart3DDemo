@@ -1,10 +1,13 @@
-#pragma once
+ï»¿#pragma once
 
 #include <memory>
 #include <QMainWindow>
 #include <QLabel>
 #include <QSlider>
 #include <QLayout>
+#include "common.h"
+#include <QMessageBox>
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -22,38 +25,41 @@ public:
     ~MainWindow();
 
 private slots:
-    // ÇĞ¸î
+    // åˆ‡å‰²
     void slotsCuttingMesh();
-    // ÏÔÊ¾ÑÀ³İ
+    // æ˜¾ç¤ºç‰™é½¿
     void slotsSetVisibleTooth();
-    // ÏÔÊ¾ÑÀö¸
+    // æ˜¾ç¤ºç‰™é¾ˆ
     void slotsSetVisibleGingiva();
-    // ´ò¿ªÎÄ¼ş¼Ğ
+    // æ‰“å¼€æ–‡ä»¶å¤¹
     void slotsOpenMeshFolder();
-    // ´ò¿ªÎÄ¼ş
+    // æ‰“å¼€æ–‡ä»¶
     void slotsOpenMeshFile();
-    // Ê¹ÓÃÎÆÀí
+    // ä½¿ç”¨çº¹ç†
     void slotsUseTexture();
-    // ´ò¿ª²¡Àı
+    // æ‰“å¼€ç—…ä¾‹
     void slotsOpenCaseData();
-    // ÏÔÊ¾Ğ¡Çò
+    //æ·»åŠ é™„ä»¶
+    void slotsAddAttachment();
+
+    // æ˜¾ç¤ºå°çƒ
     void slotsShowSphere();
-    // ÓÃÓÚ²âÊÔµÄ
+    // ç”¨äºæµ‹è¯•çš„
     void slotsTest();
-    // ÉèÖÃÍ¸Ã÷¶È
+    // è®¾ç½®é€æ˜åº¦
     void slotsSetAlpha(int value);
-    // ÏÔÊ¾ºá½ØÃæ´°¿Ú
+    // æ˜¾ç¤ºæ¨ªæˆªé¢çª—å£
     void slotsShow2DCrossSectionWidget();
 
 private:
-    // ³õÊ¼»¯»¬¿é
+    // åˆå§‹åŒ–æ»‘å—
     void initAlphaSlider();
     
 private:
    Ui::MainWindow *ui;
    FoxOpenGLWidget* m_foxOpenGLWidget;
    Fox2DCrossSectionWidget* m_fox2DCrossSectionWidget;
-   // ÎÆÀí¿ª¸ö×´Ì¬  true:¿ª   false:¹Ø
+   // çº¹ç†å¼€ä¸ªçŠ¶æ€  true:å¼€   false:å…³
    bool m_actionUseTextureStatus;
    bool m_actionShowToothStatus;
    QSlider* m_setAlphaSlider;

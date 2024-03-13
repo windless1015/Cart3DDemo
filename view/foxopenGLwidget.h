@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #define _USE_MATH_DEFINES
 
@@ -23,6 +23,9 @@
 
 #include <common/Util/OpenMeshUtil.h>
 
+
+#include "QMessageBox"
+
 // test
 class FoxRenderer;
 class FoxPipeSource;
@@ -41,35 +44,39 @@ public:
     ~FoxOpenGLWidget();    
 
       
-    /// -------------------²Ëµ¥ÊÂ¼ş-------------------
-    // ¶ÁÈ¡ÎÄ¼ş¼Ğ
+    /// -------------------èœå•äº‹ä»¶-------------------
+    // è¯»å–æ–‡ä»¶å¤¹
     void openMeshFolderPath(const QString& path);
-    // ¶ÁÈ¡ÎÄ¼ş
+
+    //è¯»å–é™„ä»¶æ–‡ä»¶,å¹¶ç§»åŠ¨åˆ°æŒ‡å®šä½ç½®
+    void FoxOpenGLWidget::openAttachmentFilePath(const QString& path, QVector3D& qv3d);
+
+    // è¯»å–æ–‡ä»¶
     void openMeshFilePath(const QString& path);
     void openMeshFilePath(const QString& upper, const QString& lower);
-    // ÉèÖÃÊ¹ÓÃÎÆÀí
+    // è®¾ç½®ä½¿ç”¨çº¹ç†
     void setUseTexture(bool useTexture);
-    // Òş²ØÄ£ĞÍ
+    // éšè—æ¨¡å‹
     void hiddenMesh();
-    // ÏÔÊ¾Ä£ĞÍ
+    // æ˜¾ç¤ºæ¨¡å‹
     void showMesh();
-    // ÇĞ¸î
+    // åˆ‡å‰²
     void cuttingMesh();
-    // ÏÔÊ¾Ğ¡Çò
+    // æ˜¾ç¤ºå°çƒ
     void showSphereAndLine();
-    // ÉèÖÃ³¡¾°ÖĞÄ£ĞÍµÄÍ¸Ã÷¶È
+    // è®¾ç½®åœºæ™¯ä¸­æ¨¡å‹çš„é€æ˜åº¦
     void setActorAlpha(float alpha);
 
-    // ´°¿ÚµÄOpenGLÊÂ¼ş
+    // çª—å£çš„OpenGLäº‹ä»¶
 protected:
-    // ³õÊ¼»¯
+    // åˆå§‹åŒ–
     void initializeGL() override;
-    // ¸üĞÂ´°¿Ú´óĞ¡
+    // æ›´æ–°çª—å£å¤§å°
     void resizeGL(int w, int h) override;
-    // »æÖÆ
+    // ç»˜åˆ¶
     void paintGL() override;
 
-    // ´°¿ÚµÄ½»»¥ÊÂ¼ş
+    // çª—å£çš„äº¤äº’äº‹ä»¶
 protected:
     void mousePressEvent(QMouseEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event) override;
@@ -113,38 +120,38 @@ private:
     //------------------------
 
     bool m_meshIsVisible;
-    // Êó±êµÄÎ»ÖÃ
+    // é¼ æ ‡çš„ä½ç½®
     QPoint m_leftMoveMousePos; 
     QPoint m_middleMoveMousePos;
-    // ÊÇ·ñÊÇµÚÒ»´ÎÊó±ê²Ù×÷
+    // æ˜¯å¦æ˜¯ç¬¬ä¸€æ¬¡é¼ æ ‡æ“ä½œ
     bool m_firstMouse;
     bool m_isPressMouseLeft;
     bool m_isPressMouseMiddle;
-    // ÉèÖÃÊÇ·ñÊ¹ÓÃ²ÄÖÊ
+    // è®¾ç½®æ˜¯å¦ä½¿ç”¨æè´¨
     bool m_useTexturel;
-    // Íø¸ñµÄÎ»ÖÃ
+    // ç½‘æ ¼çš„ä½ç½®
     QVector3D m_meshPosition;
-    // Ïà»ú µÆ¹â ×ÅÉ«Æ÷
+    // ç›¸æœº ç¯å…‰ ç€è‰²å™¨
     FoxCamera* m_camera;
     FoxLighting* m_lighting;
     FoxShaderProgram* m_shaderProgram;
-    // Ä£ĞÍ¾ØÕó ÊÓÍ¼¾ØÕó Í¶Ó°¾ØÕó
+    // æ¨¡å‹çŸ©é˜µ è§†å›¾çŸ©é˜µ æŠ•å½±çŸ©é˜µ
     QMatrix4x4 m_model;
     QMatrix4x4 m_view;
     QMatrix4x4 m_projection;
     QVector3D m_viewPos;
     float m_zoom;
-    QQuaternion m_rotateQuat; // ËÄÔªÊı
-    QVector3D m_rotateAxis; // Ğı×ªÖá
-    float m_angle; // ½Ç¶È
-    // ÑÀ³İÄ£ĞÍ
+    QQuaternion m_rotateQuat; // å››å…ƒæ•°
+    QVector3D m_rotateAxis; // æ—‹è½¬è½´
+    float m_angle; // è§’åº¦
+    // ç‰™é½¿æ¨¡å‹
     std::shared_ptr<FoxMeshModel> m_toothMeshModel;
-    // ÑÀö¸Ä£ĞÍ
+    // ç‰™é¾ˆæ¨¡å‹
     std::shared_ptr<FoxMeshModel> m_gingivaMeshModel;
 
-    // ÑÀ³İÎÆÀí
+    // ç‰™é½¿çº¹ç†
     QOpenGLTexture* m_toothTexture;
-    // ÑÀö¸ÎÆÀí
+    // ç‰™é¾ˆçº¹ç†
     QOpenGLTexture* m_gingivaTexture;
 };
 

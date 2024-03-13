@@ -1,12 +1,13 @@
-#pragma once
+ï»¿#pragma once
 
 
 #include <QMatrix4x4>
 #include <QVector3D>
 #include <QQuaternion>
+#include <QMessageBox>
 /**
- * @brief ActorÀàÖ÷ÒªÊÇ¸ºÔğÄ£ĞÍÊôĞÔµÄÉèÖÃ.
- * ±ÈÈçËµÄ£ĞÍµÄ¾ØÕó±ä»»£¬Ä£ĞÍµÄÑÕÉ«ĞŞ¸ÄµÈÏà¹ØµÄäÖÈ¾ÉèÖÃ
+ * @brief Actorç±»ä¸»è¦æ˜¯è´Ÿè´£æ¨¡å‹å±æ€§çš„è®¾ç½®.
+ * æ¯”å¦‚è¯´æ¨¡å‹çš„çŸ©é˜µå˜æ¢ï¼Œæ¨¡å‹çš„é¢œè‰²ä¿®æ”¹ç­‰ç›¸å…³çš„æ¸²æŸ“è®¾ç½®
  */
 class QObject;
 class FoxOpenGLPolyDataMapper;
@@ -17,61 +18,64 @@ class FoxActor
 public:
 	FoxActor(QObject* parent);
 	~FoxActor();
-	// ÉèÖÃÓ³ÉäµÄmapper
+	// è®¾ç½®æ˜ å°„çš„mapper
 	void setPolyDataMapper(std::shared_ptr<FoxOpenGLPolyDataMapper> polyDataMapper);
 	std::shared_ptr<FoxOpenGLPolyDataMapper> getPolyDataMapper();
 
-	// ÉèÖÃÑÕÉ«
+	//è®¾ç½®å˜æ¢çŸ©é˜µ
+	void FoxActor::setTransform(QMatrix4x4& transformMatrix, QVector3D& qv3d);
+
+	// è®¾ç½®é¢œè‰²
 	void setColor(float r, float g, float b,float alpha=1.0f);
 	QVector3D getColor();
 
-	// ÉèÖÃÎ»ÖÃ
+	// è®¾ç½®ä½ç½®
 	void setActorPosition(QVector3D& position);
 	
-	// ÊÇ·ñ¿É¼û true ¿É¼û false ²»¿É¼û
+	// æ˜¯å¦å¯è§ true å¯è§ false ä¸å¯è§
 	void setVisibility(bool visibility);
 
-	// ÉèÖÃÍ¶Ó°¾ØÕó
+	// è®¾ç½®æŠ•å½±çŸ©é˜µ
 	void setProjection(const QMatrix4x4& projection);
 	void setProjection(float zoom, float width, float hight, float nearPlane, float farPlane);
 	QMatrix4x4& getProjection();
 
-	// ÉèÖÃÄ£ĞÍ¾ØÕó ±ä»» Ëõ·Å Ğı×ª
+	// è®¾ç½®æ¨¡å‹çŸ©é˜µ å˜æ¢ ç¼©æ”¾ æ—‹è½¬
 	void setModel(const QMatrix4x4& model);
 	void setModelTranslation(QVector3D& position);
 	void setModelScale(float factor);
 	void setModelRotate(QQuaternion& rotateQuat);
 	QMatrix4x4& getModel();
 
-	// ÉèÖÃÊÓÍ¼¾ØÕó Ğı×ªÊÓÍ¼¾ØÕó
+	// è®¾ç½®è§†å›¾çŸ©é˜µ æ—‹è½¬è§†å›¾çŸ©é˜µ
 	void setView(const QMatrix4x4& view);
 	void setView(std::shared_ptr<FoxCamera> camera);
 	void setViewRotate(QQuaternion& rotateQuat);
 	QMatrix4x4& getView();
 
-	// ¸üĞÂactorµÄ×ÅÉ«Æ÷Êı¾İ
+	// æ›´æ–°actorçš„ç€è‰²å™¨æ•°æ®
 	void updataShaderProgram();
 	std::shared_ptr<FoxShaderProgram> getShaderProgram();
 
-	// ÉèÖÃ¶¥µã»º´æÊôĞÔ
+	// è®¾ç½®é¡¶ç‚¹ç¼“å­˜å±æ€§
 	void setVertexBuffe();
 
-	// »æÖÆ
+	// ç»˜åˆ¶
 	void draw();
 
 private:
-	QQuaternion m_rotateQuat;// ÓÃÓÚĞı×ªµÄËÄÔªÊı
-	QMatrix4x4 m_model; // Ä£ĞÍ¾ØÕó
-	QMatrix4x4 m_projection; // Í¶Ó°¾ØÕó
-	QMatrix4x4 m_view; // ÊÓÍ¼¾ØÕó
-	QVector3D m_actorPosition; // Î»ÖÃ
-	std::shared_ptr<FoxOpenGLPolyDataMapper> m_polyDataMapper; // Êı¾İÓ³Éä
-	std::shared_ptr<FoxShaderProgram> m_shaderProgarm; // ×ÅÉ«Æ÷
+	QQuaternion m_rotateQuat;// ç”¨äºæ—‹è½¬çš„å››å…ƒæ•°
+	QMatrix4x4 m_model; // æ¨¡å‹çŸ©é˜µ
+	QMatrix4x4 m_projection; // æŠ•å½±çŸ©é˜µ
+	QMatrix4x4 m_view; // è§†å›¾çŸ©é˜µ
+	QVector3D m_actorPosition; // ä½ç½®
+	std::shared_ptr<FoxOpenGLPolyDataMapper> m_polyDataMapper; // æ•°æ®æ˜ å°„
+	std::shared_ptr<FoxShaderProgram> m_shaderProgarm; // ç€è‰²å™¨
 	float m_zoom; 
-	float m_aspectRatio; // ÆÁÕ¼±È
+	float m_aspectRatio; // å±å æ¯”
 	float m_nearPlane;
 	float m_farPlane;
-	bool m_useTexture; // ÊÇ·ñÊ¹ÓÃ²ÄÖÊ
-	bool m_actorVisibility; // ¿É¼ûĞÔ
-	QVector3D m_color; //ÑÕÉ«
+	bool m_useTexture; // æ˜¯å¦ä½¿ç”¨æè´¨
+	bool m_actorVisibility; // å¯è§æ€§
+	QVector3D m_color; //é¢œè‰²
 };
