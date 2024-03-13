@@ -16,7 +16,9 @@
 #include <QSpacerItem>
 
 
-
+#include "circle.hpp"
+#include "arrow.hpp"
+#include "arrow_curved.hpp"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
@@ -54,16 +56,19 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui->actionUseTexture, &QAction::triggered, this, &MainWindow::slotsUseTexture);
     // 打开病例
     connect(ui->actionCaseTest1, &QAction::triggered, this, &MainWindow::slotsOpenCaseData);
-    //添加附件
-    connect(ui->actionAddAttachment, &QAction::triggered, this, &MainWindow::slotsAddAttachment);
-
-
     // 显示小球和边界线
     connect(ui->actionShowSphere, &QAction::triggered, this, &MainWindow::slotsShowSphere);
     // 测试
     connect(ui->actionTest, &QAction::triggered, this, &MainWindow::slotsTest);
     // 设置透明度
     connect(m_setAlphaSlider, &QSlider::sliderMoved, this, &MainWindow::slotsSetAlpha);
+
+
+    //wxn:
+     //添加附件
+    connect(ui->actionAddAttachment, &QAction::triggered, this, &MainWindow::slotsAddAttachment);
+    connect(ui->actionTestComponent, &QAction::triggered, this, &MainWindow::slotsAddTestComponent);
+    
 
 }
 
@@ -202,6 +207,31 @@ void MainWindow::slotsAddAttachment()
             m_foxOpenGLWidget->openAttachmentFilePath(fileName_Attachment, qv3d[i]);
         }
     }
+}
+
+void MainWindow::slotsAddTestComponent()
+{
+    QMessageBox::information(nullptr, QString::fromLocal8Bit("Tips"), QString::fromLocal8Bit("生成圆盘,直箭头和弯曲的箭头"));
+    //测试圆盘
+    float radius_circle = 0.5; //圆的半径
+    int sectorCount_circle = 360; // 圆周上的点的数量
+    QVector3D qv3d_circle(0.0f, 0.0f, 0.0f);
+        
+    createCircle(radius_circle, sectorCount_circle, qv3d_circle);
+
+    //测试直箭头
+    float radius_arrow = 1.0f;
+    float height_arrow = 2.0f;
+    int slices_arrow = 300;
+    create_Arrow(radius_arrow, height_arrow, slices_arrow);
+    
+    //测试弯箭头
+    float outerRadius = 1.0f;
+    float innerRadius = 0.3f;
+    int outerSegments = 100;
+    int innerSegments = 50;
+    create_Arrow_Curved(outerRadius, innerRadius, outerSegments, innerSegments);
+
 }
 
 void MainWindow::slotsShowSphere()

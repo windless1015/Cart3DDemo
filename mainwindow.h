@@ -9,6 +9,8 @@
 #include <QMessageBox>
 
 
+
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -39,8 +41,6 @@ private slots:
     void slotsUseTexture();
     // 打开病例
     void slotsOpenCaseData();
-    //添加附件
-    void slotsAddAttachment();
 
     // 显示小球
     void slotsShowSphere();
@@ -50,6 +50,14 @@ private slots:
     void slotsSetAlpha(int value);
     // 显示横截面窗口
     void slotsShow2DCrossSectionWidget();
+
+
+    //wxn:
+    //添加附件
+    void slotsAddAttachment();
+    //添加一些组件(仅仅用于测试)
+    //按钮名:actionTestComponent
+    void slotsAddTestComponent();
 
 private:
     // 初始化滑块

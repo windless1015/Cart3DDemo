@@ -58,6 +58,7 @@
      <string>其他</string>
     </property>
     <addaction name="actionAddAttachment"/>
+    <addaction name="actionTestComponent"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuMesh"/>
@@ -129,6 +130,21 @@
   <action name="actionAddAttachment">
    <property name="text">
     <string>AddAttachment</string>
+   </property>
+  </action>
+  <action name="actionasasdas">
+   <property name="text">
+    <string>testComponent</string>
+   </property>
+  </action>
+  <action name="actiontestComponent">
+   <property name="text">
+    <string>TestComponent</string>
+   </property>
+  </action>
+  <action name="actionTestComponent">
+   <property name="text">
+    <string>TestComponent</string>
    </property>
   </action>
  </widget>
