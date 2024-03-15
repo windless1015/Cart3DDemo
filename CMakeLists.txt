@@ -11,6 +11,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(Cart3D_DIR "${CMAKE_SOURCE_DIR}/lib/Cart3D/bin")
 set(OpenMesh_DIR "${CMAKE_SOURCE_DIR}/lib/OpenMesh/share/OpenMesh/cmake")
+#set(QWT_DIR "${CMAKE_SOURCE_DIR}/lib/qwt/lib")
+#set(QWT_LIB ${QWT_DIR}/qwt.lib)
+#set(QWT_DESIGNER_LIB ${QWT_DIR}/qwt_designer_plugin.lib)
 
 set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
 set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
@@ -67,7 +70,7 @@ set(PROJECT_SOURCES
  "geometry/foxpipesource.cpp" 
  "geometry/foxline.h" 
  "geometry/foxplane.h"
-)
+    )
 
 
 
@@ -79,6 +82,7 @@ target_link_libraries(Cart3DDemo PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 target_link_libraries(Cart3DDemo PRIVATE ${CART3D_MODELS_DLL})
 target_link_libraries(Cart3DDemo PRIVATE Qt5::OpenGL)
 target_link_libraries(Cart3DDemo PRIVATE OpenMeshCore OpenMeshTools)
+#target_link_libraries(Cart3DDemo PRIVATE ${QWT_LIB} ${QWT_DESIGNER_LIB})
 
 if(MSVC)
     file(GLOB CAR3D_DLL ${Cart3D_DIR}/*.dll)

@@ -77,7 +77,7 @@ void FoxOpenGLWidget::openMeshFilePath(const QString& path)
 void FoxOpenGLWidget::openMeshFilePath(const QString& upper, const QString& lower)
 {
 	makeCurrent();
-
+	m_renderer->clearActors();
 	//-------------------测试渲染类-------------------
 	// 北京时间 : 2024-01-18 17:42  
 	// 下面的代码是测试封装的渲染类
@@ -112,10 +112,54 @@ void FoxOpenGLWidget::openMeshFilePath(const QString& upper, const QString& lowe
 	//-----------------------------------------------
 }
 
+void FoxOpenGLWidget::openMeshFilePath(const QVector<QString>& tooth, const QString& gum)
+{
+	// 在打开新数据之前情况之前打开的记录
+	// 要确保Opengl上下文正确 否则无法执行下面的渲染
+	makeCurrent();
+	m_renderer->clearActors();
+	// 加载牙齿的模型数据
+	for(auto& path: tooth){
+		std::string fileName = path.toStdString();
+		Cart3D::OpenTriMesh mesh;
+		IO::read_mesh(mesh, fileName);
+		std::shared_ptr<FoxPolyData> polydata = std::make_shared<FoxPolyData>(mesh);
+		std::shared_ptr<FoxOpenGLPolyDataMapper> mapper = std::make_shared<FoxOpenGLPolyDataMapper>();
+		mapper->setPolyData(polydata);
+		std::shared_ptr<FoxActor> actor = std::make_shared<FoxActor>(this);
+		actor->setPolyDataMapper(mapper);
+		actor->setColor(0.5f, 0.5f, 0.5f);
+		actor->setTexture(".\\res\\texture\\ToothTexture.png");
+
+		m_renderer->addActor(actor);
+
+	}
+	// 加载牙龈
+	std::string fileName = gum.toStdString();
+	Cart3D::OpenTriMesh mesh;
+	IO::read_mesh(mesh, fileName);
+	std::shared_ptr<FoxPolyData> polydata = std::make_shared<FoxPolyData>(mesh);
+	std::shared_ptr<FoxOpenGLPolyDataMapper> mapper = std::make_shared<FoxOpenGLPolyDataMapper>();
+	mapper->setPolyData(polydata);
+	std::shared_ptr<FoxActor> actor = std::make_shared<FoxActor>(this);
+	actor->setPolyDataMapper(mapper);
+	// 设置材质
+	actor->setTexture(".\\res\\texture\\GingivaTexture.png");
+
+	actor->setColor(0.5f, 0.5f, 0.5f);
+	
+	m_renderer->addActor(actor);
+
+	update();
+
+}
+
 void FoxOpenGLWidget::setUseTexture(bool useTexture)
 {
 	makeCurrent();
-	m_useTexturel = useTexture;
+	for (auto& actor : m_renderer->getActors()) {
+		actor->setUseTexture(useTexture);
+	}
 	update();
 }
 
@@ -256,70 +300,6 @@ void FoxOpenGLWidget::initializeGL()
 	// 设置观察向量
 	m_viewPos = m_camera->getPosition();
 	m_circle = this->buildCircle(0.5f, 48);
-
-	std::vector<std::vector<QVector3D>> dataList = m_toothMeshModel->getBoundaryVertex();
-	// -------------------bug---------------------
-	// 2024年2月2日 17:16
-	// 测试出来的原因是因为上一个点映射出来的面上的点和一个点垂直
-	//qDebug() << QVector<QVector3D>::fromStdVector(dataList[5]);
-	//m_path = QVector<QVector3D>::fromStdVector(dataList[5]);
-	//m_path.push_back(dataList[5][0]);
-	//m_path.push_back(dataList[6][0]);
-	//m_path.push_back(dataList[6][1]);
-	//for(auto& point: dataList[4]){
-	//    m_path.push_back(point);
-	//    //m_path.push_back(dataList[4][1]);
-	//}
-
-	/*
-	* (-13.55668, -6.0114579, 13.011313)
-(-13.487358, -7.1773224, 14.927433)
-(-13.138556, -7.6332245, 15.899716)
-(-12.338324, -8.0273628, 16.801361)
-(-10.824355, -7.4393415, 17.726093)
-(-10.209102, -6.3536015, 17.959667)
-(-9.519865, -4.9496355, 17.846539)
-(-8.8041353, -3.7513621, 17.34923)
-(-9.1492462, -2.0842795, 17.507181)
-(-9.4483528, -0.4770748, 17.476612)
-(-9.5039253, 0.61780488, 17.190432)
-(-9.5306892, 1.5089185, 16.862356)
-(-9.0157328, 0.85421985, 16.185822)
-(-7.8984418, -2.1116643, 14.888825)
-(-8.108861, -3.3981972, 12.636942)
-(-8.8557825, -4.25598, 10.784942)
-(-9.8205938, -4.6516943, 9.5451708)
-(-11.195418, -4.7247691, 9.4539118)
-(-12.191826, -3.3123047, 11.043638)
-(-12.960554, -3.1490266, 11.563456)
-(-13.785104, -3.8911073, 12.069867)
-	*/
-	//m_path.push_back(QVector3D(-13.487358, -7.1773224, 14.927433));
-	//m_path.push_back(QVector3D(-13.138556, -7.6332245, 15.899716));
-	//m_path.push_back(QVector3D(-12.338324, -8.0273628, 16.801361));
-	//m_path.push_back(QVector3D(-10.824355, -7.4393415, 17.726093));
-	//m_path.push_back(QVector3D(-10.209102, -6.3536015, 17.959667));
-	//m_path.push_back(QVector3D(-9.519865, -4.9496355, 17.846539));
-	//m_path.push_back(QVector3D(-8.8041353, -3.7513621, 17.34923));
-	//m_path.push_back(QVector3D(-9.1492462, -2.0842795, 17.507181));
-	//m_path.push_back(QVector3D(-9.4483528, -0.4770748, 17.476612));
-	//m_path.push_back(QVector3D(-9.5039253, 0.61780488, 17.190432));
-	//m_path.push_back(QVector3D(-9.5306892, 1.5089185, 16.862356));
-	//m_path.push_back(QVector3D(-9.0157328, 0.85421985, 16.185822));
-	//m_path.push_back(QVector3D(-7.8984418, -2.1116643, 14.888825));
-	//m_path.push_back(QVector3D(-8.108861, -3.3981972, 12.636942));
-	//m_path.push_back(QVector3D(-8.8557825, -4.25598, 10.784942));
-	//m_path.push_back(QVector3D(-9.8205938, -4.6516943, 9.5451708));
-	//m_path.push_back(QVector3D(-11.195418, -4.7247691, 9.4539118));
-	//m_path.push_back(QVector3D(-12.191826, -3.3123047, 11.043638));
-	//m_path.push_back(QVector3D(-12.960554, -3.1490266, 11.563456));
-	//m_path.push_back(QVector3D(-13.785104, -3.8911073, 12.069867));
-
-	//m_foxPipeSource->set(m_path, m_circle);
-
-	//Cart3D::OpenTriMesh mesh = m_foxPipeSource->createPipeMesh();
-	//OpenMesh::IO::write_mesh(mesh, "E:\\3D\\TestData\\testData\\test\\pipe.stl");
-
 }
 
 // 窗口改变时执行
@@ -388,7 +368,7 @@ void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 		for (auto& actor : m_renderer->getActors()) {
 			actor->setModelRotate(m_rotateQuat);
 		}
-		update();
+
 
 	}
 	// 判断是否按下的是中键
@@ -409,9 +389,10 @@ void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 		for (auto& actor : m_renderer->getActors()) {
 			actor->setModelTranslation(QVector3D(-xoffset, yoffset, 0));
 		}
+		//update(); // 触发重绘
 	}
 
-	update(); // 触发重绘
+	update();
 }
 
 void FoxOpenGLWidget::wheelEvent(QWheelEvent* event)

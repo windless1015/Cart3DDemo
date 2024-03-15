@@ -58,7 +58,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actionTest, &QAction::triggered, this, &MainWindow::slotsTest);
     // 设置透明度
     connect(m_setAlphaSlider, &QSlider::sliderMoved, this, &MainWindow::slotsSetAlpha);
-
+    // 打开隐适美的数据
+    connect(ui->actionOpenTestData_2, &QAction::triggered, this, &MainWindow::slotsOpenInvisalignData);
 }
 
 MainWindow::~MainWindow()
@@ -144,9 +145,7 @@ void MainWindow::slotsOpenCaseData()
     QString fileName_upper = ".\\caseData\\100642730142856\\upper.stl";
     //m_foxOpenGLWidget->openMeshFilePath(fileName);
     m_foxOpenGLWidget->openMeshFilePath(fileName_upper, fileName_lower);
-    m_setAlphaSlider->setValue(100);
-    QString text = "value: 100";
-    m_sliderValue->setText(text);
+    updateAlphaSlider();
 }
 
 void MainWindow::slotsShowSphere()
@@ -180,13 +179,38 @@ void MainWindow::slotsShow2DCrossSectionWidget()
 
 }
 
+void MainWindow::slotsOpenInvisalignData()
+{
+    // 打开项目内现有的数据100642730142856
+    //QString fileName_lower = ".\\caseData\\invisalignData\\DownArch\\m_CutGumPd0_0.stl";
+    QString fileName_gum = ".\\caseData\\invisalignData\\DownArch\\m_CutGumPd0_14.stl";
+
+    //m_foxOpenGLWidget->openMeshFilePath(fileName);
+    QString folderPath = ".\\caseData\\invisalignData\\DownArch\\";
+    QDir dir(folderPath);
+    QStringList nameFilters;
+    nameFilters << "*.stl";
+    QStringList files = dir.entryList(nameFilters, QDir::Files | QDir::Readable, QDir::Name);
+    QVector<QString> filePathList;
+    for each (QString var in files)
+    {
+       QString filePath = folderPath +var;
+       if (filePath.compare(fileName_gum) == 0) {
+           continue;
+       }
+       filePathList.push_back(filePath);
+    }
+    m_foxOpenGLWidget->openMeshFilePath(filePathList, fileName_gum);
+    updateAlphaSlider();
+
+
+}
+
 void MainWindow::initAlphaSlider()
 {
     m_sliderValue = new QLabel(this);
     m_sliderValue->setText("value: 0.00");
     m_sliderValue->setGeometry(width() - 255, 60, 100, 15);
-
-
     m_setAlphaSlider = new QSlider(Qt::Horizontal,this);
     // 设置最大值 最小值 步长
     int max = 100;
@@ -202,4 +226,11 @@ void MainWindow::initAlphaSlider()
     // 设置显示最上层
     m_setAlphaSlider->raise();
 
+}
+
+void MainWindow::updateAlphaSlider()
+{
+    m_setAlphaSlider->setValue(100);
+    QString text = "value: 100";
+    m_sliderValue->setText(text);
 }

@@ -1,232 +1,413 @@
 #include "fox2dcrosssectionwidget.h"
 
-#include "../rendering/foxlinerenderer.h"
-
-
-#include <GL/glu.h>
-
-#include <QDebug>
-#include <QVector2D>
-#include <QWheelEvent>
-#include <QResizeEvent>
+// qt
 #include <QPainter>
-#include <QFont>
+#include <QPaintEvent>
+#include <QDebug>
+#include <qmath.h>
+#include <QWheelEvent>
+#include <QMouseEvent>
+#include <QRect>
+#include <QPainterPath>
 
-Fox2DCrossSectionWidget::Fox2DCrossSectionWidget(QWidget*parent)
-	: QOpenGLWidget(parent)
+Fox2DCrossSectionWidget::Fox2DCrossSectionWidget(QWidget* parent)
 {
-	// 窗体透明度
-	setWindowOpacity(0.6);
-	resize(QSize(220, 340));
+ 
+    m_scale = 1.0f;
 
-	m_lineRenderer = new FoxLineRenderer();
-	m_midLine = new FoxLineRenderer();
-	m_border = new FoxLineRenderer();
-	m_testLine = new FoxLineRenderer();
-	m_gridWidth = 10;
-	m_scale = 1;
-	m_firstMouse = true;
-	m_mouseRigthButton = false;
-	m_mouseLeftButton = false;
+    m_painterX = 0;
+    m_painterY = 0;
+    m_painterWidth = 1000;
+    m_painterHeight = 1000;
+
+    m_isMouseLeftButton = false;
+    m_isMouseRightButton = false;
+    updatePainterWidthOfPerPixel();
+    setWindowOpacity(0.7);
 }
 
 Fox2DCrossSectionWidget::~Fox2DCrossSectionWidget()
 {
-	makeCurrent();
-	delete m_lineRenderer;
-	delete m_border;
-	delete m_midLine;
-	delete m_testLine;
 }
 
-void Fox2DCrossSectionWidget::initializeGL()
+void Fox2DCrossSectionWidget::drawCrossSectionLine(const QVector<QPointF>& points)
 {
-	initializeOpenGLFunctions();
-	QVector<QVector2D> points;
-	QVector<QVector2D> midPoint;
-	QVector<QVector2D> borderPoint;
-	QVector<QVector2D> testPoint;
-	for (int i = 0; i <= 50; ++i) {
-		const float pos = 1.0 * (2.0 * i / 50 - 1.0);
-		QVector2D transverseLine1 = QVector2D(pos, -1.0f);
-		QVector2D transverseLine2 = QVector2D(pos, +1.0f);
-		QVector2D verticalLine1 = QVector2D(-1.0f, pos);
-		QVector2D verticalLine2 = QVector2D(+1.0f, pos);
-		points.push_back(transverseLine1);
-		points.push_back(transverseLine2);
-		points.push_back(verticalLine1);
-		points.push_back(verticalLine2);
-	}
-
-	int midNumber = points.size() / 2;
-	for (int i = midNumber; i < midNumber + 4; i++) {
-		midPoint.push_back(points[i]);
-	}
-
-	// 边框
-	for (int i = 0; i < 4; i++) {
-		borderPoint.push_back(points[i]);
-	}
-
-	for (int i = points.size() - 4; i < points.size(); i++) {
-		borderPoint.push_back(points[i]);
-	}
-
-	// -----------------------
-	// 测试线条
-	testPoint.push_back(QVector2D(0.0, 0.0));
-	testPoint.push_back(QVector2D(0.0, 0.5));
-	testPoint.push_back(QVector2D(0.0, 0.5));
-	testPoint.push_back(QVector2D(0.5, 0.5));
-	testPoint.push_back(QVector2D(0.5, 0.5));
-	testPoint.push_back(QVector2D(0.5, 0.0));
-	testPoint.push_back(QVector2D(0.5, 0.0));
-	testPoint.push_back(QVector2D(0.0, 0.0));
-	//-----------------------
-
-	m_testLine->setVector(testPoint);
-	m_testLine->initialize();
-	// 边框
-	m_border->setVector(borderPoint);
-	m_border->setLineColor(0.0f, 1.0f, 1.0f, 1.0f);
-	m_border->initialize();
-	// 中轴线
-	m_midLine->setVector(midPoint);
-	m_midLine->setLineWidth(3.0f);
-	m_midLine->setLineColor(0.4f, 0.4f, 0.4f, 1.0f);
-	m_midLine->initialize();
-	// 设置线条顶点和颜色并初始化
-	m_lineRenderer->setVector(points); 
-	m_lineRenderer->setLineColor(0.4f, 0.4f, 0.4f, 1.0f);
-	m_lineRenderer->initialize();
-
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluOrtho2D(-1, 1, -1, 1);
-
+    m_crossSectionLine = points;
+    update();
 }
 
-void Fox2DCrossSectionWidget::resizeGL(int w, int h)
+void Fox2DCrossSectionWidget::paintEvent(QPaintEvent* event)
 {
-	glViewport(0, 0, w, h);
-}
-
-void Fox2DCrossSectionWidget::paintGL()
-{
-	glClearColor(0.7f, 0.7f, 0.7f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	m_lineRenderer->render();
-	m_midLine->render();
-	m_border->render();
-	//m_testLine->render();
-	glPointSize(7.0f);
-	glEnable(GL_POINT_SMOOTH);
-	if(m_mouseLeftButton){
-		glBegin(GL_POINTS);
-		glColor3f(0.0f, 0.0f, 0.0f);
-		glVertex2f(m_mouseLeftClickPos.x(), m_mouseLeftClickPos.y()); // 圆心
-		glEnd();
-		QPainter painter(this);
-		painter.setFont(QFont("Arial", 10));
-		painter.setPen(Qt::black);
-		//qDebug() << m_mouseLeftClickPos.x() << " " << m_mouseLeftClickPos.y();
-		painter.translate(m_textPos.x() + 10, m_textPos.y()+20);
-		//painter.rotate(90);
-		QString text = "X:"+QString::number(m_mouseLeftClickPos.x())+" Y: "+QString::number(m_mouseLeftClickPos.y());
-		painter.drawText(0, 0, text);
-		painter.end();
-	}
-
-
+    QPainter painter(this);
+    painter.fillRect(0,0,width(),height(),QColor(0,0,0));
+    drawGuides(painter);
+    drawPointAndLine(painter);
+    drawCrossSectionLine(&painter);
 }
 
 void Fox2DCrossSectionWidget::mousePressEvent(QMouseEvent* event)
 {
-	event->accept();
-	if (event->button() == Qt::RightButton) {
-		m_mouseRightClickPos = event->pos();
-		m_mouseRigthButton = true;
-	}
-	if (event->button() == Qt::LeftButton) {
-		QPointF pos = event->localPos();
-		float x = pos.x() / width() * 2 - 1;
-		float y = 1 - pos.y() / height() * 2;
-		// 鼠标点击的点
-		m_mouseLeftClickPos.setX(x);
-		m_mouseLeftClickPos.setY(y);
-		m_textPos = event->pos();
-		m_mouseLeftButton = true;
-		update();
-	}
+
+    // 左键标记顶点
+    // 右键移动画布
+    if (event->button() == Qt::LeftButton) {
+        QPoint point = event->localPos().toPoint();
+        // 判断点是否在画布中
+        if (!m_drawPainterRect.contains(point)) return;
+        // 搜索点是否是横截线上的点
+        QPointF result = findApproximatelyEqualPoint(m_crossSectionLine, point, 3);
+        // 如果没找到则就返回
+        if (result.isNull())return;
+        // 判断测量点的数量是否小于2
+        if (m_measurePoint.size() < 2) {
+            m_measurePoint.push_back(result);
+        }
+        else
+        {
+            // 查找对应的点
+            QPointF findMeasurePoint = findApproximatelyEqualPoint(m_measurePoint, point, 3);
+            qDebug() << findMeasurePoint;
+            // 调用移动
+        }
+        // 更新
+        update();
+
+    }
+    else if(event->button()==Qt::RightButton)
+    {
+        m_lastMousePos = event->pos();
+        
+        m_orginDifX = m_lastMousePos.x() - m_painterX;
+        m_orginDifY = m_lastMousePos.y() - m_painterY;
+
+        m_isMouseRightButton = true;
+
+    }
+
 }
 
 void Fox2DCrossSectionWidget::mouseMoveEvent(QMouseEvent* event)
 {
-	// 如果是右键移动
-	if (m_mouseRigthButton) {
-		if (m_firstMouse) {
-			// 如果是第一次按下记录当前的位置
-			m_mouseRightClickPos = event->pos();
-			m_firstMouse = false;
-		}
-		float xoffset = m_mouseRightClickPos.x() - event->pos().x();
-		float yoffset = m_mouseRightClickPos.y() - event->pos().y();
-		m_mouseRightClickPos = event->pos();
-		float sensitivity = 0.002;
-		xoffset *= sensitivity;
-		yoffset *= sensitivity;
-		
-		m_lineRenderer->setTransformation(-xoffset, yoffset);
-		m_midLine->setTransformation(-xoffset, yoffset);
-		m_border->setTransformation(-xoffset, yoffset);
-		m_testLine->setTransformation(-xoffset, yoffset);
-	}
-	update();
 
-}
 
-void Fox2DCrossSectionWidget::mouseReleaseEvent(QMouseEvent* event)
-{
-	if (event->button() == Qt::RightButton) {
-		m_mouseRightClickPos = QPoint(0,0);
-		m_mouseRigthButton = false;
-	}
-	if (event->button() == Qt::LeftButton) {
-		m_mouseLeftButton = false;
-	}
+    if (m_isMouseRightButton) {
+        m_painterX = event->pos().x() - m_orginDifX;
+        m_painterY = event->pos().y() - m_orginDifY;
+    }
+    update();
+
 }
 
 void Fox2DCrossSectionWidget::wheelEvent(QWheelEvent* event)
 {
-	// 滚动的速度
-	float speed = 1;
-	// 获取滚轮的返回值滚轮往前滚是正往后是负
-	float yoffset = event->angleDelta().y();
-	// 判断滚轮滚动的方向
-	if (yoffset > 0)
-		yoffset = speed;
-	if (yoffset < 0)
-		yoffset = -speed;
-	yoffset *= 0.1;
-	// 获取当前的缩放比例
-	// 缩放0.1
-	m_scale -= yoffset;
-	if (m_scale < 0.1)
-	{
-		m_scale = 0.1;
-		return;
-	}
-	if (m_scale > 4.0f)
-	{
-		m_scale = 4.0f;
-		return;
-	}
+    // 向前滚动放大
+    // 向后滚动缩小
+    QPoint numPixels = event->pixelDelta();
+    QPoint numDegrees = event->angleDelta() / 8;
+    if (!numPixels.isNull()) {
+        //onWheelValueChanged(event->pos(), numPixels);
+    }
+    else if (!numDegrees.isNull()) {
+        QPoint numSteps = numDegrees / 15;
+       // onWheelValueChanged(event->pos(), numSteps);
+    }
+    event->accept();
+    update();
+}
 
-	m_lineRenderer->setScale(m_scale);
-	m_midLine->setScale(m_scale);
-	m_border->setScale(m_scale);
-	m_testLine->setScale(m_scale);
-	update();
+void Fox2DCrossSectionWidget::mouseReleaseEvent(QMouseEvent* event)
+{
+    m_isMouseLeftButton = false;
+    m_isMouseRightButton = false;
+}
+
+void Fox2DCrossSectionWidget::resizeEvent(QResizeEvent* event)
+{
+    updatePainterWidthOfPerPixel();
+    centenThePainter();
+}
+
+void Fox2DCrossSectionWidget::drawGuides(QPainter& painter)
+{
+    int draw_width = painterWidth2DrawWidth(m_painterWidth);
+    int draw_height = painterWidth2DrawWidth(m_painterHeight);
+
+    painter.setPen(QPen(Qt::red, 3, Qt::SolidLine, Qt::RoundCap));
+    m_drawPainterRect.setX(m_painterX);
+    m_drawPainterRect.setY(m_painterY);
+    m_drawPainterRect.setWidth(draw_width);
+    m_drawPainterRect.setHeight(draw_height);
+    painter.drawRect(m_drawPainterRect);
+
+
+
+    double step_width = static_cast<double>(draw_width) / 100.0;
+
+    int start_x = m_painterX + qRound(step_width / 2);
+    int start_y = m_painterY + qRound(step_width / 2);
+
+    // 绘制网格线条
+    int lineSize = 101;
+    for (int i = 0; i < lineSize; i++) {
+        if(i%5==0){
+            painter.setPen(QPen(Qt::white, 3, Qt::SolidLine, Qt::RoundCap));
+        }
+        else
+        {
+            painter.setPen(QPen(Qt::white, 1, Qt::SolidLine, Qt::RoundCap));
+        }
+        int draw_lien_x1 = start_x + qRound(i * step_width);
+        int draw_lien_y1 = start_y + qRound(0 * step_width);
+        int draw_lien_x2 = start_x + qRound(i * step_width);
+        int draw_lien_y2 = start_y + qRound(lineSize * step_width);
+        painter.drawLine(draw_lien_x1, draw_lien_y1, draw_lien_x2, draw_lien_y2);
+    }
+    
+    for (int i = 0; i < lineSize; i++) {
+        if (i % 5 == 0) {
+            painter.setPen(QPen(Qt::white, 3, Qt::SolidLine, Qt::RoundCap));
+        }
+        else
+        {
+            painter.setPen(QPen(Qt::white, 1, Qt::SolidLine, Qt::RoundCap));
+        }
+        int draw_lien_x1 = start_x + qRound(0 * step_width);
+        int draw_lien_y1 = start_y + qRound(i * step_width);
+        int draw_lien_x2 = start_x + qRound(lineSize * step_width);
+        int draw_lien_y2 = start_y + qRound(i * step_width);
+        painter.drawLine(draw_lien_x1, draw_lien_y1, draw_lien_x2, draw_lien_y2);
+    }
+
+
+}
+
+void Fox2DCrossSectionWidget::drawText(const QString& text)
+{
+
+
+
+}
+
+void Fox2DCrossSectionWidget::drawPointAndLine(QPainter& painter)
+{
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setPen(QPen(Qt::green, 7,Qt::SolidLine,Qt::RoundCap));
+    for (auto& point : m_measurePoint) {
+        painter.drawPoint(point.x(), point.y());
+    }
+
+    painter.setPen(QPen(Qt::yellow, 2, Qt::SolidLine));
+    if (m_measurePoint.size() == 2) {
+        painter.drawLine(m_measurePoint[0], m_measurePoint[1]);
+    }
+
+}
+
+void Fox2DCrossSectionWidget::drawCrossSectionLine(QPainter* painter)
+{
+    int draw_width = painterWidth2DrawWidth(m_painterWidth);
+    // 计算宽度对应100的比
+    double step_width = static_cast<double>(draw_width) / 100.0;
+
+    int start_x = m_painterX + qRound(step_width / 2);
+    int start_y = m_painterY + qRound(step_width / 2);
+
+    painter->setPen(QPen(Qt::blue, 5));
+    // 整个网格的中心点
+    int origin_x = start_x + qRound(50 * step_width);
+    int origin_y = start_y + qRound(50 * step_width);
+    //qDebug() << "origin_x" << origin_x;
+    //qDebug() << "origin_y" << origin_y;
+
+    m_crossSectionLine.clear();
+    m_crossSectionLine.push_back(QPoint(origin_x - 100, origin_y - 50));
+    m_crossSectionLine.push_back(QPoint(origin_x - 50, origin_y - 100));
+    m_crossSectionLine.push_back(QPoint(origin_x - 50, origin_y - 100));
+    m_crossSectionLine.push_back(QPoint(origin_x + 50, origin_y + 100));
+    m_crossSectionLine.push_back(QPoint(origin_x + 50, origin_y + 100));
+    m_crossSectionLine.push_back(QPoint(origin_x + 150, origin_y - 100));
+    
+
+    painter->drawPoint(QPoint(origin_x, origin_y));
+
+    painter->setPen(QPen(Qt::blue, 2));
+    QPainterPath path;
+    // 绘制的默认坐标在左上角(0,0)位置
+    path.moveTo(m_crossSectionLine[0]); // 起始位置
+    for(int i=0;i<m_crossSectionLine.size();i++){
+        path.lineTo(m_crossSectionLine[i]);
+    }
+
+    //painter->drawLines(m_crossSectionLine);
+    painter->drawPath(path);
 }
 
 
+double Fox2DCrossSectionWidget::calcPainterWidthOfPerPixel(double scaleValue, int painterWidth, int widgetWidth)
+{
+
+    int painterWidthOfFinalShow = m_painterWidth;
+    int scaledWidgetWidth = qRound(static_cast<double>(widgetWidth) * scaleValue);
+    double painterWidthOfPerPixel = static_cast<double>(painterWidthOfFinalShow) / static_cast<double>(scaledWidgetWidth);
+    if (painterWidthOfPerPixel < 0.0005) painterWidthOfPerPixel = 0.0005;
+    return painterWidthOfPerPixel;
+}
+
+void Fox2DCrossSectionWidget::updatePainterWidthOfPerPixel()
+{
+    if (this->height() >= this->width()) {
+        m_painterWidthOfPerPixel = calcPainterWidthOfPerPixel(m_scale, m_painterWidth, this->width());
+    }
+    else
+    {
+        m_painterWidthOfPerPixel = calcPainterWidthOfPerPixel(m_scale, m_painterWidth, this->height());
+    }
+
+}
+
+int Fox2DCrossSectionWidget::painterWidth2DrawWidth(int painterWidth)
+{
+    double drawWidth = static_cast<double>(painterWidth) / m_painterWidthOfPerPixel;
+    return qRound(drawWidth);
+}
+
+int Fox2DCrossSectionWidget::drawWidth2PainterWidth(int drawWidth)
+{
+    double paperWidth = static_cast<double>(drawWidth) * m_painterWidthOfPerPixel;
+    return static_cast<int>(qRound(paperWidth));
+}
+
+void Fox2DCrossSectionWidget::onWheelValueChanged(QPoint mousePos, QPoint step)
+{
+    
+    if (m_drawPainterRect.contains(mousePos)) {
+        // 找到光标所对应到画布坐标系统的位置点，记为p0
+        QPoint p0 = mousePoint2PaperPoint(mousePos);
+        int temp_paper_point_x = drawWidth2PainterWidth(p0.x());
+        int temp_paper_point_y = drawWidth2PainterWidth(p0.y());
+
+        // 第二步进行缩放
+        int step_value = step.y();
+        m_scale += static_cast<double>(step_value) / 20.0;
+        if (m_scale > SCALE_VALUE_MAX) m_scale = SCALE_VALUE_MAX;
+        if (m_scale < SCALE_VALUE_MIN) m_scale = SCALE_VALUE_MIN;
+        updatePainterWidthOfPerPixel();
+
+        // 获取P1的位置
+        int temp_draw_point_x = painterWidth2DrawWidth(temp_paper_point_x);
+        int temp_draw_point_y = painterWidth2DrawWidth(temp_paper_point_y);
+        QPoint p1(temp_draw_point_x, temp_draw_point_y);
+
+        // P1 减去P2 得到对应的偏移量
+        QPoint should_move_length = p1 - p0;
+        // 将对应的偏移量设置到对应的位置
+        m_painterX -= should_move_length.x();
+        m_painterY -= should_move_length.y();
+
+        update();
+
+    }
+    else
+    {
+        int old_width = m_drawPainterRect.width();
+        int old_height = m_drawPainterRect.height();
+
+        //resize
+        int step_value = step.y();
+        m_scale += static_cast<double>(step_value) / 20.0;
+        if (m_scale > SCALE_VALUE_MAX) m_scale = SCALE_VALUE_MAX;
+        if (m_scale < SCALE_VALUE_MIN) m_scale = SCALE_VALUE_MIN;
+        updatePainterWidthOfPerPixel();
+
+        int new_width = painterWidth2DrawWidth(m_painterWidth);
+        int new_height = painterWidth2DrawWidth(m_painterHeight);
+
+        int adjusted_height = new_height - old_height;
+        int adjusted_width = new_width - old_width;
+
+        m_painterX -= adjusted_width / 2;
+        m_painterY -= adjusted_height / 2;
+
+        update();
+    }
+}
+
+/// <summary>
+///  用于计算鼠标与画布之间的坐标
+/// </summary>
+/// <param name="point">传入鼠标的位置</param>
+/// <returns>返回计算后的对应坐标</returns>
+QPoint Fox2DCrossSectionWidget::mousePoint2PaperPoint(QPoint point)
+{
+    QPoint ret;
+    ret.setX(point.x() - m_painterX);
+    ret.setY(point.y() - m_painterY);
+    return ret;
+}
+
+
+/// <summary>
+/// 用于将矩形绘制在窗口中心
+/// </summary>
+void Fox2DCrossSectionWidget::centenThePainter()
+{
+    // 设置放大的比例
+    m_scale = 15;
+    updatePainterWidthOfPerPixel();
+    // 计算窗口中心原点位置
+    int adjust_distance_x = (this->width() - painterWidth2DrawWidth(m_painterWidth)) / 2;
+    int adjust_distance_y = (this->height() - painterWidth2DrawWidth(m_painterHeight)) / 2;
+    // 设置中心位置
+    m_painterX = adjust_distance_x;
+    m_painterY = adjust_distance_y;
+    update();
+
+}
+
+/// <summary>
+///  移动点
+/// </summary>
+/// <param name="point"></param>
+void Fox2DCrossSectionWidget::moveMeasurePointAndLine(const QPointF& point)
+{
+
+    // 移动顶点时 判断点是否在m_measurePoint中
+    // 
+
+
+}
+
+bool Fox2DCrossSectionWidget::pointsApproximatelyEqual(const QPointF& p1, const QPointF& p2, qreal tolerance)
+{
+    // 判断两个距离 然后判断是否在容差值范围内
+    qreal distance = QLineF(p1, p2).length();
+    return distance <= tolerance;
+}
+
+QPointF Fox2DCrossSectionWidget::findApproximatelyEqualPoint(const QVector<QPointF>& points, const QPointF& targetPoint, qreal tolerance)
+{
+    // 遍历
+    for (const QPointF& point : points)
+    {
+        // 找出这个点是否在该范围内
+        if (pointsApproximatelyEqual(point, targetPoint, tolerance))
+        {
+            return point;
+        }
+    }
+    return QPointF();
+}
+
+
+int Fox2DCrossSectionWidget::indexOfPointInVector(const QVector<QPointF>& points, const QPointF& targetPoint, qreal tolerance)
+{
+    // 查找到了返回对应所以没找到返回-1
+    for (int i = 0; i < points.size(); ++i)
+    {
+        if (pointsApproximatelyEqual(points[i], targetPoint, tolerance))
+        {
+            return i;
+        }
+    }
+    return -1;
+}
