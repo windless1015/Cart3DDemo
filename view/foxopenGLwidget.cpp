@@ -39,6 +39,10 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) :QOpenGLWidget(parent)
 
 	m_rotateQuat = QQuaternion::fromAxisAndAngle(1.0f, 0.0f, 0.0f, 30.0f);
 	m_rotateQuat *= QQuaternion::fromAxisAndAngle(0.0f, 1.0f, 0.0f, -10.0f);
+	// ¿ªÆô¿¹¾â³Ý
+	QSurfaceFormat surfaceFormat;
+	surfaceFormat.setSamples(4);
+	setFormat(surfaceFormat);
 }
 
 FoxOpenGLWidget::~FoxOpenGLWidget()
