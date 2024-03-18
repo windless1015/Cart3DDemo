@@ -23,8 +23,6 @@
 //----------------test----------------
 
 //纹理库
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
 #include <QImage>
 #include <QOpenGLTexture>
 
