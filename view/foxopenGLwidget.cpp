@@ -22,6 +22,12 @@
 #include "../geometry/foxpipesource.h"
 //----------------test----------------
 
+//纹理库
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+#include <QImage>
+#include <QOpenGLTexture>
+
 using namespace OpenMesh;
 
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) :QOpenGLWidget(parent)
@@ -81,11 +87,13 @@ void FoxOpenGLWidget::openAttachmentFilePath(const QString& path, QVector3D& qv3
 	std::shared_ptr<FoxPolyData> polydata = std::make_shared<FoxPolyData>(mesh);//获取网格的数据结构,什么顶点,面,法向量,纹理坐标,点数据之类的...
 	std::shared_ptr<FoxOpenGLPolyDataMapper> mapper = std::make_shared<FoxOpenGLPolyDataMapper>();
 	mapper->setPolyData(polydata);//OpenGLPolyDataMapper是polydata的数据映射
+	
 	std::shared_ptr<FoxActor> actor = std::make_shared<FoxActor>(this);
 	actor->setPolyDataMapper(mapper);//演员
-	actor->setColor(0.5f, 0.5f, 0.5f);
+	//actor->setColor(0.5f, 0.5f, 0.5f);
 
-	
+	actor->setColor(1.0f, 0.0f, 0.0f);//设置红色
+
 
 	// 应用矩阵变换
 	QMatrix4x4 transformMatrix;

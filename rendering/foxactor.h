@@ -5,6 +5,8 @@
 #include <QVector3D>
 #include <QQuaternion>
 #include <QMessageBox>
+
+#include <QOpenGLTexture>
 /**
  * @brief Actor类主要是负责模型属性的设置.
  * 比如说模型的矩阵变换，模型的颜色修改等相关的渲染设置
@@ -78,4 +80,6 @@ private:
 	bool m_useTexture; // 是否使用材质
 	bool m_actorVisibility; // 可见性
 	QVector3D m_color; //颜色
+
+
 };

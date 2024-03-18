@@ -248,6 +248,8 @@ QMatrix4x4& FoxActor::getView()
 
 void FoxActor::updataShaderProgram()
 {
+ 
+
 	// 绑定着色器
 	m_shaderProgarm->shaderBind();
 	// 重新设置矩阵
@@ -268,6 +270,7 @@ void FoxActor::setVertexBuffe()
 
 void FoxActor::draw()
 {
+ 
 	// 如果不可见就 直接返回
 	if (!m_actorVisibility) return;
 	m_shaderProgarm->shaderBind();

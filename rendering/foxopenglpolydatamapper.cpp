@@ -1,4 +1,4 @@
-
+ï»¿
 #include "foxopenglpolydatamapper.h"
 #include"foxpolydata.h"
 #include "foxshaderprogram.h"
@@ -40,7 +40,8 @@ void FoxOpenGLPolyDataMapper::releaseVBO()
 
 void FoxOpenGLPolyDataMapper::renderer()
 {
-	// °ó¶¨VAO »æÖÆ
+
+	// ç»‘å®šVAO ç»˜åˆ¶
 	QOpenGLVertexArrayObject::Binder vaoBinder(&m_VAO);
 	glDrawArrays(GL_TRIANGLES, 0, m_polydata->getMeshVertexDataSize());
 }
@@ -50,7 +51,7 @@ void FoxOpenGLPolyDataMapper::bindVertexBuffObject(std::shared_ptr<FoxShaderProg
 	QOpenGLVertexArrayObject::Binder vaoBinder(&m_VAO);
 	m_VBO.create();
 	m_VBO.bind();
-	// ½«¶¥µãÊý¾Ý´«µÝ¸øvbo
+	// å°†é¡¶ç‚¹æ•°æ®ä¼ é€’ç»™vbo
 	std::vector<float> vertexData = m_polydata->getMeshVertexData();
 	m_VBO.allocate(vertexData.data(), vertexData.size() * sizeof(float));
 	shaderProgram->setVertexAttributeBuffe("aPos", 0, 3, 8 * sizeof(float));

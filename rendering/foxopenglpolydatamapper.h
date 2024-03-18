@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 // c++
 #include <memory>
@@ -8,8 +8,8 @@
 #include <QOpenGLBuffer>
 #include <QVector3D>
 /**
- * @brief FoxOpenGLPolyDataMapper Ö÷ÒªÊÇ½«¶¥µãÊı¾İÓ³Éäµ½VBOÖĞ.
- * Î§ÈÆ×ÅÕâ¸ö¿ªÊ¼äÖÈ¾, ×îÖÕµÄäÖÈ¾ÆäÊµÊÇÔÚÕâ¸öÀàÖĞÍê³É
+ * @brief FoxOpenGLPolyDataMapper ä¸»è¦æ˜¯å°†é¡¶ç‚¹æ•°æ®æ˜ å°„åˆ°VBOä¸­.
+ * å›´ç»•ç€è¿™ä¸ªå¼€å§‹æ¸²æŸ“, æœ€ç»ˆçš„æ¸²æŸ“å…¶å®æ˜¯åœ¨è¿™ä¸ªç±»ä¸­å®Œæˆ
  */
 class FoxPolyData;
 class FoxShaderProgram;
@@ -19,24 +19,26 @@ public:
 	FoxOpenGLPolyDataMapper();
 	~FoxOpenGLPolyDataMapper();
 
-	// ÉèÖÃ¶¥µãÊı¾İ
+	// è®¾ç½®é¡¶ç‚¹æ•°æ®
 	void setPolyData(std::shared_ptr<FoxPolyData> polyData);
 	std::shared_ptr<FoxPolyData> getPolyData();
-	// °ó¶¨VAO »æÖÆÊ±ĞèÒªbind VAO
+	// ç»‘å®šVAO ç»˜åˆ¶æ—¶éœ€è¦bind VAO
 	void bindVAO();
-	// ÊÍ·ÅVAO
+	// é‡Šæ”¾VAO
 	void releaseVAO();
-	// ÊÍ·ÅVBO
+	// é‡Šæ”¾VBO
 	void releaseVBO();
-	// äÖÈ¾
+	// æ¸²æŸ“
 	void renderer();
-	// °ó¶¨VBOÊı¾İ
+	// ç»‘å®šVBOæ•°æ®
 	void bindVertexBuffObject(std::shared_ptr<FoxShaderProgram> shaderProgram);
 
 
 private:
-	QOpenGLBuffer m_VBO;  // ¶¥µã»º´æ
-	QOpenGLVertexArrayObject m_VAO; // ¶¥µãÊı×é
-	std::shared_ptr<FoxPolyData> m_polydata; // ¶¥µãÊı¾İ
+	QOpenGLBuffer m_VBO;  // é¡¶ç‚¹ç¼“å­˜
+	QOpenGLVertexArrayObject m_VAO; // é¡¶ç‚¹æ•°ç»„
+	std::shared_ptr<FoxPolyData> m_polydata; // é¡¶ç‚¹æ•°æ®
 	std::shared_ptr<FoxShaderProgram> m_shaderProgram;
+
+
 };
