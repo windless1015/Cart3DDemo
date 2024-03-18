@@ -70,6 +70,9 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui->actionTestComponent, &QAction::triggered, this, &MainWindow::slotsAddTestComponent);
     
 
+
+    connect(ui->actionOpenTestData_2, &QAction::triggered, this, &MainWindow::slotsOpenInvisalignData);
+
 }
 
 MainWindow::~MainWindow()
@@ -157,9 +160,7 @@ void MainWindow::slotsOpenCaseData()
     QString fileName_upper = ".\\caseData\\100642730142856\\upper.stl";
     //m_foxOpenGLWidget->openMeshFilePath(fileName);
     m_foxOpenGLWidget->openMeshFilePath(fileName_upper, fileName_lower);
-    m_setAlphaSlider->setValue(100);
-    QString text = "value: 100";
-    m_sliderValue->setText(text);
+    updateAlphaSlider();
 }
 
 
@@ -265,6 +266,33 @@ void MainWindow::slotsShow2DCrossSectionWidget()
 
 }
 
+void MainWindow::slotsOpenInvisalignData()
+{
+    // ����Ŀ�����е�����100642730142856
+    //QString fileName_lower = ".\\caseData\\invisalignData\\DownArch\\m_CutGumPd0_0.stl";
+    QString fileName_gum = ".\\caseData\\invisalignData\\DownArch\\m_CutGumPd0_14.stl";
+
+    //m_foxOpenGLWidget->openMeshFilePath(fileName);
+    QString folderPath = ".\\caseData\\invisalignData\\DownArch\\";
+    QDir dir(folderPath);
+    QStringList nameFilters;
+    nameFilters << "*.stl";
+    QStringList files = dir.entryList(nameFilters, QDir::Files | QDir::Readable, QDir::Name);
+    QVector<QString> filePathList;
+    for each (QString var in files)
+    {
+       QString filePath = folderPath +var;
+       if (filePath.compare(fileName_gum) == 0) {
+           continue;
+       }
+       filePathList.push_back(filePath);
+    }
+    m_foxOpenGLWidget->openMeshFilePath(filePathList, fileName_gum);
+    updateAlphaSlider();
+
+
+}
+
 void MainWindow::initAlphaSlider()
 {
     m_sliderValue = new QLabel(this);
@@ -287,4 +315,11 @@ void MainWindow::initAlphaSlider()
     // 设置显示最上层
     m_setAlphaSlider->raise();
 
+}
+
+void MainWindow::updateAlphaSlider()
+{
+    m_setAlphaSlider->setValue(100);
+    QString text = "value: 100";
+    m_sliderValue->setText(text);
 }

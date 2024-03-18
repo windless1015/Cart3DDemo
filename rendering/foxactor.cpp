@@ -23,7 +23,7 @@ FoxActor::FoxActor(QObject* parent):m_zoom(45.0f),m_nearPlane(0.1f),m_farPlane(1
 	m_shaderProgarm->setObjectColor(0.5f, 0.5f, 0.5f);
 	// actor 鏄惁鍙
 	m_actorVisibility = true;
-	
+	m_useTexture = false;
 }
 
 FoxActor::~FoxActor()
@@ -170,6 +170,30 @@ void FoxActor::setVisibility(bool visibility)
 	m_actorVisibility = visibility;
 }
 
+/// <summary>
+///   使用纹理
+/// </summary>
+/// <param name="useTexture">输入true 使用 false 不使用</param>
+void FoxActor::setUseTexture(bool useTexture)
+{
+	// 设置为true之前先要判断是否已经初始化材质了
+	// 这里是否应该是返回异常
+	if (m_texturePath.isEmpty()) return;
+	m_useTexture = useTexture;
+	m_shaderProgarm->setUseMaterial(m_useTexture);
+}
+
+/// <summary>
+///  设置材质的图片路径
+/// </summary>
+/// <param name="textureName">材质的图片路径</param>
+void FoxActor::setTexture(const QString& textureName)
+{
+	m_texturePath = textureName;
+	m_shaderProgarm->setMaterialPath(m_texturePath);
+	m_shaderProgarm->initTexture();
+}
+
 void FoxActor::setProjection(const QMatrix4x4& projection)
 {
 	m_projection = projection;
@@ -273,6 +297,10 @@ void FoxActor::draw()
  
 	// 濡傛灉涓嶅彲瑙佸氨 鐩存帴杩斿洖
 	if (!m_actorVisibility) return;
+	if (m_useTexture)
+	{
+		m_shaderProgarm->textureBind();
+	}
 	m_shaderProgarm->shaderBind();
 	m_polyDataMapper->renderer();
 }

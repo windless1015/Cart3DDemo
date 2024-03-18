@@ -2,12 +2,14 @@
 
 
 #include <memory>
-
+#include <QString>
 // 着色器程序
 // 简化着色器的使用,对qt着色器程序进行封装
 // 有两种模式一种是默认的渲染效果 还有 添加纹理后的效果
 class QOpenGLShaderProgram;
+class QOpenGLTexture;
 class QObject;
+class QString;
 class QVector3D;
 class QMatrix4x4;
 class FoxLighting;
@@ -26,6 +28,9 @@ public:
 	void setMatrix4x4(QMatrix4x4& projection, QMatrix4x4& view, QMatrix4x4& model);
 	// 是否使用材质 true 使用  false 不使用
 	void setUseMaterial(bool useMaterial);
+	void setMaterialPath(const QString& texturePath);
+	void initTexture();
+	void textureBind();
 	// 设置灯光
 	void setLighting(std::shared_ptr<FoxLighting> lighting);
 	// 设置属性缓存
@@ -50,7 +55,9 @@ private:
 	QOpenGLShaderProgram* m_shaderProgram;
 	// 物体颜色
 	float m_objectColor[4];
-
+	QOpenGLTexture* m_texture;
+	QString m_texturePath;
+	bool m_useTexture;
 };
 
 

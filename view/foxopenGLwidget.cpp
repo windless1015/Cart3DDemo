@@ -43,6 +43,10 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) :QOpenGLWidget(parent)
 
 	m_rotateQuat = QQuaternion::fromAxisAndAngle(1.0f, 0.0f, 0.0f, 30.0f);
 	m_rotateQuat *= QQuaternion::fromAxisAndAngle(0.0f, 1.0f, 0.0f, -10.0f);
+	// ��������
+	QSurfaceFormat surfaceFormat;
+	surfaceFormat.setSamples(4);
+	setFormat(surfaceFormat);
 }
 
 FoxOpenGLWidget::~FoxOpenGLWidget()
@@ -120,9 +124,11 @@ void FoxOpenGLWidget::openMeshFilePath(const QString& upper, const QString& lowe
 {
 	makeCurrent();
 
-	//-------------------测试渲染类-------------------
-	// 北京时间 : 2024-01-18 17:42  
-	// 下面的代码是测试封装的渲染类
+	m_renderer->clearActors();
+	//-------------------������Ⱦ��-------------------
+	// ����ʱ�� : 2024-01-18 17:42  
+	// ����Ĵ����ǲ��Է�װ����Ⱦ��
+
 	std::string fileName = lower.toStdString();
 	Cart3D::OpenTriMesh mesh;
 	IO::read_mesh(mesh, fileName);
@@ -154,10 +160,54 @@ void FoxOpenGLWidget::openMeshFilePath(const QString& upper, const QString& lowe
 	//-----------------------------------------------
 }
 
+void FoxOpenGLWidget::openMeshFilePath(const QVector<QString>& tooth, const QString& gum)
+{
+	// �ڴ�������֮ǰ���֮ǰ�򿪵ļ�¼
+	// Ҫȷ��Opengl��������ȷ �����޷�ִ���������Ⱦ
+	makeCurrent();
+	m_renderer->clearActors();
+	// �������ݵ�ģ������
+	for(auto& path: tooth){
+		std::string fileName = path.toStdString();
+		Cart3D::OpenTriMesh mesh;
+		IO::read_mesh(mesh, fileName);
+		std::shared_ptr<FoxPolyData> polydata = std::make_shared<FoxPolyData>(mesh);
+		std::shared_ptr<FoxOpenGLPolyDataMapper> mapper = std::make_shared<FoxOpenGLPolyDataMapper>();
+		mapper->setPolyData(polydata);
+		std::shared_ptr<FoxActor> actor = std::make_shared<FoxActor>(this);
+		actor->setPolyDataMapper(mapper);
+		actor->setColor(0.5f, 0.5f, 0.5f);
+		actor->setTexture(".\\res\\texture\\ToothTexture.png");
+
+		m_renderer->addActor(actor);
+
+	}
+	// ��������
+	std::string fileName = gum.toStdString();
+	Cart3D::OpenTriMesh mesh;
+	IO::read_mesh(mesh, fileName);
+	std::shared_ptr<FoxPolyData> polydata = std::make_shared<FoxPolyData>(mesh);
+	std::shared_ptr<FoxOpenGLPolyDataMapper> mapper = std::make_shared<FoxOpenGLPolyDataMapper>();
+	mapper->setPolyData(polydata);
+	std::shared_ptr<FoxActor> actor = std::make_shared<FoxActor>(this);
+	actor->setPolyDataMapper(mapper);
+	// ���ò���
+	actor->setTexture(".\\res\\texture\\GingivaTexture.png");
+
+	actor->setColor(0.5f, 0.5f, 0.5f);
+	
+	m_renderer->addActor(actor);
+
+	update();
+
+}
+
 void FoxOpenGLWidget::setUseTexture(bool useTexture)
 {
 	makeCurrent();
-	m_useTexturel = useTexture;
+	for (auto& actor : m_renderer->getActors()) {
+		actor->setUseTexture(useTexture);
+	}
 	update();
 }
 
@@ -362,6 +412,7 @@ void FoxOpenGLWidget::initializeGL()
 	//Cart3D::OpenTriMesh mesh = m_foxPipeSource->createPipeMesh();
 	//OpenMesh::IO::write_mesh(mesh, "E:\\3D\\TestData\\testData\\test\\pipe.stl");
 
+
 }
 
 // 窗口改变时执行
@@ -432,32 +483,32 @@ void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 		for (auto& actor : m_renderer->getActors()) {
 			actor->setModelRotate(m_rotateQuat);
 		}
-		//qDebug() << "begin-----";
-		//m_renderer->renderer();
-		//qDebug() << "end-----";
-		//update(); // 触发重绘
-		this->repaint();
+
+
 	}
-	//// 判断是否按下的是中键
-	//if (m_isPressMouseMiddle) {
-	//	if (m_firstMouse) {
-	//		// 如果是第一次按下记录当前的位置
-	//		m_middleMoveMousePos = event->pos();
-	//		m_firstMouse = false;
-	//	}
-	//	float xoffset = m_middleMoveMousePos.x() - event->pos().x();
-	//	float yoffset = m_middleMoveMousePos.y() - event->pos().y();
-	//	m_middleMoveMousePos = event->pos();
-	//	float sensitivity = 0.2;
-	//	xoffset *= sensitivity;
-	//	yoffset *= sensitivity;
-	//	// 平移模型
-	//	//m_model.translate(QVector3D(-xoffset, yoffset, 0));
-	//	for (auto& actor : m_renderer->getActors()) {
-	//		actor->setModelTranslation(QVector3D(-xoffset, yoffset, 0));
-	//	}
-	//	update(); // 触发重绘
-	//}
+	// �ж��Ƿ��µ����м�
+	if (m_isPressMouseMiddle) {
+		if (m_firstMouse) {
+			// ����ǵ�һ�ΰ��¼�¼��ǰ��λ��
+			m_middleMoveMousePos = event->pos();
+			m_firstMouse = false;
+		}
+		float xoffset = m_middleMoveMousePos.x() - event->pos().x();
+		float yoffset = m_middleMoveMousePos.y() - event->pos().y();
+		m_middleMoveMousePos = event->pos();
+		float sensitivity = 0.2;
+		xoffset *= sensitivity;
+		yoffset *= sensitivity;
+		// ƽ��ģ��
+		//m_model.translate(QVector3D(-xoffset, yoffset, 0));
+		for (auto& actor : m_renderer->getActors()) {
+			actor->setModelTranslation(QVector3D(-xoffset, yoffset, 0));
+		}
+		//update(); // �����ػ�
+	}
+
+	update();
+
 }
 
 void FoxOpenGLWidget::wheelEvent(QWheelEvent* event)

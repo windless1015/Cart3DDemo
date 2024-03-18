@@ -5,7 +5,6 @@
 #include <QVector3D>
 #include <QQuaternion>
 #include <QMessageBox>
-
 #include <QOpenGLTexture>
 /**
  * @brief Actor类主要是负责模型属性的设置.
@@ -37,7 +36,14 @@ public:
 	// 是否可见 true 可见 false 不可见
 	void setVisibility(bool visibility);
 
-	// 设置投影矩阵
+
+	// �Ƿ�ʹ�ò���
+	void setUseTexture(bool useTexture);
+	// ��ʼ����ɫ���еĲ���
+	void setTexture(const QString& textureName);
+
+	// ����ͶӰ����
+
 	void setProjection(const QMatrix4x4& projection);
 	void setProjection(float zoom, float width, float hight, float nearPlane, float farPlane);
 	QMatrix4x4& getProjection();
@@ -77,9 +83,10 @@ private:
 	float m_aspectRatio; // 屏占比
 	float m_nearPlane;
 	float m_farPlane;
-	bool m_useTexture; // 是否使用材质
-	bool m_actorVisibility; // 可见性
-	QVector3D m_color; //颜色
 
+	bool m_useTexture; // �Ƿ�ʹ�ò���
+	bool m_actorVisibility; // �ɼ���
+	QVector3D m_color; //��ɫ
+	QString m_texturePath;// ����·��
 
 };

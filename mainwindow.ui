@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>798</width>
+    <height>602</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,8 +19,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
-     <height>26</height>
+     <width>798</width>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -32,6 +32,7 @@
       <string>病例</string>
      </property>
      <addaction name="actionCaseTest1"/>
+     <addaction name="actionOpenTestData_2"/>
     </widget>
     <addaction name="actionOpenMeshFile"/>
     <addaction name="actionOpenMeshFolder"/>
@@ -132,19 +133,15 @@
     <string>AddAttachment</string>
    </property>
   </action>
-  <action name="actionasasdas">
-   <property name="text">
-    <string>testComponent</string>
-   </property>
-  </action>
-  <action name="actiontestComponent">
-   <property name="text">
-    <string>TestComponent</string>
-   </property>
-  </action>
+
   <action name="actionTestComponent">
    <property name="text">
     <string>TestComponent</string>
+	</property>
+  </action>
+  <action name="actionOpenTestData_2">
+   <property name="text">
+    <string>打开隐适美数据</string>
    </property>
   </action>
  </widget>

@@ -52,6 +52,7 @@ private slots:
     void slotsShow2DCrossSectionWidget();
 
 
+
     //wxn:
     //添加附件
     void slotsAddAttachment();
@@ -59,10 +60,14 @@ private slots:
     //按钮名:actionTestComponent
     void slotsAddTestComponent();
 
+
+    // ������������
+    void slotsOpenInvisalignData();
+
 private:
     // 初始化滑块
     void initAlphaSlider();
-    
+    void updateAlphaSlider();
 private:
    Ui::MainWindow *ui;
    FoxOpenGLWidget* m_foxOpenGLWidget;

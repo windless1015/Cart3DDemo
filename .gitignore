@@ -2,7 +2,8 @@
 /out
 /.vs
 
-
+#This is my local qwt lib file
+/lib/qwt
 
 *.txt.user
 CMakePresets.json
