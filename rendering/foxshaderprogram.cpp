@@ -4,6 +4,7 @@
 #include <QOpenGLShaderProgram>
 #include <QVector3D>
 #include <QObject>
+#include <QOpenGLTexture>
 
 // 默认渲染着色器的代码
 const char* vertexShaderCode = R"(#version 330 core
@@ -54,7 +55,6 @@ uniform vec3 viewPos;
 uniform Material material;
 uniform Light light;
 uniform bool useMaterial;
-//uniform vec3 objectColor;
 uniform vec4 objectColor;
 void main()
 {
@@ -91,18 +91,18 @@ void main()
         spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
         specular = light.specular * spec * texture(material.specular, TexCoords).rgb;
         result = ambient + diffuse + specular;
+        vecResult = vec4(result, 1.0);
     }
     else{
         spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
         specular = light.specular * spec * light.color;
         //result = (ambient + diffuse + specular) * objectColor;
         fObjectColor = objectColor;
-        //fObjectColor = vec4(0.5, 0.5, 0.5, 0.8);
         lightColor = vec4((ambient + diffuse + specular), 1.0);
         vecResult = lightColor * fObjectColor;
     }
     
-    //FragColor = vec4(result, 0.5);
+    //FragColor = vec4(result, 1.0);
     FragColor = vecResult;
 }
 )";
@@ -120,9 +120,16 @@ FoxShaderProgram::FoxShaderProgram(QObject* parent)
     m_objectColor[1] = { 0.5f }; // g
     m_objectColor[2] = { 0.5f }; // b
     m_objectColor[3] = { 1.0f }; // a
+    m_useTexture = false;
+    m_texture = nullptr;
 }
 
-FoxShaderProgram::~FoxShaderProgram(){}
+FoxShaderProgram::~FoxShaderProgram(){
+    if (m_texture != nullptr) {
+        delete m_texture;
+        m_texture = nullptr;
+    }
+}
 
 void FoxShaderProgram::shaderBind()
 {
@@ -157,7 +164,31 @@ void FoxShaderProgram::setUseMaterial(bool useMaterial = false)
     m_shaderProgram->bind();
     // 设置是否使用材质
     m_shaderProgram->setUniformValue("useMaterial", useMaterial);
+    m_shaderProgram->setUniformValue("material.specular", QVector3D(0.5f, 0.5f, 0.5f));
+    m_shaderProgram->setUniformValue("material.shininess", 32.0f);
     m_shaderProgram->release();
+    m_useTexture = useMaterial;
+}
+
+void FoxShaderProgram::setMaterialPath(const QString& texturePath)
+{
+    m_texturePath = texturePath;
+}
+
+void FoxShaderProgram::initTexture()
+{
+    // 这里应该返回异常
+    if (m_texturePath.isEmpty()) return;
+    // 初始化纹理
+    m_texture = new QOpenGLTexture(QImage(m_texturePath).mirrored());
+    m_texture->setMinMagFilters(QOpenGLTexture::LinearMipMapLinear, QOpenGLTexture::Linear);
+    m_texture->setWrapMode(QOpenGLTexture::DirectionS, QOpenGLTexture::Repeat);
+    m_texture->setWrapMode(QOpenGLTexture::DirectionT, QOpenGLTexture::Repeat);
+}
+
+void FoxShaderProgram::textureBind()
+{
+    m_texture->bind(0);
 }
 
 void FoxShaderProgram::setLighting(std::shared_ptr<FoxLighting> lighting)
@@ -181,8 +212,6 @@ void FoxShaderProgram::setVertexAttributeBuffe(const char* name, int offset, int
 void FoxShaderProgram::setViewPosition(QVector3D& viewPosition)
 {
     m_shaderProgram->bind();
-
-
 }
 
 
@@ -210,8 +239,8 @@ void FoxShaderProgram::useShaderProgram(bool useMaterial,QVector3D& viewPosition
     // 2024-01-16
     // 设置材质 后面看看要不要独立出一个foxTexture类在管理纹理
     // ------------------------------------------------
-    m_shaderProgram->setUniformValue("material.specular", QVector3D(0.5f, 0.5f, 0.5f));
-    m_shaderProgram->setUniformValue("material.shininess", 64.0f);
+    //m_shaderProgram->setUniformValue("material.specular", QVector3D(0.5f, 0.5f, 0.5f));
+    //m_shaderProgram->setUniformValue("material.shininess", 64.0f);
 
     // 设置观察向量
     QVector3D viewPos = viewPosition;

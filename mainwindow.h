@@ -44,11 +44,12 @@ private slots:
     void slotsSetAlpha(int value);
     // 显示横截面窗口
     void slotsShow2DCrossSectionWidget();
-
+    // 打开隐适美数据
+    void slotsOpenInvisalignData();
 private:
     // 初始化滑块
     void initAlphaSlider();
-    
+    void updateAlphaSlider();
 private:
    Ui::MainWindow *ui;
    FoxOpenGLWidget* m_foxOpenGLWidget;

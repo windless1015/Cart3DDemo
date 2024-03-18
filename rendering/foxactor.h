@@ -4,6 +4,7 @@
 #include <QMatrix4x4>
 #include <QVector3D>
 #include <QQuaternion>
+#include <QOpenGLTexture>
 /**
  * @brief Actor类主要是负责模型属性的设置.
  * 比如说模型的矩阵变换，模型的颜色修改等相关的渲染设置
@@ -30,6 +31,11 @@ public:
 	
 	// 是否可见 true 可见 false 不可见
 	void setVisibility(bool visibility);
+
+	// 是否使用材质
+	void setUseTexture(bool useTexture);
+	// 初始化着色器中的材质
+	void setTexture(const QString& textureName);
 
 	// 设置投影矩阵
 	void setProjection(const QMatrix4x4& projection);
@@ -74,4 +80,5 @@ private:
 	bool m_useTexture; // 是否使用材质
 	bool m_actorVisibility; // 可见性
 	QVector3D m_color; //颜色
+	QString m_texturePath;// 材质路径
 };

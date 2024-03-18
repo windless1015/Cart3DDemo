@@ -47,6 +47,7 @@ public:
     // 读取文件
     void openMeshFilePath(const QString& path);
     void openMeshFilePath(const QString& upper, const QString& lower);
+    void openMeshFilePath(const QVector<QString>& tooth, const QString& gum);
     // 设置使用纹理
     void setUseTexture(bool useTexture);
     // 隐藏模型
