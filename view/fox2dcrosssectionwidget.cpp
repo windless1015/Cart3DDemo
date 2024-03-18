@@ -9,6 +9,8 @@
 #include <QMouseEvent>
 #include <QRect>
 #include <QPainterPath>
+#include <QPainterPathStroker>
+
 
 Fox2DCrossSectionWidget::Fox2DCrossSectionWidget(QWidget* parent)
 {
@@ -24,6 +26,8 @@ Fox2DCrossSectionWidget::Fox2DCrossSectionWidget(QWidget* parent)
     m_isMouseRightButton = false;
     updatePainterWidthOfPerPixel();
     setWindowOpacity(0.7);
+
+
 }
 
 Fox2DCrossSectionWidget::~Fox2DCrossSectionWidget()
@@ -54,20 +58,20 @@ void Fox2DCrossSectionWidget::mousePressEvent(QMouseEvent* event)
         QPoint point = event->localPos().toPoint();
         // 判断点是否在画布中
         if (!m_drawPainterRect.contains(point)) return;
-        // 搜索点是否是横截线上的点
-        QPointF result = findApproximatelyEqualPoint(m_crossSectionLine, point, 3);
-        // 如果没找到则就返回
-        if (result.isNull())return;
+
         // 判断测量点的数量是否小于2
         if (m_measurePoint.size() < 2) {
-            m_measurePoint.push_back(result);
+            // 判断鼠标点击的点是否是路径上的点
+            if (!m_enlargedPath.contains(point)) return;
+            // 将点保存起来
+            m_measurePoint.push_back(point);
         }
         else
         {
             // 查找对应的点
-            QPointF findMeasurePoint = findApproximatelyEqualPoint(m_measurePoint, point, 3);
-            qDebug() << findMeasurePoint;
-            // 调用移动
+            int index = indexOfPointInVector(m_measurePoint, point, 15);
+            m_selectPoint = index;
+            m_isMouseLeftButton = true;
         }
         // 更新
         update();
@@ -88,8 +92,13 @@ void Fox2DCrossSectionWidget::mousePressEvent(QMouseEvent* event)
 
 void Fox2DCrossSectionWidget::mouseMoveEvent(QMouseEvent* event)
 {
+    // 点击左键触发
+    if (m_isMouseLeftButton) {
+        QPointF point = event->pos();
+        moveMeasurePoint(point);
+    }
 
-
+    // 点击右键触发
     if (m_isMouseRightButton) {
         m_painterX = event->pos().x() - m_orginDifX;
         m_painterY = event->pos().y() - m_orginDifY;
@@ -191,9 +200,10 @@ void Fox2DCrossSectionWidget::drawText(const QString& text)
 void Fox2DCrossSectionWidget::drawPointAndLine(QPainter& painter)
 {
     painter.setRenderHint(QPainter::Antialiasing);
-    painter.setPen(QPen(Qt::green, 7,Qt::SolidLine,Qt::RoundCap));
+    painter.setPen(QPen(Qt::green, 10,Qt::SolidLine,Qt::RoundCap));
     for (auto& point : m_measurePoint) {
         painter.drawPoint(point.x(), point.y());
+        //painter.drawEllipse(point, 5, 5);
     }
 
     painter.setPen(QPen(Qt::yellow, 2, Qt::SolidLine));
@@ -216,8 +226,6 @@ void Fox2DCrossSectionWidget::drawCrossSectionLine(QPainter* painter)
     // 整个网格的中心点
     int origin_x = start_x + qRound(50 * step_width);
     int origin_y = start_y + qRound(50 * step_width);
-    //qDebug() << "origin_x" << origin_x;
-    //qDebug() << "origin_y" << origin_y;
 
     m_crossSectionLine.clear();
     m_crossSectionLine.push_back(QPoint(origin_x - 100, origin_y - 50));
@@ -231,15 +239,19 @@ void Fox2DCrossSectionWidget::drawCrossSectionLine(QPainter* painter)
     painter->drawPoint(QPoint(origin_x, origin_y));
 
     painter->setPen(QPen(Qt::blue, 2));
-    QPainterPath path;
     // 绘制的默认坐标在左上角(0,0)位置
-    path.moveTo(m_crossSectionLine[0]); // 起始位置
+    m_drawCrossSectionLine.moveTo(m_crossSectionLine[0]); // 起始位置
     for(int i=0;i<m_crossSectionLine.size();i++){
-        path.lineTo(m_crossSectionLine[i]);
+        m_drawCrossSectionLine.lineTo(m_crossSectionLine[i]);
     }
 
+    // 添加路径描边起 用于增加线条的判断
+    QPainterPathStroker storker;
+    storker.setWidth(17);
+    m_enlargedPath = storker.createStroke(m_drawCrossSectionLine);
+
     //painter->drawLines(m_crossSectionLine);
-    painter->drawPath(path);
+    painter->drawPath(m_drawCrossSectionLine);
 }
 
 
@@ -368,12 +380,15 @@ void Fox2DCrossSectionWidget::centenThePainter()
 ///  移动点
 /// </summary>
 /// <param name="point"></param>
-void Fox2DCrossSectionWidget::moveMeasurePointAndLine(const QPointF& point)
+void Fox2DCrossSectionWidget::moveMeasurePoint(const QPointF& point)
 {
 
-    // 移动顶点时 判断点是否在m_measurePoint中
-    // 
-
+    // 移动顶点时 判断点是否在m_drawCrossSectionLine上
+    if (m_selectPoint == -1) return;
+    if (m_enlargedPath.contains(point)) {
+        // qDebug() << point << "in path"<<" index :"<<m_selectPoint;
+        m_measurePoint[m_selectPoint] = point;
+    }
 
 }
 

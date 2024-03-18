@@ -2,6 +2,7 @@
 
 #include <QWidget>
 #include <QVector>
+#include <QPainterPath>
 /**
  * @brief 这是一个2D的坐标窗口, 负责显示横截面曲线
  *  交互: 
@@ -21,7 +22,7 @@ class Fox2DCrossSectionWidget  :  public QWidget
 public:
 	Fox2DCrossSectionWidget(QWidget* parent=nullptr);
 	~Fox2DCrossSectionWidget();
-
+	
 	// 通过不断的绘制顶点组成曲线
 	void drawCrossSectionLine(const QVector<QPointF>& points);
 
@@ -63,7 +64,7 @@ private:
 	void centenThePainter();
 
 	// 移动顶点
-	void moveMeasurePointAndLine(const QPointF& point);
+	void moveMeasurePoint(const QPointF& point);
 	// 对比两个点找到一个大约相等的点, 且容差值为tolerance
 	bool pointsApproximatelyEqual(const QPointF& p1, const QPointF& p2, qreal tolerance);
 	// 并且获取这个点
@@ -74,6 +75,8 @@ private:
 private:
 	QVector<QPointF> m_measurePoint; // 测量点
 	QVector<QPointF> m_crossSectionLine; // 横截面线条
+	QPainterPath m_drawCrossSectionLine; // 绘制横截线
+	QPainterPath m_enlargedPath;
 	double  m_scale;
 	// 记录鼠标按下的位置
 	QPoint m_lastMousePos; 
@@ -97,6 +100,8 @@ private:
 	// 设置最大和最小比例
 	const double SCALE_VALUE_MAX = 30.0;
 	const double SCALE_VALUE_MIN = 0.5;
+
+	
 
 	QRect m_drawPainterRect;
 
