@@ -64,6 +64,8 @@ private slots:
     // ������������
     void slotsOpenInvisalignData();
 
+    void slotsAbout();
+
 private:
     // 初始化滑块
     void initAlphaSlider();

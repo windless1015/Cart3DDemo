@@ -450,6 +450,7 @@ void FoxOpenGLWidget::paintGL()
 	m_renderer->renderer();
 }
 
+
 void FoxOpenGLWidget::mousePressEvent(QMouseEvent* event)
 {
 	qDebug() << "mousePressEvent";
@@ -464,6 +465,7 @@ void FoxOpenGLWidget::mousePressEvent(QMouseEvent* event)
 		m_isPressMouseMiddle = true;
 	}
 
+
 }
 
 void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
@@ -471,7 +473,7 @@ void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 	qDebug() << "mouseMoveEvent";
 	if (m_renderer->getActors().size() == 0) return;
 	event->accept();
-	// 如果按下的是左键就移动
+	// 如果按下的是左键就旋转
 	if (m_isPressMouseLeft) {
 		qDebug() << "mouseMoveEvent--m_leftMoveMousePos:[" << m_leftMoveMousePos << "]";
 		float angle = 2.0f;
@@ -483,7 +485,8 @@ void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 		for (auto& actor : m_renderer->getActors()) {
 			actor->setModelRotate(m_rotateQuat);
 		}
-
+		
+		//如何正确完成模型的旋转?
 
 	}
 	// �ж��Ƿ��µ����м�

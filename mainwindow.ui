@@ -13,6 +13,17 @@
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">QWidget{
+		background-color:rgb(68,68,68);
+		color:rgb(255,255,255);
+		font:	10pt	&quot;幼圆&quot;;
+}
+QMenuBar{
+		background-color:grb(200,200,200);
+		color:rgb(60,60,60);
+}</string>
+  </property>
   <widget class="QWidget" name="centralwidget"/>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -20,7 +31,7 @@
      <x>0</x>
      <y>0</y>
      <width>798</width>
-     <height>22</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -61,10 +72,17 @@
     <addaction name="actionAddAttachment"/>
     <addaction name="actionTestComponent"/>
    </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>关于</string>
+    </property>
+    <addaction name="actionAbout"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuMesh"/>
    <addaction name="menuRendering"/>
    <addaction name="menu"/>
+   <addaction name="menu_2"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
@@ -133,15 +151,19 @@
     <string>AddAttachment</string>
    </property>
   </action>
-
   <action name="actionTestComponent">
    <property name="text">
     <string>TestComponent</string>
-	</property>
+   </property>
   </action>
   <action name="actionOpenTestData_2">
    <property name="text">
     <string>打开隐适美数据</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
    </property>
   </action>
  </widget>

@@ -53,12 +53,17 @@ public:
 	void setModelTranslation(QVector3D& position);
 	void setModelScale(float factor);
 	void setModelRotate(QQuaternion& rotateQuat);
+
+	void setModetranslation(QVector3D& translation);
+
 	QMatrix4x4& getModel();
 
 	// 设置视图矩阵 旋转视图矩阵
 	void setView(const QMatrix4x4& view);
 	void setView(std::shared_ptr<FoxCamera> camera);
 	void setViewRotate(QQuaternion& rotateQuat);
+
+	
 	QMatrix4x4& getView();
 
 	// 更新actor的着色器数据

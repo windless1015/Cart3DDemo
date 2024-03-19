@@ -171,22 +171,22 @@ void FoxActor::setVisibility(bool visibility)
 }
 
 /// <summary>
-///   使用纹理
+///   使锟斤拷锟斤拷锟斤拷
 /// </summary>
-/// <param name="useTexture">输入true 使用 false 不使用</param>
+/// <param name="useTexture">锟斤拷锟斤拷true 使锟斤拷 false 锟斤拷使锟斤拷</param>
 void FoxActor::setUseTexture(bool useTexture)
 {
-	// 设置为true之前先要判断是否已经初始化材质了
-	// 这里是否应该是返回异常
+	// 锟斤拷锟斤拷为true之前锟斤拷要锟叫讹拷锟角凤拷锟窖撅拷锟斤拷始锟斤拷锟斤拷锟斤拷锟斤拷
+	// 锟斤拷锟斤拷锟角凤拷应锟斤拷锟角凤拷锟斤拷锟届常
 	if (m_texturePath.isEmpty()) return;
 	m_useTexture = useTexture;
 	m_shaderProgarm->setUseMaterial(m_useTexture);
 }
 
 /// <summary>
-///  设置材质的图片路径
+///  锟斤拷锟矫诧拷锟绞碉拷图片路锟斤拷
 /// </summary>
-/// <param name="textureName">材质的图片路径</param>
+/// <param name="textureName">锟斤拷锟绞碉拷图片路锟斤拷</param>
 void FoxActor::setTexture(const QString& textureName)
 {
 	m_texturePath = textureName;
@@ -235,6 +235,12 @@ void FoxActor::setModelScale(float factor)
 void FoxActor::setModelRotate(QQuaternion& rotateQuat)
 {
 	m_model.rotate(rotateQuat);
+	updataShaderProgram();
+}
+
+void FoxActor::setModetranslation(QVector3D& translation)
+{
+	m_model.translate(translation);
 	updataShaderProgram();
 }
 

@@ -73,6 +73,8 @@ MainWindow::MainWindow(QWidget* parent)
 
     connect(ui->actionOpenTestData_2, &QAction::triggered, this, &MainWindow::slotsOpenInvisalignData);
 
+    connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::slotsAbout);
+
 }
 
 MainWindow::~MainWindow()
@@ -291,6 +293,11 @@ void MainWindow::slotsOpenInvisalignData()
     updateAlphaSlider();
 
 
+}
+
+void MainWindow::slotsAbout()
+{
+    QMessageBox::aboutQt(nullptr, "About Qt");
 }
 
 void MainWindow::initAlphaSlider()
