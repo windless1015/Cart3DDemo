@@ -52,7 +52,9 @@ public:
 	void setModel(const QMatrix4x4& model);
 	void setModelTranslation(QVector3D& position);
 	void setModelScale(float factor);
+
 	void setModelRotate(QQuaternion& rotateQuat);
+
 
 	void setModetranslation(QVector3D& translation);
 
@@ -75,6 +77,9 @@ public:
 
 	// 绘制
 	void draw();
+
+
+	void setModelRotate(QMatrix4x4& rotateQuat);
 
 private:
 	QQuaternion m_rotateQuat;// 用于旋转的四元数

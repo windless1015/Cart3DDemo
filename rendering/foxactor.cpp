@@ -234,9 +234,20 @@ void FoxActor::setModelScale(float factor)
 
 void FoxActor::setModelRotate(QQuaternion& rotateQuat)
 {
+	//m_model.translate(0.0f, 0.0f, -5.0f);
+
 	m_model.rotate(rotateQuat);
 	updataShaderProgram();
 }
+
+void FoxActor::setModelRotate(QMatrix4x4& rotateQuat)
+{
+	//m_model.translate(0.0f, 0.0f, -5.0f);
+
+	m_model = rotateQuat * m_model;
+	updataShaderProgram();
+}
+
 
 void FoxActor::setModetranslation(QVector3D& translation)
 {

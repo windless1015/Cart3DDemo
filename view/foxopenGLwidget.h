@@ -68,6 +68,15 @@ public:
     // 设置场景中模型的透明度
     void setActorAlpha(float alpha);
 
+    //wxn
+    /**
+     * @brief 因为qt的鼠标事件获取的点所在的坐标轴，原点在左上角，而且y轴方向朝下,而我们计算旋转轴时所用的坐标轴，原点在旋转中心，也就是视口中心，y轴方向朝上
+     * @param p_ab 用于拟合平面的点集
+     * @return 
+     */
+    void translate_point(QPoint& p_ab);
+    void setPressPosition(QPoint p_ab);
+
     // 窗口的OpenGL事件
 protected:
     // 初始化
@@ -154,5 +163,15 @@ private:
     QOpenGLTexture* m_toothTexture;
     // 牙龈纹理
     QOpenGLTexture* m_gingivaTexture;
+    //鼠标位置
+    QPoint mousePos;
+    //
+    QVector3D rotationAxis;
+    QQuaternion rotationQuat;
+
+    //
+    QMatrix4x4 modelUse;
+    QMatrix4x4 modelSave;
+    QPoint press_position;
 };
 

@@ -47,6 +47,11 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) :QOpenGLWidget(parent)
 	QSurfaceFormat surfaceFormat;
 	surfaceFormat.setSamples(4);
 	setFormat(surfaceFormat);
+
+
+
+	/*rotationQuat = QQuaternion::fromAxisAndAngle(1.0f, 0.0f, 0.0f, 30.0f);
+	rotationQuat *= QQuaternion::fromAxisAndAngle(0.0f, 1.0f, 0.0f, -10.0f);*/
 }
 
 FoxOpenGLWidget::~FoxOpenGLWidget()
@@ -315,6 +320,23 @@ void FoxOpenGLWidget::setActorAlpha(float alpha)
 
 
 
+void FoxOpenGLWidget::translate_point(QPoint& p_ab)
+{
+	// this->width() 表示视口的宽度，由于视口宽高一样，
+	// 所以点(this->width(), this->height() )就是视口的中心点，即旋转中心。
+	int x = p_ab.x() - this->width() / 2;
+	int y = -(p_ab.y() - this->height() / 2);
+
+	p_ab.setX(x);
+	p_ab.setY(y);
+}
+
+void FoxOpenGLWidget::setPressPosition(QPoint p_ab)
+{
+	translate_point(p_ab);
+	press_position = p_ab;
+}
+
 void FoxOpenGLWidget::initializeGL()
 {
 	initializeOpenGLFunctions();
@@ -454,6 +476,9 @@ void FoxOpenGLWidget::paintGL()
 void FoxOpenGLWidget::mousePressEvent(QMouseEvent* event)
 {
 	qDebug() << "mousePressEvent";
+	event->accept();
+	mousePos = event->pos();
+
 	if (m_renderer->getActors().size() == 0) return;
 	if (event->button() == Qt::LeftButton) {
 		m_leftMoveMousePos = event->pos();
@@ -465,6 +490,20 @@ void FoxOpenGLWidget::mousePressEvent(QMouseEvent* event)
 		m_isPressMouseMiddle = true;
 	}
 
+	//单击 
+	QPoint p_ab = event->pos();
+	// 如果是鼠标左键按下
+	if (event->button() == Qt::LeftButton)
+	{
+		modelUse = modelSave;
+		setPressPosition(p_ab);
+	}
+
+
+	//计算模型的旋转轴
+	/*rotationAxis[0] = 0.0f;
+	rotationAxis[1] = 1.0f;
+	rotationAxis[2] = 0.0f;*/
 
 }
 
@@ -475,18 +514,53 @@ void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 	event->accept();
 	// 如果按下的是左键就旋转
 	if (m_isPressMouseLeft) {
-		qDebug() << "mouseMoveEvent--m_leftMoveMousePos:[" << m_leftMoveMousePos << "]";
-		float angle = 2.0f;
-		QVector2D diff = QVector2D(event->pos()) - QVector2D(m_leftMoveMousePos);
+		//qDebug() << "mouseMoveEvent--m_leftMoveMousePos:[" << event->pos() << "]";
+		//QVector2D diff = QVector2D(event->pos()) - QVector2D(m_leftMoveMousePos);
+		//qDebug() << "mouseMoveEvent--m_leftMoveMousePos:["<< diff << "]";
+
+		/*float angle = 2.0f;
 		m_leftMoveMousePos = event->pos();
 		QVector3D n = QVector3D(diff.y(), diff.x(), 0.0f).normalized();
 		m_rotateAxis = (m_rotateAxis + n).normalized();
 		m_rotateQuat = QQuaternion::fromAxisAndAngle(m_rotateAxis, angle)* m_rotateQuat;
 		for (auto& actor : m_renderer->getActors()) {
 			actor->setModelRotate(m_rotateQuat);
-		}
+		}*/
 		
 		//如何正确完成模型的旋转?
+		event->accept();
+		if (m_isPressMouseLeft) {
+			QPoint p_ab = event->pos();
+			translate_point(p_ab); // 坐标系转换 
+			
+			QPoint sub_point = p_ab - press_position;
+			qDebug() << p_ab << "-" << press_position << "=" << sub_point;
+			press_position = p_ab;
+			// 计算鼠标移动的角度
+			float angle = qSqrt(qPow(sub_point.x(), 2) + qPow(sub_point.y(), 2)) / 5;
+
+			// 固定旋转轴，例如围绕Z轴旋转
+			//QVector3D rotationAxis(0.0f, 0.0f, 1.0f);
+			//QVector3D rotationAxis(1.0f, 0.0f, 0.0f);//x
+			//QVector3D rotationAxis(0.0f, 1.0f, 0.0f);//y
+			//QVector3D rotationAxis(0.0f, 0.0f, 1.0f);
+
+			// 计算旋转轴
+			QVector3D rotationAxis = QVector3D(-sub_point.y(), sub_point.x(), 0.0).normalized();
+
+			// 根据旋转轴和角度创建四元数
+			QQuaternion rotationQuat = QQuaternion::fromAxisAndAngle(rotationAxis, angle);
+
+
+
+			//m_renderer->getActors()[0]->setModelRotate(rotationQuat);
+			// 对每个模型进行旋转
+			for (auto& actor : m_renderer->getActors()) {
+				actor->setModelRotate(rotationQuat);
+			}
+			
+		}
+
 
 	}
 	// �ж��Ƿ��µ����м�
@@ -504,14 +578,11 @@ void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 		yoffset *= sensitivity;
 		// ƽ��ģ��
 		//m_model.translate(QVector3D(-xoffset, yoffset, 0));
-		for (auto& actor : m_renderer->getActors()) {
+		for (auto& actor : m_renderer->getActors()) {//middle key
 			actor->setModelTranslation(QVector3D(-xoffset, yoffset, 0));
 		}
-		//update(); // �����ػ�
 	}
-
 	update();
-
 }
 
 void FoxOpenGLWidget::wheelEvent(QWheelEvent* event)
