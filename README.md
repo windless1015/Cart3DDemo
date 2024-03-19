@@ -12,8 +12,10 @@ this is wxn branch.
 
 # 移动模型
 - 先把模型中心定在屏幕的五五开
+
 ![image](https://github.com/wss/Cart3DDemo/assets/78208268/50e03de5-8c2f-41a7-8250-ccce86e0e103)
 
 - 使用公式即可完成
 
 
+![QQ录屏20240319173154 -original-original](https://github.com/wss/Cart3DDemo/assets/78208268/bdb0e9c1-b9f6-42c9-9ded-594c853c781e)
