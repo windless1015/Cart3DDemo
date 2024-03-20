@@ -77,6 +77,9 @@ public:
     void translate_point(QPoint& p_ab);
     void setPressPosition(QPoint p_ab);
 
+
+    void generateGridVertices(int rows, int cols);
+
     // 窗口的OpenGL事件
 protected:
     // 初始化
@@ -173,5 +176,9 @@ private:
     QMatrix4x4 modelUse;
     QMatrix4x4 modelSave;
     QPoint press_position;
+
+
+    QOpenGLShaderProgram* gridProgram;
+    QVector<QVector2D> gridVertices; // Store grid vertices
 };
 

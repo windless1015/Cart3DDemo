@@ -71,6 +71,8 @@ QMenuBar{
     </property>
     <addaction name="actionAddAttachment"/>
     <addaction name="actionTestComponent"/>
+    <addaction name="action_Coordinate_System"/>
+    <addaction name="action_grid"/>
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
@@ -164,6 +166,16 @@ QMenuBar{
   <action name="actionAbout">
    <property name="text">
     <string>About</string>
+   </property>
+  </action>
+  <action name="action_Coordinate_System">
+   <property name="text">
+    <string>添加坐标系</string>
+   </property>
+  </action>
+  <action name="action_grid">
+   <property name="text">
+    <string>添加网格</string>
    </property>
   </action>
  </widget>

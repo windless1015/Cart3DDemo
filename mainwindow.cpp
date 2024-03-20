@@ -74,7 +74,10 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui->actionOpenTestData_2, &QAction::triggered, this, &MainWindow::slotsOpenInvisalignData);
 
     connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::slotsAbout);
-
+    connect(ui->action_Coordinate_System, &QAction::triggered, this, &MainWindow::slotsCoordinate_System);
+    connect(ui->action_grid, &QAction::triggered, this, &MainWindow::slotsGrid);
+    
+        
 }
 
 MainWindow::~MainWindow()
@@ -298,6 +301,28 @@ void MainWindow::slotsOpenInvisalignData()
 void MainWindow::slotsAbout()
 {
     QMessageBox::aboutQt(nullptr, "About Qt");
+}
+
+void MainWindow::slotsCoordinate_System()
+{
+    //QMessageBox::information(nullptr, "Tips", QString::fromLocal8Bit("即将来袭,敬请期待..."));
+
+    //    ../XTranslation.stl
+    //    ../YTranslation.stl
+    //    ../ZTranslation.stl
+    QString fileName_X = "../XTranslation.stl";
+    QString fileName_Y = "../YTranslation.stl";
+    QString fileName_Z = "../ZTranslation.stl";
+
+    m_foxOpenGLWidget->openAttachmentFilePath(fileName_X, QVector3D(0, 0, 0));
+    m_foxOpenGLWidget->openAttachmentFilePath(fileName_Y, QVector3D(0, 0, 0));
+    m_foxOpenGLWidget->openAttachmentFilePath(fileName_Z, QVector3D(0, 0, 0));
+
+}
+
+void MainWindow::slotsGrid()
+{
+    m_foxOpenGLWidget->generateGridVertices(100, 100);
 }
 
 void MainWindow::initAlphaSlider()

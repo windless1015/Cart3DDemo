@@ -1,4 +1,4 @@
-#include "foxshaderprogram.h"
+ï»¿#include "foxshaderprogram.h"
 #include "foxlighting.h"
 
 #include <QOpenGLShaderProgram>
@@ -6,7 +6,7 @@
 #include <QObject>
 #include <QOpenGLTexture>
 
-// Ä¬ÈÏäÖÈ¾×ÅÉ«Æ÷µÄ´úÂë
+// é»˜è®¤æ¸²æŸ“ç€è‰²å™¨çš„ä»£ç 
 const char* vertexShaderCode = R"(#version 330 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
@@ -112,7 +112,7 @@ void main()
 FoxShaderProgram::FoxShaderProgram(QObject* parent)
 {
     m_shaderProgram = new QOpenGLShaderProgram(parent);
-	// Ìí¼ÓÄ¬ÈÏµÄ¶¥µã×ÅÉ«Æ÷
+	// æ·»åŠ é»˜è®¤çš„é¡¶ç‚¹ç€è‰²å™¨
     m_shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderCode);
     m_shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShadeCode);
     m_shaderProgram->link();
@@ -144,7 +144,7 @@ void FoxShaderProgram::shaderRelease()
 void FoxShaderProgram::setObjectColor(float r, float g, float b, float alpha)
 {
     m_shaderProgram->bind();
-    // ÉèÖÃÄ£ÐÍÑÕÉ«
+    // è®¾ç½®æ¨¡åž‹é¢œè‰²
     m_shaderProgram->setUniformValue("objectColor", r, g, b, alpha);
     
 }
@@ -152,7 +152,7 @@ void FoxShaderProgram::setObjectColor(float r, float g, float b, float alpha)
 void FoxShaderProgram::setMatrix4x4(QMatrix4x4& projection, QMatrix4x4& view, QMatrix4x4& model)
 {
     m_shaderProgram->bind();
-    // ÉèÖÃÍ¶Ó°¾ØÕó ÊÓÍ¼¾ØÕó Ä£ÐÍ¾ØÕó
+    // è®¾ç½®æŠ•å½±çŸ©é˜µ è§†å›¾çŸ©é˜µ æ¨¡åž‹çŸ©é˜µ
     m_shaderProgram->setUniformValue("projection", projection);
     m_shaderProgram->setUniformValue("view", view);
     m_shaderProgram->setUniformValue("model", model);
@@ -162,7 +162,7 @@ void FoxShaderProgram::setMatrix4x4(QMatrix4x4& projection, QMatrix4x4& view, QM
 void FoxShaderProgram::setUseMaterial(bool useMaterial = false)
 {
     m_shaderProgram->bind();
-    // ÉèÖÃÊÇ·ñÊ¹ÓÃ²ÄÖÊ
+    // è®¾ç½®æ˜¯å¦ä½¿ç”¨æè´¨
     m_shaderProgram->setUniformValue("useMaterial", useMaterial);
     m_shaderProgram->setUniformValue("material.specular", QVector3D(0.5f, 0.5f, 0.5f));
     m_shaderProgram->setUniformValue("material.shininess", 32.0f);
@@ -177,9 +177,9 @@ void FoxShaderProgram::setMaterialPath(const QString& texturePath)
 
 void FoxShaderProgram::initTexture()
 {
-    // ÕâÀïÓ¦¸Ã·µ»ØÒì³£
+    // è¿™é‡Œåº”è¯¥è¿”å›žå¼‚å¸¸
     if (m_texturePath.isEmpty()) return;
-    // ³õÊ¼»¯ÎÆÀí
+    // åˆå§‹åŒ–çº¹ç†
     m_texture = new QOpenGLTexture(QImage(m_texturePath).mirrored());
     m_texture->setMinMagFilters(QOpenGLTexture::LinearMipMapLinear, QOpenGLTexture::Linear);
     m_texture->setWrapMode(QOpenGLTexture::DirectionS, QOpenGLTexture::Repeat);
@@ -194,7 +194,7 @@ void FoxShaderProgram::textureBind()
 void FoxShaderProgram::setLighting(std::shared_ptr<FoxLighting> lighting)
 {
     m_shaderProgram->bind();
-    // Í¨¹ýµÆ¹âÀà¶ÔÏóÉèÖÃµÆ¹âÊôÐÔ
+    // é€šè¿‡ç¯å…‰ç±»å¯¹è±¡è®¾ç½®ç¯å…‰å±žæ€§
     m_shaderProgram->setUniformValue("light.position", lighting->getPosition());
     m_shaderProgram->setUniformValue("light.color", lighting->getLightingColor());
     m_shaderProgram->setUniformValue("light.ambient", lighting->getAmbient());
@@ -220,12 +220,12 @@ void FoxShaderProgram::useShaderProgram(bool useMaterial,QVector3D& viewPosition
 {
     m_shaderProgram->bind();
     m_shaderProgram->setUniformValue("useMaterial", useMaterial);
-    // ÎïÌåÑÕÉ«
+    // ç‰©ä½“é¢œè‰²
     m_shaderProgram->setUniformValue("objectColor", m_objectColor[0], m_objectColor[1], m_objectColor[2], m_objectColor[3]);
 
     // ------------------------------------------------
     // 2024-01-16
-    // ³¡¾°ÖÐµÆ¹ÜµÄÊôÐÔ µÈÏÂ½«ÏÂÃæµÄ¶«Î÷¶¼·â×°µ½µÆ¹âÀàÖÐ
+    // åœºæ™¯ä¸­ç¯ç®¡çš„å±žæ€§ ç­‰ä¸‹å°†ä¸‹é¢çš„ä¸œè¥¿éƒ½å°è£…åˆ°ç¯å…‰ç±»ä¸­
     // ------------------------------------------------
     
     m_shaderProgram->setUniformValue("light.position", QVector3D(5.0f, 10.0f, 30.0f));
@@ -237,16 +237,16 @@ void FoxShaderProgram::useShaderProgram(bool useMaterial,QVector3D& viewPosition
 
     // ------------------------------------------------
     // 2024-01-16
-    // ÉèÖÃ²ÄÖÊ ºóÃæ¿´¿´Òª²»Òª¶ÀÁ¢³öÒ»¸öfoxTextureÀàÔÚ¹ÜÀíÎÆÀí
+    // è®¾ç½®æè´¨ åŽé¢çœ‹çœ‹è¦ä¸è¦ç‹¬ç«‹å‡ºä¸€ä¸ªfoxTextureç±»åœ¨ç®¡ç†çº¹ç†
     // ------------------------------------------------
     //m_shaderProgram->setUniformValue("material.specular", QVector3D(0.5f, 0.5f, 0.5f));
     //m_shaderProgram->setUniformValue("material.shininess", 64.0f);
 
-    // ÉèÖÃ¹Û²ìÏòÁ¿
+    // è®¾ç½®è§‚å¯Ÿå‘é‡
     QVector3D viewPos = viewPosition;
     m_shaderProgram->setUniformValue("viewPos", viewPos);
 
-    // ½«¾ØÕó´«Èë×ÅÉ«Æ÷³ÌÐòµ±ÖÐ
+    // å°†çŸ©é˜µä¼ å…¥ç€è‰²å™¨ç¨‹åºå½“ä¸­
     m_shaderProgram->setUniformValue("projection", projection);
     m_shaderProgram->setUniformValue("view", view);
     m_shaderProgram->setUniformValue("model", model);

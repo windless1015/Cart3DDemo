@@ -66,6 +66,10 @@ private slots:
 
     void slotsAbout();
 
+    void slotsCoordinate_System();
+    void slotsGrid();
+
+
 private:
     // 初始化滑块
     void initAlphaSlider();

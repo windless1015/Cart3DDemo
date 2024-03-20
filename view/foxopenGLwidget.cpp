@@ -102,6 +102,7 @@ void FoxOpenGLWidget::openAttachmentFilePath(const QString& path, QVector3D& qv3
 	actor->setColor(1.0f, 0.0f, 0.0f);//设置红色
 
 
+
 	// 应用矩阵变换
 	QMatrix4x4 transformMatrix;
 	transformMatrix.setToIdentity(); // 先将变换矩阵重置为单位矩阵
@@ -435,6 +436,24 @@ void FoxOpenGLWidget::initializeGL()
 	//OpenMesh::IO::write_mesh(mesh, "E:\\3D\\TestData\\testData\\test\\pipe.stl");
 
 
+
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f); // Dark background
+
+	// Shader setup
+	gridProgram = new QOpenGLShaderProgram(this);
+	gridProgram->addShaderFromSourceCode(QOpenGLShader::Vertex,
+		"attribute vec2 position;\n"
+		"void main() {\n"
+		"  gl_Position = vec4(position, 0.0, 1.0);\n"
+		"}");
+	gridProgram->addShaderFromSourceCode(QOpenGLShader::Fragment,
+		"void main() {\n"
+		"  gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);\n"
+		"}");
+	gridProgram->link();
+
+	// Generate grid vertices
+	//generateGridVertices(10, 10); // 10x10 grid
 }
 
 // 窗口改变时执行
@@ -470,8 +489,52 @@ void FoxOpenGLWidget::paintGL()
 	// 混合方程设置透明度
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	m_renderer->renderer();
+
+
+
+
+	//glBegin(GL_LINES);
+	//glColor3f(1.0f, 1.0f, 1.0f); // 设置线条颜色为白色
+
+	//// 绘制网格
+	//int gridSize = 100; // 定义网格大小
+	//for (int i = -gridSize; i <= gridSize; ++i) {
+	//	// 垂直线
+	//	glVertex2f(i, -gridSize);
+	//	glVertex2f(i, gridSize);
+	//	// 水平线
+	//	glVertex2f(-gridSize, i);
+	//	glVertex2f(gridSize, i);
+	//}
+
+	//glEnd();
+
+	gridProgram->bind();
+	// Assuming gridVertices is a QVector<QVector2D> filled with grid vertices
+	gridProgram->enableAttributeArray(0);
+	gridProgram->setAttributeArray(0, GL_FLOAT, gridVertices.data(), 2);
+	glDrawArrays(GL_LINES, 0, gridVertices.size());
+	gridProgram->disableAttributeArray(0);
+	gridProgram->release();
 }
 
+void FoxOpenGLWidget::generateGridVertices(int rows, int cols) {
+	float rowStep = 2.0f / rows;
+	float colStep = 2.0f / cols;
+
+	for (int i = 0; i <= rows; ++i) {
+		float y = -1.0f + i * rowStep;
+		gridVertices.push_back(QVector2D(-1.0f, y));
+		gridVertices.push_back(QVector2D(1.0f, y));
+	}
+
+	for (int i = 0; i <= cols; ++i) {
+		float x = -1.0f + i * colStep;
+		gridVertices.push_back(QVector2D(x, -1.0f));
+		gridVertices.push_back(QVector2D(x, 1.0f));
+	}
+	update();
+}
 
 void FoxOpenGLWidget::mousePressEvent(QMouseEvent* event)
 {
@@ -490,7 +553,7 @@ void FoxOpenGLWidget::mousePressEvent(QMouseEvent* event)
 		m_isPressMouseMiddle = true;
 	}
 
-	//单击 
+	//单击,这里也很重要,不可以注释掉
 	QPoint p_ab = event->pos();
 	// 如果是鼠标左键按下
 	if (event->button() == Qt::LeftButton)
@@ -533,9 +596,9 @@ void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 			QPoint p_ab = event->pos();
 			translate_point(p_ab); // 坐标系转换 
 			
-			QPoint sub_point = p_ab - press_position;
+			QPoint sub_point = (p_ab - press_position);
 			qDebug() << p_ab << "-" << press_position << "=" << sub_point;
-			press_position = p_ab;
+			press_position = p_ab;//以前就是因为没更新这个,所以才胡乱转动
 			// 计算鼠标移动的角度
 			float angle = qSqrt(qPow(sub_point.x(), 2) + qPow(sub_point.y(), 2)) / 5;
 
@@ -550,14 +613,40 @@ void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 
 			// 根据旋转轴和角度创建四元数
 			QQuaternion rotationQuat = QQuaternion::fromAxisAndAngle(rotationAxis, angle);
+			//QQuaternion rotationQuat1 = QQuaternion::fromAxisAndAngle(rotationAxis, angle);
+			
 
 
+			/******************************************************************************************************************/
+			/********
+			* 这个slerp没啥用,目前我是没有用到的,如果你日后想用,
+			* 可以直接在遍历中使用actor->setModelRotate(m_rotateQuat);
+			********/
+			//// Assuming m_rotateQuat is the current rotation quaternion and rotationQuat is the target rotation quaternion
 
+			//// Calculate the intermediate rotation quaternion using slerp
+			//float t = 0.9; // Adjust this value for the desired interpolation speed
+			//QQuaternion intermediateQuat = QQuaternion::slerp(m_rotateQuat, rotationQuat, t);
+
+			//// Update the current rotation quaternion to the interpolated quaternion
+			//m_rotateQuat = intermediateQuat;
+			/******************************************************************************************************************/
+
+
+			// Apply the interpolated rotation to each model
 			//m_renderer->getActors()[0]->setModelRotate(rotationQuat);
 			// 对每个模型进行旋转
 			for (auto& actor : m_renderer->getActors()) {
+				//actor->setModelRotate(m_rotateQuat);
 				actor->setModelRotate(rotationQuat);
 			}
+
+
+			/***
+			* 目前这效果已经相当不错了.
+			* 前端网页和qt的页面布局一模一样,所以我更加肯定了qt就是前端的一种
+			* 是否还有更好的优化?目前没有,坐标转换正常,着色器正常
+			*******/
 			
 		}
 
