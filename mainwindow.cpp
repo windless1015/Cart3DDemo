@@ -314,9 +314,10 @@ void MainWindow::slotsCoordinate_System()
     QString fileName_Y = "../YTranslation.stl";
     QString fileName_Z = "../ZTranslation.stl";
 
-    m_foxOpenGLWidget->openAttachmentFilePath(fileName_X, QVector3D(0, 0, 0));
-    m_foxOpenGLWidget->openAttachmentFilePath(fileName_Y, QVector3D(0, 0, 0));
-    m_foxOpenGLWidget->openAttachmentFilePath(fileName_Z, QVector3D(0, 0, 0));
+    //就是右手坐标系的样子
+    m_foxOpenGLWidget->openAttachmentFilePath(fileName_X, QVector3D(-60, -45, 0), QVector3D(1.0f,0.0f,0.0f));//red
+    m_foxOpenGLWidget->openAttachmentFilePath(fileName_Y, QVector3D(-60, -45, 0), QVector3D(0.0f,1.0f,0.0f));//green
+    m_foxOpenGLWidget->openAttachmentFilePath(fileName_Z, QVector3D(-60, -45, 0), QVector3D(0.0f,0.0f,1.0f));//blue
 
 }
 

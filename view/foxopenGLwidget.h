@@ -50,6 +50,8 @@ public:
 
     //读取附件文件,并移动到指定位置
     void FoxOpenGLWidget::openAttachmentFilePath(const QString& path, QVector3D& qv3d);
+    //重载一下,把颜色传进去
+    void FoxOpenGLWidget::openAttachmentFilePath(const QString& path, QVector3D& qv3d, QVector3D color);
 
     // 读取文件
     void openMeshFilePath(const QString& path);
@@ -79,6 +81,8 @@ public:
 
 
     void generateGridVertices(int rows, int cols);
+
+    QVector3D toSphereCoords(int x, int y, int width, int height);
 
     // 窗口的OpenGL事件
 protected:
@@ -180,5 +184,13 @@ private:
 
     QOpenGLShaderProgram* gridProgram;
     QVector<QVector2D> gridVertices; // Store grid vertices
+
+
+
+
+    QQuaternion currentRotation; // 当前旋转状态
+    QQuaternion lastRotation;    // 上一次鼠标释放时的旋转状态
+    QPoint lastMousePos;         // 上一次鼠标位置
+    bool m_isPressMouseRight;
 };
 

@@ -66,8 +66,8 @@ private slots:
 
     void slotsAbout();
 
-    void slotsCoordinate_System();
-    void slotsGrid();
+    void slotsCoordinate_System();//坐标系
+    void slotsGrid();//网格
 
 
 private:
