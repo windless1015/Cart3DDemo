@@ -716,11 +716,39 @@ void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 		//QVector3D rotationAxis(0.0f, 0.0f, 1.0f);
 
 		// 计算旋转轴
-		QVector3D rotationAxis = QVector3D(-sub_point.y(), sub_point.x(), 0.0).normalized();
+		QVector3D rotationAxis;
+		QQuaternion rotationQuat;
+		float flag = sub_point.y();
+		if (flag<0)
+		{
+			flag = -flag;
+		}
 
-		// 根据旋转轴和角度创建四元数
-		QQuaternion rotationQuat = QQuaternion::fromAxisAndAngle(rotationAxis, angle);
-						
+		if (flag < 0.5) {
+			//
+			 
+			rotationAxis[0] = 0.0f;
+			rotationAxis[1] = 0.0f;
+			if (sub_point.x() < 0)
+			{
+				rotationAxis[2] = 1.0f;
+			}
+			else
+			{
+				rotationAxis[2] = -1.0f;
+			}
+
+   
+
+			// 根据旋转轴和角度创建四元数
+			 rotationQuat = QQuaternion::fromAxisAndAngle(rotationAxis, angle);
+		}
+		else{
+			rotationAxis = QVector3D(-sub_point.y(), sub_point.x(), 0.0).normalized();
+
+			// 根据旋转轴和角度创建四元数
+			rotationQuat = QQuaternion::fromAxisAndAngle(rotationAxis, angle);
+		}				
 
 
 		/******************************************************************************************************************/
