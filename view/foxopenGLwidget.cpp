@@ -28,6 +28,10 @@
 
 using namespace OpenMesh;
 
+//  静态成员变量不拘束于任何一个成员函数
+//  在类定义外初始化静态成员变量
+std::string FoxOpenGLWidget::rotateMode = "ClassMode";
+
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) :QOpenGLWidget(parent)
 {
 	m_meshIsVisible = true;
@@ -359,7 +363,28 @@ void FoxOpenGLWidget::setActorAlpha(float alpha)
 	update();
 }
 
+void FoxOpenGLWidget::translate_point_standard(QPoint& p_ab)
+{
+	// this->width() 表示视口的宽度，由于视口宽高一样，
+	// 所以点(this->width(), this->height() )就是视口的中心点，即旋转中心。
+	//float x = p_ab.x() - this->width() / 2.0;
+	//float y = -(p_ab.y() - this->height() / 2.0);
+	int x = (p_ab.x() - this->width() / 2.0);
+	int y = -(p_ab.y() - this->height() / 2.0);
+	qDebug() << "==================================";
+	qDebug() << "p_ab.x():" << p_ab.x() << ",p_ab.y():" << p_ab.y();
+	qDebug() << x <<"," << y;
+	qDebug() << "==================================";
 
+	p_ab.setX(x);
+	p_ab.setY(y);
+}
+
+void FoxOpenGLWidget::translate_point(float& x, float& y)
+{
+	x = (x - this->width() / 2.0)/ this->width() / 2.0;
+	y = -(y - this->height() / 2.0)/ this->height() / 2.0;
+}
 
 
 void FoxOpenGLWidget::translate_point(QPoint& p_ab)
@@ -368,6 +393,12 @@ void FoxOpenGLWidget::translate_point(QPoint& p_ab)
 	// 所以点(this->width(), this->height() )就是视口的中心点，即旋转中心。
 	int x = p_ab.x() - this->width() / 2;
 	int y = -(p_ab.y() - this->height() / 2);
+	/*float x = (p_ab.x() - this->width() / 2.0)/ this->width() / 2.0;
+	float y = -(p_ab.y() - this->height() / 2.0)/ this->height() / 2.0;*/
+	//qDebug() << "==================================";
+	//qDebug() << x <<"," << y;
+	//qDebug() << x/ this->width()/2.0 << "," << y/ this->height()/2.0;
+	//qDebug() << "==================================";
 
 	p_ab.setX(x);
 	p_ab.setY(y);
@@ -375,8 +406,33 @@ void FoxOpenGLWidget::translate_point(QPoint& p_ab)
 
 void FoxOpenGLWidget::setPressPosition(QPoint p_ab)
 {
-	translate_point(p_ab);
+	if (FoxOpenGLWidget::rotateMode == "ClassMode") {
+		translate_point(p_ab);
+	}
+	else if (FoxOpenGLWidget::rotateMode == "ArcBallMode") {
+		translate_point_standard(p_ab);
+	}
 	press_position = p_ab;
+}
+
+QVector3D FoxOpenGLWidget::mapToSphere(const QPoint& point, float screenWidth, float screenHeight)
+{
+	float x = point.x() * 1.0f ;
+	float y = point.y() * 1.0f ;
+	float z = 0.0f;
+	float length = x  + y ;
+	qDebug() << "x:" << x << ",y:" << y<<"length:"<<length;
+	if (length > 1.0f) {
+		float norm = 1.0f / length;
+		x *= norm;
+		y *= norm;
+		z = 0.0f;
+	}
+	else {
+		z = 1.0f - length;
+	}
+
+	return QVector3D(x, y, z);
 }
 
 void FoxOpenGLWidget::initializeGL()
@@ -625,7 +681,7 @@ void FoxOpenGLWidget::mousePressEvent(QMouseEvent* event)
 	}
 
 
-	// 如果是鼠标左键按下
+	// 如果是鼠标右键按下
 	if (event->button() == Qt::RightButton)
 	{
 		m_isPressMouseRight = true;
@@ -638,6 +694,20 @@ void FoxOpenGLWidget::mousePressEvent(QMouseEvent* event)
 	rotationAxis[1] = 1.0f;
 	rotationAxis[2] = 0.0f;*/
 
+	//arcball.onMousePressed(event,this->width(), this->height());
+	if (event->button() == Qt::LeftButton)
+	{
+		translate_point_standard(p_ab);
+		//qDebug() << "!!!!!!!!!!!!!!!!!!p_ab.x():" << p_ab.x() << ",p_ab.y():" << p_ab.y();
+		start = mapToSphere(p_ab, this->width(), this->height());
+	}
+
+	if (event->button() == Qt::LeftButton)
+	{
+		press_x = event->x();
+		press_y = event->y();
+		translate_point(press_x, press_y);
+	}
 }
 
 
@@ -683,50 +753,112 @@ void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 	qDebug() << "mouseMoveEvent";
 	if (m_renderer->getActors().size() == 0) return;
 	event->accept();
-	// 如果按下的是左键就旋转
-	if (m_isPressMouseLeft) {
-		//qDebug() << "mouseMoveEvent--m_leftMoveMousePos:[" << event->pos() << "]";
-		//QVector2D diff = QVector2D(event->pos()) - QVector2D(m_leftMoveMousePos);
-		//qDebug() << "mouseMoveEvent--m_leftMoveMousePos:["<< diff << "]";
 
-		/*float angle = 2.0f;
-		m_leftMoveMousePos = event->pos();
-		QVector3D n = QVector3D(diff.y(), diff.x(), 0.0f).normalized();
-		m_rotateAxis = (m_rotateAxis + n).normalized();
-		m_rotateQuat = QQuaternion::fromAxisAndAngle(m_rotateAxis, angle)* m_rotateQuat;
-		for (auto& actor : m_renderer->getActors()) {
-			actor->setModelRotate(m_rotateQuat);
-		}*/
-		
-		//如何正确完成模型的旋转?
+	if(FoxOpenGLWidget::getRotateMode() == "ClassMode"){
+		// 如果按下的是左键就旋转
+		if (m_isPressMouseLeft) {
+			//qDebug() << "mouseMoveEvent--m_leftMoveMousePos:[" << event->pos() << "]";
+			//QVector2D diff = QVector2D(event->pos()) - QVector2D(m_leftMoveMousePos);
+			//qDebug() << "mouseMoveEvent--m_leftMoveMousePos:["<< diff << "]";
 
-		QPoint p_ab = event->pos();
-		translate_point(p_ab); // 坐标系转换 
-			
-		QPoint sub_point = (p_ab - press_position);
-		qDebug() << p_ab << "-" << press_position << "=" << sub_point;
-		press_position = p_ab;//以前就是因为没更新这个,所以才胡乱转动
-		// 计算鼠标移动的角度
-		float angle = qSqrt(qPow(sub_point.x(), 2) + qPow(sub_point.y(), 2)) / 5;
+			/*float angle = 2.0f;
+			m_leftMoveMousePos = event->pos();
+			QVector3D n = QVector3D(diff.y(), diff.x(), 0.0f).normalized();
+			m_rotateAxis = (m_rotateAxis + n).normalized();
+			m_rotateQuat = QQuaternion::fromAxisAndAngle(m_rotateAxis, angle)* m_rotateQuat;
+			for (auto& actor : m_renderer->getActors()) {
+				actor->setModelRotate(m_rotateQuat);
+			}*/
 
-		// 固定旋转轴，例如围绕Z轴旋转
-		//QVector3D rotationAxis(0.0f, 0.0f, 1.0f);
-		//QVector3D rotationAxis(1.0f, 0.0f, 0.0f);//x
-		//QVector3D rotationAxis(0.0f, 1.0f, 0.0f);//y
-		//QVector3D rotationAxis(0.0f, 0.0f, 1.0f);
+			//如何正确完成模型的旋转?
 
-		// 计算旋转轴
-		QVector3D rotationAxis;
-		QQuaternion rotationQuat;
-		float flag = sub_point.y();
-		if (flag<0)
-		{
-			flag = -flag;
+			QPoint p_ab = event->pos();
+			translate_point(p_ab); // 坐标系转换 
+
+			QPoint sub_point = (p_ab - press_position);
+			qDebug() << p_ab << "-" << press_position << "=" << sub_point;
+			press_position = p_ab;//以前就是因为没更新这个,所以才胡乱转动
+			// 计算鼠标移动的角度
+			float angle = qSqrt(qPow(sub_point.x(), 2) + qPow(sub_point.y(), 2)) / 5;
+
+			// 固定旋转轴，例如围绕Z轴旋转
+			//QVector3D rotationAxis(0.0f, 0.0f, 1.0f);
+			//QVector3D rotationAxis(1.0f, 0.0f, 0.0f);//x
+			//QVector3D rotationAxis(0.0f, 1.0f, 0.0f);//y
+			//QVector3D rotationAxis(0.0f, 0.0f, 1.0f);
+
+			// 计算旋转轴
+			QVector3D rotationAxis;
+			QQuaternion rotationQuat;
+			rotationAxis = QVector3D(-sub_point.y(), sub_point.x(), 0.0).normalized();
+			// 根据旋转轴和角度创建四元数
+			rotationQuat = QQuaternion::fromAxisAndAngle(rotationAxis, angle);
+			/******************************************************************************************************************/
+			/********
+			* 这个slerp没啥用,目前我是没有用到的,如果你日后想用,
+			* 可以直接在遍历中使用actor->setModelRotate(m_rotateQuat);
+			********/
+			//// Assuming m_rotateQuat is the current rotation quaternion and rotationQuat is the target rotation quaternion
+
+			//// Calculate the intermediate rotation quaternion using slerp
+			//float t = 0.9; // Adjust this value for the desired interpolation speed
+			//QQuaternion intermediateQuat = QQuaternion::slerp(m_rotateQuat, rotationQuat, t);
+
+			//// Update the current rotation quaternion to the interpolated quaternion
+			//m_rotateQuat = intermediateQuat;
+			/******************************************************************************************************************/
+
+
+			// Apply the interpolated rotation to each model
+			//m_renderer->getActors()[0]->setModelRotate(rotationQuat);
+			// 对每个模型进行旋转
+			for (auto& actor : m_renderer->getActors()) {
+				//actor->setModelRotate(m_rotateQuat);
+				actor->setModelRotate(rotationQuat);
+			}
+
+
+			/****
+			* 以下为测试,可直接删掉
+			***/
+			/****************测试开始*********************/
+			/*float test_x;
+			float test_y;
+			test_x = (event->x() - this->width() / 2.0f);
+			test_y = -(event->y() - this->height() / 2.0f);
+			qDebug() << QString::fromLocal8Bit("坐标圆形转换:") << test_x << "," << test_y;
+			test_x = test_x / this->width() / 2.0f;
+			test_y = test_y / this->height() / 2.0f;
+			qDebug() << QString::fromLocal8Bit("标准化坐标:") << test_x << "," << test_y;*/
+			/****************测试结束*********************/
+
+			/***
+			* 目前这效果已经相当不错了.
+			* 前端网页和qt的页面布局一模一样,所以我更加肯定了qt就是前端的一种
+			* 是否还有更好的优化?目前没有,坐标转换正常,着色器正常
+			*******/
 		}
 
-		if (flag < 0.5) {
-			//
-			 
+
+		if (m_isPressMouseRight)
+		{
+
+			//如何正确完成模型的旋转?
+			QPoint p_ab = event->pos();
+			translate_point(p_ab); // 坐标系转换 
+
+			QPoint sub_point = (p_ab - press_position);
+			qDebug() << p_ab << "-" << press_position << "=" << sub_point;
+			press_position = p_ab;//以前就是因为没更新这个,所以才胡乱转动
+			// 计算鼠标移动的角度
+			float angle = qSqrt(qPow(sub_point.x(), 2) + qPow(sub_point.y(), 2)) / 5;
+
+			// 固定旋转轴，例如围绕Z轴旋转
+			//QVector3D rotationAxis(0.0f, 0.0f, 1.0f);
+			//QVector3D rotationAxis(1.0f, 0.0f, 0.0f);//x
+			//QVector3D rotationAxis(0.0f, 1.0f, 0.0f);//y
+
+			QVector3D rotationAxis;
 			rotationAxis[0] = 0.0f;
 			rotationAxis[1] = 0.0f;
 			if (sub_point.x() < 0)
@@ -738,102 +870,102 @@ void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 				rotationAxis[2] = -1.0f;
 			}
 
-   
+
+			// 计算旋转轴
+			//QVector3D rotationAxis = QVector3D(-sub_point.y(), sub_point.x(), 0.0).normalized();
 
 			// 根据旋转轴和角度创建四元数
-			 rotationQuat = QQuaternion::fromAxisAndAngle(rotationAxis, angle);
+			QQuaternion rotationQuat = QQuaternion::fromAxisAndAngle(rotationAxis, angle);
+
+			// Apply the interpolated rotation to each model
+			// 对每个模型进行旋转
+			for (auto& actor : m_renderer->getActors()) {
+				//actor->setModelRotate(m_rotateQuat);
+				actor->setModelRotate(rotationQuat);
+			}
+
 		}
-		else{
-			rotationAxis = QVector3D(-sub_point.y(), sub_point.x(), 0.0).normalized();
-
-			// 根据旋转轴和角度创建四元数
-			rotationQuat = QQuaternion::fromAxisAndAngle(rotationAxis, angle);
-		}				
-
-
-		/******************************************************************************************************************/
-		/********
-		* 这个slerp没啥用,目前我是没有用到的,如果你日后想用,
-		* 可以直接在遍历中使用actor->setModelRotate(m_rotateQuat);
-		********/
-		//// Assuming m_rotateQuat is the current rotation quaternion and rotationQuat is the target rotation quaternion
-
-		//// Calculate the intermediate rotation quaternion using slerp
-		//float t = 0.9; // Adjust this value for the desired interpolation speed
-		//QQuaternion intermediateQuat = QQuaternion::slerp(m_rotateQuat, rotationQuat, t);
-
-		//// Update the current rotation quaternion to the interpolated quaternion
-		//m_rotateQuat = intermediateQuat;
-		/******************************************************************************************************************/
-
-
-		// Apply the interpolated rotation to each model
-		//m_renderer->getActors()[0]->setModelRotate(rotationQuat);
-		// 对每个模型进行旋转
-		for (auto& actor : m_renderer->getActors()) {
-			//actor->setModelRotate(m_rotateQuat);
-			actor->setModelRotate(rotationQuat);
-		}
-
-
-		/***
-		* 目前这效果已经相当不错了.
-		* 前端网页和qt的页面布局一模一样,所以我更加肯定了qt就是前端的一种
-		* 是否还有更好的优化?目前没有,坐标转换正常,着色器正常
-		*******/
 	}
-
-
-	if (m_isPressMouseRight)
-	{
-
-		//如何正确完成模型的旋转?
+	else if (FoxOpenGLWidget::getRotateMode() == "ArcBallMode") {
+		//弧形球算法
+		//Arcball.hpp算法有点效果了
+		/*if (event->buttons() & Qt::LeftButton) {
+			arcball.onMouseMoved(event, this->width(), this->height());
+			totalRotation = arcball.getRotation() * totalRotation;
+			
+			update();
+			for (auto& actor : m_renderer->getActors()) {
+				actor->setModelRotate(totalRotation);
+			}
+		}*/
+		//Arcball.hpp算法改进
 		QPoint p_ab = event->pos();
-		translate_point(p_ab); // 坐标系转换 
-
-		QPoint sub_point = (p_ab - press_position);
-		qDebug() << p_ab << "-" << press_position << "=" << sub_point;
-		press_position = p_ab;//以前就是因为没更新这个,所以才胡乱转动
-		// 计算鼠标移动的角度
-		float angle = qSqrt(qPow(sub_point.x(), 2) + qPow(sub_point.y(), 2)) / 5;
-
-		// 固定旋转轴，例如围绕Z轴旋转
-		//QVector3D rotationAxis(0.0f, 0.0f, 1.0f);
-		//QVector3D rotationAxis(1.0f, 0.0f, 0.0f);//x
-		//QVector3D rotationAxis(0.0f, 1.0f, 0.0f);//y
-
-		QVector3D rotationAxis;
-		rotationAxis[0] = 0.0f;
-		rotationAxis[1] = 0.0f;
-		if (sub_point.x()<0)
-		{
-			rotationAxis[2] = 1.0f;
-		}
-		else
-		{
-			rotationAxis[2] = -1.0f;
-		}
+		translate_point_standard(p_ab);
 		
-
-		// 计算旋转轴
-		//QVector3D rotationAxis = QVector3D(-sub_point.y(), sub_point.x(), 0.0).normalized();
-
-		// 根据旋转轴和角度创建四元数
-		QQuaternion rotationQuat = QQuaternion::fromAxisAndAngle(rotationAxis, angle);
-
-		// Apply the interpolated rotation to each model
-		// 对每个模型进行旋转
+		end = mapToSphere(p_ab, this->width(), this->height());
+		QQuaternion rotation = QQuaternion::rotationTo(start, end);// .normalized();
+		qDebug() << start;
+		qDebug() << end;
+		qDebug() << rotation;
+		start = mapToSphere(p_ab, this->width(), this->height());
+		
 		for (auto& actor : m_renderer->getActors()) {
-			//actor->setModelRotate(m_rotateQuat);
-			actor->setModelRotate(rotationQuat);
+			actor->setModelRotate(rotation);
 		}
+	}
+	else if (FoxOpenGLWidget::getRotateMode() == "SphereMode")
+	{
+		if (m_isPressMouseLeft) {
+			float current_x = event->x();
+			float current_y = event->y();
+			float current_z = 0.0f;
+			translate_point(current_x, current_y);
 
+			float length1 = press_x * press_x + press_y * press_y;
+			float length2 = current_x * current_x + current_y * current_y;
+			qDebug() << "::::::::::::::" << length1 << length2;
+			if (length1 <= 1 && length2 <= 1) {
+				press_z = std::sqrt(1 - length1);
+				current_z = std::sqrt(1 - length2);
+			}
+			else {
+				press_z = 0.0f;
+				current_z = 0.0f;
+			}
+
+			//求两个向量的内积
+			float s = press_x * current_x + press_y * current_y + press_z * current_z;
+
+			//求两个向量的外积
+			QVector3D v = {
+				press_y * current_z - press_z * current_y,
+				press_z * current_x - press_x * current_z,
+				press_x * current_y - press_y * current_x
+			};
+
+			QQuaternion q = {
+				s,
+				v
+			};
+			// 单位化四元数
+			q = q.normalized();
+
+			for (auto& actor : m_renderer->getActors()) {
+				actor->setModelRotate(q);
+			}
+
+			press_x = event->x();
+			press_y = event->y();
+			translate_point(press_x, press_y);
+		}
+	}
+	else if (FoxOpenGLWidget::getRotateMode() == "ClassModeAndRing") {
+		//还没添加信号与槽
 	}
 
-	// �ж��Ƿ��µ����м�
+
 	if (m_isPressMouseMiddle) {
 		if (m_firstMouse) {
-			// ����ǵ�һ�ΰ��¼�¼��ǰ��λ��
 			m_middleMoveMousePos = event->pos();
 			m_firstMouse = false;
 		}
@@ -843,7 +975,6 @@ void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 		float sensitivity = 0.2;
 		xoffset *= sensitivity;
 		yoffset *= sensitivity;
-		// ƽ��ģ��
 		//m_model.translate(QVector3D(-xoffset, yoffset, 0));
 		for (auto& actor : m_renderer->getActors()) {//middle key
 			actor->setModelTranslation(QVector3D(-xoffset, yoffset, 0));
@@ -866,11 +997,8 @@ void FoxOpenGLWidget::wheelEvent(QWheelEvent* event)
 		yoffset = speed;
 	if (yoffset < 0)
 		yoffset = -speed;
-	//m_camera->wheelScrollEvent(yoffset);
-	//m_zoom = m_camera->getCameraZoom();
-	//QMatrix4x4 projection;
-	//projection.perspective(m_zoom, (float)width() / (float)height(), 0.1f, 100.0f);
-	//m_projection = projection;
+
+
 	m_renderer->setCameraZoom(yoffset);
 	m_zoom = m_renderer->getCameraZoom();
 	for (auto& actor : m_renderer->getActors())

@@ -73,6 +73,8 @@ QMenuBar{
     <addaction name="actionTestComponent"/>
     <addaction name="action_Coordinate_System"/>
     <addaction name="action_grid"/>
+    <addaction name="action_add_ring"/>
+    <addaction name="action_CS_2"/>
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
@@ -80,11 +82,20 @@ QMenuBar{
     </property>
     <addaction name="actionAbout"/>
    </widget>
+   <widget class="QMenu" name="menu_3">
+    <property name="title">
+     <string>变换模式</string>
+    </property>
+    <addaction name="ClassicModeAction"/>
+    <addaction name="ArcBallAction"/>
+    <addaction name="actionsphere"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuMesh"/>
    <addaction name="menuRendering"/>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
+   <addaction name="menu_3"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
@@ -176,6 +187,31 @@ QMenuBar{
   <action name="action_grid">
    <property name="text">
     <string>添加网格</string>
+   </property>
+  </action>
+  <action name="ClassicModeAction">
+   <property name="text">
+    <string>经典模式</string>
+   </property>
+  </action>
+  <action name="ArcBallAction">
+   <property name="text">
+    <string>弧形球模式</string>
+   </property>
+  </action>
+  <action name="actionsphere">
+   <property name="text">
+    <string>sphere</string>
+   </property>
+  </action>
+  <action name="action_add_ring">
+   <property name="text">
+    <string>添加圆环</string>
+   </property>
+  </action>
+  <action name="action_CS_2">
+   <property name="text">
+    <string>添加坐标轴2</string>
    </property>
   </action>
  </widget>

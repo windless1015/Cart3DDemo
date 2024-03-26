@@ -76,8 +76,19 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::slotsAbout);
     connect(ui->action_Coordinate_System, &QAction::triggered, this, &MainWindow::slotsCoordinate_System);
     connect(ui->action_grid, &QAction::triggered, this, &MainWindow::slotsGrid);
+
+
+    connect(ui->ClassicModeAction, &QAction::triggered, this, &MainWindow::slots_Change_to_Classic_mode);
+    connect(ui->ArcBallAction, &QAction::triggered, this, &MainWindow::slots_Change_to_ArcBall_mode);
+    connect(ui->actionsphere, &QAction::triggered, this, &MainWindow::slots_Change_to_Sphere_mode);
+       
+    //圆环
+    //action_add_ring
+    connect(ui->action_add_ring, &QAction::triggered, this, &MainWindow::slots_Add_circular_ring);
+    // 坐标轴
+    //action_CS_2
+    connect(ui->action_CS_2, &QAction::triggered, this, &MainWindow::slots_Change_Add_Axis);
     
-        
 }
 
 MainWindow::~MainWindow()
@@ -324,6 +335,71 @@ void MainWindow::slotsCoordinate_System()
 void MainWindow::slotsGrid()
 {
     m_foxOpenGLWidget->generateGridVertices(100, 100);
+}
+
+void MainWindow::slots_Change_to_Classic_mode()
+{
+    std::string Mode = "ClassMode";
+    FoxOpenGLWidget::setRotateMode(Mode);
+}
+
+void MainWindow::slots_Change_to_ArcBall_mode()
+{
+    std::string Mode = "ArcBallMode";
+    FoxOpenGLWidget::setRotateMode(Mode);
+}
+
+void MainWindow::slots_Change_to_Sphere_mode()
+{
+    std::string Mode = "SphereMode";
+    FoxOpenGLWidget::setRotateMode(Mode);
+}
+void drawRing(float cx, float cy, float cz, float radius, const QVector3D& axis, int segments) {
+    glPushMatrix(); // 保存当前的模型视图矩阵
+
+    // 将圆环移动到指定的中心位置
+    glTranslatef(cx, cy, cz);
+
+    // 如果需要，根据轴向旋转圆环
+    if (axis == QVector3D(1, 0, 0)) {
+        // 绕X轴旋转，不需要旋转
+    }
+    else if (axis == QVector3D(0, 1, 0)) {
+        // 绕Y轴旋转，将圆环旋转到正确的位置
+        glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+    }
+    else if (axis == QVector3D(0, 0, 1)) {
+        // 绕Z轴旋转，将圆环旋转到正确的位置
+        glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+    }
+
+    glBegin(GL_LINE_LOOP);
+    for (int i = 0; i < segments; ++i) {
+        float angle = 2.0f * M_PI * float(i) / float(segments);
+        float x = radius * cos(angle);
+        float y = radius * sin(angle);
+        glVertex3f(x, y, 0.0f); // Z is always 0 here, ring is in the XY plane
+    }
+    glEnd();
+
+    glPopMatrix(); // 恢复之前保存的模型视图矩阵
+}
+void MainWindow::slots_Add_circular_ring()
+{
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glColor3f(1.0, 1.0, 1.0); // 设置圆环颜色为白色
+
+    // 绘制三个互相垂直的圆环
+    drawRing(0.0, 0.0, 0.0, 1.0, QVector3D(1, 0, 0), 100); // 绕X轴
+    drawRing(0.0, 0.0, 0.0, 1.0, QVector3D(0, 1, 0), 100); // 绕Y轴
+    drawRing(0.0, 0.0, 0.0, 1.0, QVector3D(0, 0, 1), 100); // 绕Z轴
+
+
+}
+
+void MainWindow::slots_Change_Add_Axis()
+{
+
 }
 
 void MainWindow::initAlphaSlider()

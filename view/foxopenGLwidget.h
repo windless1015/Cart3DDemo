@@ -25,6 +25,7 @@
 
 
 #include "QMessageBox"
+#include "../Arcball.hpp"
 
 // test
 class FoxRenderer;
@@ -76,13 +77,25 @@ public:
      * @param p_ab 用于拟合平面的点集
      * @return 
      */
-    void translate_point(QPoint& p_ab);
+    void translate_point(QPoint& p_ab);//将qt坐标系转化为以平面中心为原点的坐标系
+    void translate_point(float& x, float& y);//直接就是标准化坐标[-1,1]
+    void translate_point_standard(QPoint& p_ab);//将qt坐标系转化为以平面中心为原点的坐标系,并转化为[-1,1]的标准坐标系
     void setPressPosition(QPoint p_ab);
+    QVector3D mapToSphere(const QPoint& point, float screenWidth, float screenHeight);
 
 
     void generateGridVertices(int rows, int cols);
 
     QVector3D toSphereCoords(int x, int y, int width, int height);
+
+    static void setRotateMode(std::string Mode)
+    {
+        rotateMode = Mode;
+    }
+    static std::string getRotateMode()
+    {
+        return rotateMode;
+    }
 
     // 窗口的OpenGL事件
 protected:
@@ -192,5 +205,19 @@ private:
     QQuaternion lastRotation;    // 上一次鼠标释放时的旋转状态
     QPoint lastMousePos;         // 上一次鼠标位置
     bool m_isPressMouseRight;
+
+    static std::string rotateMode;
+
+private:
+    //弧形球算法
+    Arcball arcball;
+    QQuaternion totalRotation;
+    //改进
+    QVector3D start, end;
+    QQuaternion rotation;
+    //再改进
+    float press_x;
+    float press_y;
+    float press_z;
 };
 

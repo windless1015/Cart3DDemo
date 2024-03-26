@@ -68,8 +68,11 @@ private slots:
 
     void slotsCoordinate_System();//坐标系
     void slotsGrid();//网格
-
-
+    void slots_Change_to_Classic_mode();
+    void slots_Change_to_ArcBall_mode();
+    void slots_Change_to_Sphere_mode();
+    void slots_Add_circular_ring();
+    void slots_Change_Add_Axis();
 private:
     // 初始化滑块
     void initAlphaSlider();
