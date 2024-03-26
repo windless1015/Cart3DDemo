@@ -40,6 +40,7 @@ MainWindow::MainWindow(QWidget* parent)
     setCentralWidget(m_foxOpenGLWidget);
 
     this->setWindowTitle("Cart3D_Demo");
+    slots_statusbar_text_show(QString::fromLocal8Bit("当前的旋转模式:ClassMode"));
 
     // 切割
     connect(ui->actionCutting, &QAction::triggered, this, &MainWindow::slotsCuttingMesh);
@@ -54,7 +55,7 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui->actionOpenMeshFile, &QAction::triggered, this, &MainWindow::slotsOpenMeshFile);
     // 使用纹理
     connect(ui->actionUseTexture, &QAction::triggered, this, &MainWindow::slotsUseTexture);
-    // 打开病例
+    // 打开1428...病例
     connect(ui->actionCaseTest1, &QAction::triggered, this, &MainWindow::slotsOpenCaseData);
     // 显示小球和边界线
     connect(ui->actionShowSphere, &QAction::triggered, this, &MainWindow::slotsShowSphere);
@@ -70,25 +71,30 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui->actionTestComponent, &QAction::triggered, this, &MainWindow::slotsAddTestComponent);
     
 
-
+    //隐适美的那个病例
     connect(ui->actionOpenTestData_2, &QAction::triggered, this, &MainWindow::slotsOpenInvisalignData);
 
+    //软件说明
     connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::slotsAbout);
+
+    /**
+     * @brief 添加坐标系
+     * @doubt 为何先加载病例再加载坐标系,坐标系不会消失,
+     * 但是,先加载坐标系再加载病例,坐标系便会消失?
+     */
     connect(ui->action_Coordinate_System, &QAction::triggered, this, &MainWindow::slotsCoordinate_System);
-    connect(ui->action_grid, &QAction::triggered, this, &MainWindow::slotsGrid);
 
 
     connect(ui->ClassicModeAction, &QAction::triggered, this, &MainWindow::slots_Change_to_Classic_mode);
     connect(ui->ArcBallAction, &QAction::triggered, this, &MainWindow::slots_Change_to_ArcBall_mode);
     connect(ui->actionsphere, &QAction::triggered, this, &MainWindow::slots_Change_to_Sphere_mode);
        
-    //圆环
-    //action_add_ring
-    connect(ui->action_add_ring, &QAction::triggered, this, &MainWindow::slots_Add_circular_ring);
     // 坐标轴
     //action_CS_2
     connect(ui->action_CS_2, &QAction::triggered, this, &MainWindow::slots_Change_Add_Axis);
-    
+
+    //QOpenGLWidget与Mainwindow状态栏的绑定
+    connect(m_foxOpenGLWidget, &FoxOpenGLWidget::statusbar_text, this, &MainWindow::slots_statusbar_text_show);
 }
 
 MainWindow::~MainWindow()
@@ -100,11 +106,13 @@ MainWindow::~MainWindow()
 
 void MainWindow::slotsCuttingMesh()
 {
+    slots_statusbar_text_show(QString::fromLocal8Bit("调用切割算法"));
     m_foxOpenGLWidget->cuttingMesh();
 }
 
 void MainWindow::slotsSetVisibleTooth()
 {
+    slots_statusbar_text_show(QString::fromLocal8Bit("设置牙齿的可见性"));
     if (!m_actionShowToothStatus) {
         ui->actionVisibleTooth->setText(QString::fromLocal8Bit("显示牙齿"));
         m_foxOpenGLWidget->hiddenMesh();
@@ -119,7 +127,7 @@ void MainWindow::slotsSetVisibleTooth()
 
 void MainWindow::slotsSetVisibleGingiva()
 {
-
+    slots_statusbar_text_show(QString::fromLocal8Bit("设置牙龈的可见性"));
 }
 
 void MainWindow::slotsOpenMeshFolder()
@@ -153,6 +161,7 @@ void MainWindow::slotsOpenMeshFile()
 
 void MainWindow::slotsUseTexture()
 {
+    slots_statusbar_text_show(QString::fromLocal8Bit("暂时只针对映射美模型进行纹理贴图..."));
     if (!m_actionUseTextureStatus)
     {
         ui->actionUseTexture->setText(QString::fromLocal8Bit("关闭纹理"));
@@ -197,6 +206,7 @@ void MainWindow::slotsOpenCaseData()
     */
 void MainWindow::slotsAddAttachment()
 {
+    slots_statusbar_text_show(QString::fromLocal8Bit("添加附件"));
     if (isLoading == false) {
         QMessageBox::information(nullptr, QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("请先加载病人牙齿"));
     }
@@ -228,6 +238,7 @@ void MainWindow::slotsAddAttachment()
 
 void MainWindow::slotsAddTestComponent()
 {
+    slots_statusbar_text_show(QString::fromLocal8Bit("在可执行文件目录下生成圆盘,直箭头和弯曲的箭头,但是还没有在widget上显示"));
     QMessageBox::information(nullptr, QString::fromLocal8Bit("Tips"), QString::fromLocal8Bit("生成圆盘,直箭头和弯曲的箭头"));
     //测试圆盘
     float radius_circle = 0.5; //圆的半径
@@ -253,7 +264,7 @@ void MainWindow::slotsAddTestComponent()
 
 void MainWindow::slotsShowSphere()
 {
-
+    slots_statusbar_text_show(QString::fromLocal8Bit("显示球体和边界线"));
     m_foxOpenGLWidget->showSphereAndLine();
 
 }
@@ -265,6 +276,7 @@ void MainWindow::slotsTest()
 
 void MainWindow::slotsSetAlpha(int value)
 {
+    slots_statusbar_text_show(QString::fromLocal8Bit("使用着色器对模型的透明度进行更改"));
     float alpha = (float)(value) / 100;
     QString text = "value: " + QString::number(alpha, 'f', 2);
     m_sliderValue->setText(text);
@@ -282,9 +294,15 @@ void MainWindow::slotsShow2DCrossSectionWidget()
 
 }
 
+void MainWindow::slots_statusbar_text_show(QString text)
+{
+    ui->statusbar->showMessage(text);
+}
+
 void MainWindow::slotsOpenInvisalignData()
 {
-    // ����Ŀ�����е�����100642730142856
+
+    slots_statusbar_text_show(QString::fromLocal8Bit("加载隐适美的病例"));
     //QString fileName_lower = ".\\caseData\\invisalignData\\DownArch\\m_CutGumPd0_0.stl";
     QString fileName_gum = ".\\caseData\\invisalignData\\DownArch\\m_CutGumPd0_14.stl";
 
@@ -311,16 +329,15 @@ void MainWindow::slotsOpenInvisalignData()
 
 void MainWindow::slotsAbout()
 {
+    slots_statusbar_text_show(QString::fromLocal8Bit("软件说明"));
     QMessageBox::aboutQt(nullptr, "About Qt");
 }
 
 void MainWindow::slotsCoordinate_System()
 {
+    slots_statusbar_text_show(QString::fromLocal8Bit("在左下角添加坐标系"));
     //QMessageBox::information(nullptr, "Tips", QString::fromLocal8Bit("即将来袭,敬请期待..."));
 
-    //    ../XTranslation.stl
-    //    ../YTranslation.stl
-    //    ../ZTranslation.stl
     QString fileName_X = "../XTranslation.stl";
     QString fileName_Y = "../YTranslation.stl";
     QString fileName_Z = "../ZTranslation.stl";
@@ -332,74 +349,31 @@ void MainWindow::slotsCoordinate_System()
 
 }
 
-void MainWindow::slotsGrid()
-{
-    m_foxOpenGLWidget->generateGridVertices(100, 100);
-}
-
 void MainWindow::slots_Change_to_Classic_mode()
 {
+    slots_statusbar_text_show(QString::fromLocal8Bit("当前的旋转模式:ClassMode"));
     std::string Mode = "ClassMode";
     FoxOpenGLWidget::setRotateMode(Mode);
 }
 
 void MainWindow::slots_Change_to_ArcBall_mode()
 {
+    slots_statusbar_text_show(QString::fromLocal8Bit("当前的旋转模式:ArcBallMode"));
     std::string Mode = "ArcBallMode";
     FoxOpenGLWidget::setRotateMode(Mode);
 }
 
 void MainWindow::slots_Change_to_Sphere_mode()
 {
+    slots_statusbar_text_show(QString::fromLocal8Bit("当前的旋转模式:SphereMode"));
     std::string Mode = "SphereMode";
     FoxOpenGLWidget::setRotateMode(Mode);
 }
-void drawRing(float cx, float cy, float cz, float radius, const QVector3D& axis, int segments) {
-    glPushMatrix(); // 保存当前的模型视图矩阵
 
-    // 将圆环移动到指定的中心位置
-    glTranslatef(cx, cy, cz);
-
-    // 如果需要，根据轴向旋转圆环
-    if (axis == QVector3D(1, 0, 0)) {
-        // 绕X轴旋转，不需要旋转
-    }
-    else if (axis == QVector3D(0, 1, 0)) {
-        // 绕Y轴旋转，将圆环旋转到正确的位置
-        glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
-    }
-    else if (axis == QVector3D(0, 0, 1)) {
-        // 绕Z轴旋转，将圆环旋转到正确的位置
-        glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-    }
-
-    glBegin(GL_LINE_LOOP);
-    for (int i = 0; i < segments; ++i) {
-        float angle = 2.0f * M_PI * float(i) / float(segments);
-        float x = radius * cos(angle);
-        float y = radius * sin(angle);
-        glVertex3f(x, y, 0.0f); // Z is always 0 here, ring is in the XY plane
-    }
-    glEnd();
-
-    glPopMatrix(); // 恢复之前保存的模型视图矩阵
-}
-void MainWindow::slots_Add_circular_ring()
-{
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glColor3f(1.0, 1.0, 1.0); // 设置圆环颜色为白色
-
-    // 绘制三个互相垂直的圆环
-    drawRing(0.0, 0.0, 0.0, 1.0, QVector3D(1, 0, 0), 100); // 绕X轴
-    drawRing(0.0, 0.0, 0.0, 1.0, QVector3D(0, 1, 0), 100); // 绕Y轴
-    drawRing(0.0, 0.0, 0.0, 1.0, QVector3D(0, 0, 1), 100); // 绕Z轴
-
-
-}
 
 void MainWindow::slots_Change_Add_Axis()
 {
-
+    slots_statusbar_text_show(QString::fromLocal8Bit("怎么使用qopengl绘制坐标系?而不是对模型的读取,暂时还没有想到..."));
 }
 
 void MainWindow::initAlphaSlider()

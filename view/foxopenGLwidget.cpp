@@ -26,6 +26,7 @@
 #include <QImage>
 #include <QOpenGLTexture>
 
+
 using namespace OpenMesh;
 
 //  静态成员变量不拘束于任何一个成员函数
@@ -143,10 +144,8 @@ void FoxOpenGLWidget::openAttachmentFilePath(const QString& path, QVector3D& qv3
 	//actor->setColor(0.5f, 0.5f, 0.5f);
 
 
-	//默认红色
-	actor->setColor(color[0], color[1], color[2]);//设置颜色
-
-
+	//设置颜色
+	actor->setColor(color[0], color[1], color[2]);
 
 	// 应用矩阵变换
 	QMatrix4x4 transformMatrix;
@@ -157,6 +156,8 @@ void FoxOpenGLWidget::openAttachmentFilePath(const QString& path, QVector3D& qv3
 
 	m_renderer->addActor(actor);
 	update();
+
+	doneCurrent();
 
 }
 
@@ -581,58 +582,73 @@ void FoxOpenGLWidget::paintGL()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	//Z缓冲(Z-buffer)，也被称为深度缓冲(Depth Buffer)
 	glEnable(GL_DEPTH_TEST); 
-	// 开启混合模式
-	glEnable(GL_BLEND);
-	// 混合方程设置透明度
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	m_renderer->renderer();
+	//// 开启混合模式
+	//glEnable(GL_BLEND);
+	//// 混合方程设置透明度
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//m_renderer->renderer();
 
 
-
-
-	//glBegin(GL_LINES);
-	//glColor3f(1.0f, 1.0f, 1.0f); // 设置线条颜色为白色
-
-	//// 绘制网格
-	//int gridSize = 100; // 定义网格大小
-	//for (int i = -gridSize; i <= gridSize; ++i) {
-	//	// 垂直线
-	//	glVertex2f(i, -gridSize);
-	//	glVertex2f(i, gridSize);
-	//	// 水平线
-	//	glVertex2f(-gridSize, i);
-	//	glVertex2f(gridSize, i);
-	//}
-
-	//glEnd();
-
-
-	//加了之后,病例1428刚加载进来就可以动了/////////////////////////////////////////////////////////////////
+	/**
+	 * @title 神奇的bug
+	 * @brief 这段代码本来是用来绘制网格的,但是这段代码没有起到实质的作用,后序由drawGrid函数全权接管了,
+	 * 但是神奇的是,当我加上这段代码时,142856病例直接加进来后便可以通过鼠标事件进行移动,否则鼠标事件就会失灵
+	 * 在鼠标事件失灵的情况下,你不得不先对模型进行分割操作,然后你才可以对模型的移动.
+	 * 可能受制于1650的芯片,4060的芯片便没有这样的问题,所以非常奇怪:加上下面的6行代码后,似乎代码的性能得到了巨大的优化,
+	 * 1650芯片的电脑也可以使用畅通无阻的使用鼠标事件去旋转,移动模型
+	 * @param nullptr
+	 * @return nullptr
+	 */
 	gridProgram->bind();
-	// Assuming gridVertices is a QVector<QVector2D> filled with grid vertices
 	gridProgram->enableAttributeArray(0);
 	gridProgram->setAttributeArray(0, GL_FLOAT, gridVertices.data(), 2);
 	glDrawArrays(GL_LINES, 0, gridVertices.size());
 	gridProgram->disableAttributeArray(0);
 	gridProgram->release();
+
+
+	// 绘制网格，且不受深度缓存的影响
+	glDisable(GL_DEPTH_TEST); // 禁用深度测试来绘制网格
+	// 绘制第一个圆环
+	//drawTorus(0.0, 0.0, 0.0, 1.0, 0.1);
+	// 绘制网格
+	drawGrid(100, 100);
+	glEnable(GL_DEPTH_TEST); // 再次启用深度测试
+	// 开启混合模式
+	glEnable(GL_BLEND);
+	// 混合方程设置透明度
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	// 在这里绘制其他模型，它们会在网格的上方
+	m_renderer->renderer();
+
+	
 }
 
-void FoxOpenGLWidget::generateGridVertices(int rows, int cols) {
+
+
+void FoxOpenGLWidget::drawGrid(int rows, int cols)
+{
 	float rowStep = 2.0f / rows;
 	float colStep = 2.0f / cols;
+	glColor3f(1.0, 1.0, 1.0); // 设置线条颜色为白色
 
+	// 绘制水平线
+	glBegin(GL_LINES);
 	for (int i = 0; i <= rows; ++i) {
 		float y = -1.0f + i * rowStep;
-		gridVertices.push_back(QVector2D(-1.0f, y));
-		gridVertices.push_back(QVector2D(1.0f, y));
+		glVertex2f(-1.0f, y);
+		glVertex2f(1.0f, y);
 	}
+	glEnd();
 
+	// 绘制垂直线
+	glBegin(GL_LINES);
 	for (int i = 0; i <= cols; ++i) {
 		float x = -1.0f + i * colStep;
-		gridVertices.push_back(QVector2D(x, -1.0f));
-		gridVertices.push_back(QVector2D(x, 1.0f));
+		glVertex2f(x, -1.0f);
+		glVertex2f(x, 1.0f);
 	}
-	update();
+	glEnd();
 }
 
 QVector3D FoxOpenGLWidget::toSphereCoords(int x, int y, int width, int height)
@@ -755,6 +771,9 @@ void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 	event->accept();
 
 	if(FoxOpenGLWidget::getRotateMode() == "ClassMode"){
+		emit statusbar_text(QString::fromLocal8Bit("完美的旋转算法"));
+		//QMessageBox::information(0, "tips", QString::fromLocal8Bit("完美的旋转算法"));
+		//ui->statusBar()->showMessage(text);
 		// 如果按下的是左键就旋转
 		if (m_isPressMouseLeft) {
 			//qDebug() << "mouseMoveEvent--m_leftMoveMousePos:[" << event->pos() << "]";
@@ -887,26 +906,15 @@ void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 		}
 	}
 	else if (FoxOpenGLWidget::getRotateMode() == "ArcBallMode") {
+		emit statusbar_text(QString::fromLocal8Bit("ArcBallMode算法有待完善"));
+		//QMessageBox::information(0,"tips",QString::fromLocal8Bit("ArcBallMode算法有待完善"));
 		//弧形球算法
-		//Arcball.hpp算法有点效果了
-		/*if (event->buttons() & Qt::LeftButton) {
-			arcball.onMouseMoved(event, this->width(), this->height());
-			totalRotation = arcball.getRotation() * totalRotation;
-			
-			update();
-			for (auto& actor : m_renderer->getActors()) {
-				actor->setModelRotate(totalRotation);
-			}
-		}*/
 		//Arcball.hpp算法改进
 		QPoint p_ab = event->pos();
 		translate_point_standard(p_ab);
 		
 		end = mapToSphere(p_ab, this->width(), this->height());
 		QQuaternion rotation = QQuaternion::rotationTo(start, end);// .normalized();
-		qDebug() << start;
-		qDebug() << end;
-		qDebug() << rotation;
 		start = mapToSphere(p_ab, this->width(), this->height());
 		
 		for (auto& actor : m_renderer->getActors()) {
@@ -915,6 +923,8 @@ void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 	}
 	else if (FoxOpenGLWidget::getRotateMode() == "SphereMode")
 	{
+		emit statusbar_text(QString::fromLocal8Bit("这个也是arc算法的一种,但是效果和ClassMode差不多,这个是用的向量的内积与外积"));
+		//QMessageBox::information(0, "tips", QString::fromLocal8Bit("这个应该是arc算法,但是效果差不多,这个是用的向量的内积与外积"));
 		if (m_isPressMouseLeft) {
 			float current_x = event->x();
 			float current_y = event->y();
@@ -960,7 +970,7 @@ void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 		}
 	}
 	else if (FoxOpenGLWidget::getRotateMode() == "ClassModeAndRing") {
-		//还没添加信号与槽
+		//还没添加信号与槽,ui界面也没有写
 	}
 
 

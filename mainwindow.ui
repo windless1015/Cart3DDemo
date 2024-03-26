@@ -71,9 +71,8 @@ QMenuBar{
     </property>
     <addaction name="actionAddAttachment"/>
     <addaction name="actionTestComponent"/>
+    <addaction name="separator"/>
     <addaction name="action_Coordinate_System"/>
-    <addaction name="action_grid"/>
-    <addaction name="action_add_ring"/>
     <addaction name="action_CS_2"/>
    </widget>
    <widget class="QMenu" name="menu_2">
@@ -184,11 +183,6 @@ QMenuBar{
     <string>添加坐标系</string>
    </property>
   </action>
-  <action name="action_grid">
-   <property name="text">
-    <string>添加网格</string>
-   </property>
-  </action>
   <action name="ClassicModeAction">
    <property name="text">
     <string>经典模式</string>
@@ -202,11 +196,6 @@ QMenuBar{
   <action name="actionsphere">
    <property name="text">
     <string>sphere</string>
-   </property>
-  </action>
-  <action name="action_add_ring">
-   <property name="text">
-    <string>添加圆环</string>
    </property>
   </action>
   <action name="action_CS_2">

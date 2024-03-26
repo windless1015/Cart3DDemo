@@ -51,7 +51,8 @@ private slots:
     // 显示横截面窗口
     void slotsShow2DCrossSectionWidget();
 
-
+    //状态栏的显示
+    void slots_statusbar_text_show(QString text);
 
     //wxn:
     //添加附件
@@ -66,12 +67,11 @@ private slots:
 
     void slotsAbout();
 
-    void slotsCoordinate_System();//坐标系
-    void slotsGrid();//网格
+    //坐标系
+    void slotsCoordinate_System();
     void slots_Change_to_Classic_mode();
     void slots_Change_to_ArcBall_mode();
     void slots_Change_to_Sphere_mode();
-    void slots_Add_circular_ring();
     void slots_Change_Add_Axis();
 private:
     // 初始化滑块

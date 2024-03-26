@@ -26,6 +26,7 @@
 
 #include "QMessageBox"
 #include "../Arcball.hpp"
+#include <QObject>
 
 // test
 class FoxRenderer;
@@ -37,8 +38,9 @@ class FoxLighting;
 class FoxMeshModel;
 class FoxShaderProgram;
 class FoxLineRenderer;
-class FoxOpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
+class FoxOpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions , public QObject
 {
+    Q_OBJECT
 
 public:
     FoxOpenGLWidget(QWidget* parent);
@@ -84,7 +86,7 @@ public:
     QVector3D mapToSphere(const QPoint& point, float screenWidth, float screenHeight);
 
 
-    void generateGridVertices(int rows, int cols);
+    void drawGrid(int rows, int cols);
 
     QVector3D toSphereCoords(int x, int y, int width, int height);
 
@@ -96,6 +98,35 @@ public:
     {
         return rotateMode;
     }
+
+    /**
+     * @brief 这只是绘制一个二维的圆环,可以直接在paintGL()中调用,但是我想要的是一个三维的圆环,
+     * 所以这个函数仅供参考,他并没有在代码中运行过,可以想想如何优化成三维的圆环?
+     * @example drawTorus(0.0, 0.0, 0.0, 1.0, 0.1);=>cz你给了非0值后,就绘制表屏幕外了,便不会显示什么东西.
+     * (0.0, 0.0, 0.0, 1.0, 0.1)该参数例子刚好可以显示一个铺满屏幕的二维圆环
+     * @param cx是圆环中心的X坐标，cy是Y坐标，而cz是Z坐标
+     * r:圆环的主半径，即圆环中心到圆环管道中心的距离可以理解为如果你从圆环的中心点向外画一条直线，这条线直到它触及圆环本身的长度。这个距离不包括圆环管道的厚度
+     * thickness:这个参数代表圆环管道的半径，也就是圆环的“厚度”
+     * @return nullptr
+     */
+    void drawTorus(float cx, float cy, float cz, float r, float thickness) {
+        int numSegments = 100; // 圆环的细分程度
+        float deltaAngle = 2.0f * M_PI / numSegments; // 计算每个段的角度
+        glBegin(GL_QUAD_STRIP);
+        for (int i = 0; i <= numSegments; ++i) {
+            float angle = i * deltaAngle;
+            float x = cos(angle);
+            float y = sin(angle);
+
+            // 外圈
+            glVertex3f(cx + (r + thickness) * x, cy + (r + thickness) * y, cz);
+            // 内圈
+            glVertex3f(cx + (r - thickness) * x, cy + (r - thickness) * y, cz);
+        }
+        glEnd();
+    }
+
+
 
     // 窗口的OpenGL事件
 protected:
@@ -199,8 +230,6 @@ private:
     QVector<QVector2D> gridVertices; // Store grid vertices
 
 
-
-
     QQuaternion currentRotation; // 当前旋转状态
     QQuaternion lastRotation;    // 上一次鼠标释放时的旋转状态
     QPoint lastMousePos;         // 上一次鼠标位置
@@ -219,5 +248,8 @@ private:
     float press_x;
     float press_y;
     float press_z;
+
+signals:
+    void statusbar_text(QString text);
 };
 
