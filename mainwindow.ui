@@ -75,6 +75,7 @@ QMenuBar{
     <addaction name="action_Coordinate_System"/>
     <addaction name="action_CS_2"/>
     <addaction name="action_CS_3"/>
+    <addaction name="actionDrawSpheresAndTorus"/>
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
@@ -225,6 +226,11 @@ QMenuBar{
   <action name="ProhibitDeepTestingAction">
    <property name="text">
     <string>禁用深度测试</string>
+   </property>
+  </action>
+  <action name="actionDrawSpheresAndTorus">
+   <property name="text">
+    <string>绘制球体和圆环</string>
    </property>
   </action>
  </widget>

@@ -128,6 +128,8 @@ public:
 
     // 绘制坐标系
     void display();
+    void drawSphere(const QVector3D& center);
+    void drawCircle(GLfloat centerX, GLfloat centerY, GLfloat centerZ, GLfloat radius);
 
     // 窗口的OpenGL事件
 protected:
@@ -236,7 +238,10 @@ private:
     QPoint lastMousePos;         // 上一次鼠标位置
     bool m_isPressMouseRight;
 
+    //旋转模式
     static std::string rotateMode;
+    //绘制球体和圆环
+    static bool DrawSpheresAndTorus_flag;
 
 private:
     //弧形球算法1.0
@@ -262,5 +267,6 @@ signals:
 public slots:
     void RePaintGL_coordinate_system(QString text);
     void RePaintGL_Grid(QString text);
+    void slots_DrawSpheresAndTorus();
 };
 

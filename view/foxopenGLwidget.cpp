@@ -34,6 +34,7 @@ using namespace OpenMesh;
 std::string FoxOpenGLWidget::rotateMode = "ClassMode";
 QString FoxOpenGLWidget::opengl_Draw_coordinate_system = "NO_draw";
 QString FoxOpenGLWidget::opengl_Draw_Grid = "ProhibitDeepTesting";
+bool FoxOpenGLWidget::DrawSpheresAndTorus_flag = false;
 
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) :QOpenGLWidget(parent)
 {
@@ -614,7 +615,7 @@ void FoxOpenGLWidget::paintGL()
 
 	//ProhibitDeepTestingAction
     //EnableDeepTestingAction
-	if (opengl_Draw_Grid == "ProhibitDeepTesting"){
+	if (opengl_Draw_Grid == "ProhibitDeepTesting"){//默认
 		// 绘制网格，且不受深度缓存的影响
 		glDisable(GL_DEPTH_TEST); // 禁用深度测试来绘制网格
 		// 绘制第一个圆环
@@ -641,12 +642,72 @@ void FoxOpenGLWidget::paintGL()
 		display();
 		glEnable(GL_DEPTH_TEST); // 再次启用深度测试
 	}
+
+	if(DrawSpheresAndTorus_flag)
+	{
+		glColor3f(0.0, 0.0, 1.0); // 设置颜色为白色
+		//xyz都是(-1,1)
+		QVector3D sphereCenter1(0.0f, 0.0f, 0.3f); 
+		QVector3D sphereCenter2(0.3f, 0.0f, 0.0f); 
+		QVector3D sphereCenter3(0.0f, 0.3f, 0.0f); 
+		//position.x/width/2
+		//position.y/height/2
+		//position.z/min(width,height)/2
+		drawSphere(sphereCenter1);
+		drawSphere(sphereCenter2);
+		drawSphere(sphereCenter3);
+
+		// 假设你已经有了计算出的圆心和半径，这里只是示例
+		GLfloat centerX = 0.0f, centerY = 0.0f, centerZ = 0.0f;
+		GLfloat radius = 1.0f; // 假设的半径值
+
+		drawCircle(centerX, centerY, centerZ, radius);
+
+		glFlush();
+	}
+
 	// 开启混合模式
 	glEnable(GL_BLEND);
 	// 混合方程设置透明度
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	// 在这里绘制其他模型，它们会在网格的上方
 	m_renderer->renderer();
+}
+
+void FoxOpenGLWidget::drawCircle(GLfloat centerX, GLfloat centerY, GLfloat centerZ, GLfloat radius) {
+	int numSegments = 100; // 圆的分段数量，增加以获得更平滑的圆
+	glBegin(GL_LINE_LOOP); // 使用线段绘制圆的边界
+	for (int i = 0; i < numSegments; i++) {
+		GLfloat angle = 2.0f * M_PI * float(i) / float(numSegments); // 计算当前段的角度
+		GLfloat x = radius * cosf(angle); // 计算x坐标
+		GLfloat y = radius * sinf(angle); // 计算y坐标
+		glVertex3f(centerX + x, centerY + y, centerZ); // 指定顶点
+	}
+	glEnd();
+}
+
+void FoxOpenGLWidget::drawSphere(const QVector3D& center) {
+	float sphereRadius = 0.01f; // 球体半径
+	int slices = 10; // 经线数
+	int stacks = 10; // 纬线数
+
+	// 球体的绘制可以使用GLU库中的gluSphere函数
+	GLUquadric* quadric = gluNewQuadric();
+
+	// 将模型视图矩阵推入栈中
+	glPushMatrix();
+
+	// 将当前矩阵平移到球体的中心位置
+	glTranslatef(center.x(), center.y(), center.z());
+
+	// 绘制球体
+	gluSphere(quadric, sphereRadius, slices, stacks);
+
+	// 释放二次曲面对象
+	gluDeleteQuadric(quadric);
+
+	// 将之前推入栈的模型视图矩阵弹出，回到之前的状态
+	glPopMatrix();
 }
 
 // 绘制坐标系
@@ -1213,6 +1274,12 @@ QVector3D FoxOpenGLWidget::Arcball_algorithm(float x, float y)
 void FoxOpenGLWidget::RePaintGL_Grid(QString text)
 {
 	opengl_Draw_Grid = text;
+	update();
+}
+
+void FoxOpenGLWidget::slots_DrawSpheresAndTorus()
+{
+	DrawSpheresAndTorus_flag = !DrawSpheresAndTorus_flag;
 	update();
 }
 

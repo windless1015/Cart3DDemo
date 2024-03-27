@@ -103,6 +103,8 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui->EnableDeepTestingAction, &QAction::triggered, this, &MainWindow::slots_Change_GridMode_EnableDeepTesting);
     connect(ui->ProhibitDeepTestingAction, &QAction::triggered, this, &MainWindow::slots_Change_GridMode_ProhibitDeepTesting);
     connect(this, &MainWindow::Change_GridMode, m_foxOpenGLWidget, &FoxOpenGLWidget::RePaintGL_Grid);
+    //绘制球体和圆环
+    connect(ui->actionDrawSpheresAndTorus, &QAction::triggered, m_foxOpenGLWidget, &FoxOpenGLWidget::slots_DrawSpheresAndTorus);
 
     //QOpenGLWidget与Mainwindow状态栏的绑定
     connect(m_foxOpenGLWidget, &FoxOpenGLWidget::statusbar_text, this, &MainWindow::slots_statusbar_text_show);
