@@ -32,6 +32,8 @@ using namespace OpenMesh;
 //  静态成员变量不拘束于任何一个成员函数
 //  在类定义外初始化静态成员变量
 std::string FoxOpenGLWidget::rotateMode = "ClassMode";
+QString FoxOpenGLWidget::opengl_Draw_coordinate_system = "NO_draw";
+QString FoxOpenGLWidget::opengl_Draw_Grid = "ProhibitDeepTesting";
 
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) :QOpenGLWidget(parent)
 {
@@ -575,7 +577,10 @@ void FoxOpenGLWidget::resizeGL(int w, int h)
 
 
 
-
+/*****
+* paintGL是负责绘制每一帧的图像的,
+* 当调用了update()方法，paintGL()函数将被触发执行
+****/
 void FoxOpenGLWidget::paintGL()
 {
 	glClearColor(0.85f, 0.85f, 0.85f, 1.0f);
@@ -607,24 +612,77 @@ void FoxOpenGLWidget::paintGL()
 	gridProgram->release();
 
 
-	// 绘制网格，且不受深度缓存的影响
-	glDisable(GL_DEPTH_TEST); // 禁用深度测试来绘制网格
-	// 绘制第一个圆环
-	//drawTorus(0.0, 0.0, 0.0, 1.0, 0.1);
-	// 绘制网格
-	drawGrid(100, 100);
-	glEnable(GL_DEPTH_TEST); // 再次启用深度测试
+	//ProhibitDeepTestingAction
+    //EnableDeepTestingAction
+	if (opengl_Draw_Grid == "ProhibitDeepTesting"){
+		// 绘制网格，且不受深度缓存的影响
+		glDisable(GL_DEPTH_TEST); // 禁用深度测试来绘制网格
+		// 绘制第一个圆环
+		//drawTorus(0.0, 0.0, 0.0, 1.0, 0.1);
+		// 绘制网格
+		drawGrid(100, 100);
+		glEnable(GL_DEPTH_TEST); // 再次启用深度测试
+	}
+	else if(opengl_Draw_Grid == "EnableDeepTesting")
+	{
+		drawGrid(100, 100);
+	}
+	
+	if (opengl_Draw_coordinate_system == "NO_draw")
+	{
+		//不绘制
+	}else if (opengl_Draw_coordinate_system == "Enable_deep_testing") {
+		display();
+	}
+	else if (opengl_Draw_coordinate_system == "Prohibit_deep_testing")
+	{
+		// 绘制网格，且不受深度缓存的影响
+		glDisable(GL_DEPTH_TEST); // 禁用深度测试来绘制网格
+		display();
+		glEnable(GL_DEPTH_TEST); // 再次启用深度测试
+	}
 	// 开启混合模式
 	glEnable(GL_BLEND);
 	// 混合方程设置透明度
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	// 在这里绘制其他模型，它们会在网格的上方
 	m_renderer->renderer();
-
-	
 }
 
+// 绘制坐标系
+void FoxOpenGLWidget::display() {
 
+	// 开始绘制线段表示坐标轴
+	glBegin(GL_LINES);
+
+	// 绘制X轴，红色
+	glColor3f(1.0, 0.0, 0.0); // 红色
+	glVertex3f(-1.0, 0.0, 0.0);
+	glVertex3f(1.0, 0.0, 0.0);
+
+	// 绘制Y轴，绿色
+	glColor3f(0.0, 1.0, 0.0); // 绿色
+	glVertex3f(0.0, -1.0, 0.0);
+	glVertex3f(0.0, 1.0, 0.0);
+
+	// 绘制Z轴，蓝色
+	glColor3f(0.0, 0.0, 1.0); // 蓝色
+	//glVertex3f(0.0, 0.0, -1.0);
+	//glVertex3f(0.0, 0.0, 1.0);
+	glVertex3f(1.0, 1.0, -1.0);
+	glVertex3f(-1.0, -1.0, 1.0); // 修改Z轴的一个端点，使其沿X和Y轴方向偏移
+
+	// 结束绘制
+	glEnd();
+
+}
+
+void FoxOpenGLWidget::RePaintGL_coordinate_system(QString text)
+{
+	qDebug() << QString::fromLocal8Bit("准备重绘");
+	opengl_Draw_coordinate_system = text;
+	update();
+}
 
 void FoxOpenGLWidget::drawGrid(int rows, int cols)
 {
@@ -910,16 +968,16 @@ void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 		//QMessageBox::information(0,"tips",QString::fromLocal8Bit("ArcBallMode算法有待完善"));
 		//弧形球算法
 		//Arcball.hpp算法改进
-		QPoint p_ab = event->pos();
-		translate_point_standard(p_ab);
-		
-		end = mapToSphere(p_ab, this->width(), this->height());
-		QQuaternion rotation = QQuaternion::rotationTo(start, end);// .normalized();
-		start = mapToSphere(p_ab, this->width(), this->height());
-		
-		for (auto& actor : m_renderer->getActors()) {
-			actor->setModelRotate(rotation);
-		}
+		//QPoint p_ab = event->pos();
+		//translate_point_standard(p_ab);
+		//
+		//end = mapToSphere(p_ab, this->width(), this->height());
+		//QQuaternion rotation = QQuaternion::rotationTo(start, end);// .normalized();
+		//start = mapToSphere(p_ab, this->width(), this->height());
+		//
+		//for (auto& actor : m_renderer->getActors()) {
+		//	actor->setModelRotate(rotation);
+		//}
 	}
 	else if (FoxOpenGLWidget::getRotateMode() == "SphereMode")
 	{
@@ -1102,6 +1160,12 @@ QVector<QVector3D> FoxOpenGLWidget::buildCircle(float radius, int steps)
 		points.push_back(QVector3D(x, y, 0));
 	}
 	return points;
+}
+
+void FoxOpenGLWidget::RePaintGL_Grid(QString text)
+{
+	opengl_Draw_Grid = text;
+	update();
 }
 
 

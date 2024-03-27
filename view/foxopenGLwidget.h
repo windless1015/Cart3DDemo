@@ -126,7 +126,8 @@ public:
         glEnd();
     }
 
-
+    // 绘制坐标系
+    void display();
 
     // 窗口的OpenGL事件
 protected:
@@ -249,7 +250,13 @@ private:
     float press_y;
     float press_z;
 
+    //opengl直接画坐标系
+    static QString opengl_Draw_coordinate_system;
+    static QString opengl_Draw_Grid;
 signals:
     void statusbar_text(QString text);
+public slots:
+    void RePaintGL_coordinate_system(QString text);
+    void RePaintGL_Grid(QString text);
 };
 

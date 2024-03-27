@@ -91,10 +91,22 @@ MainWindow::MainWindow(QWidget* parent)
        
     // 坐标轴
     //action_CS_2
-    connect(ui->action_CS_2, &QAction::triggered, this, &MainWindow::slots_Change_Add_Axis);
+    connect(ui->action_CS_2, &QAction::triggered, this, &MainWindow::slots_Change_Add_Axis_2);
+    connect(ui->action_CS_3, &QAction::triggered, this, &MainWindow::slots_Change_Add_Axis_3);
+    //connect(m_foxOpenGLWidget, &FoxOpenGLWidget::, this, &MainWindow::);
+    //自定义信号与槽
+    connect(this, &MainWindow::opengl_Draw_coordinate_system_flag,m_foxOpenGLWidget, &FoxOpenGLWidget::RePaintGL_coordinate_system);
+
+    //网格绘制
+    //ProhibitDeepTestingAction
+    //EnableDeepTestingAction
+    connect(ui->EnableDeepTestingAction, &QAction::triggered, this, &MainWindow::slots_Change_GridMode_EnableDeepTesting);
+    connect(ui->ProhibitDeepTestingAction, &QAction::triggered, this, &MainWindow::slots_Change_GridMode_ProhibitDeepTesting);
+    connect(this, &MainWindow::Change_GridMode, m_foxOpenGLWidget, &FoxOpenGLWidget::RePaintGL_Grid);
 
     //QOpenGLWidget与Mainwindow状态栏的绑定
     connect(m_foxOpenGLWidget, &FoxOpenGLWidget::statusbar_text, this, &MainWindow::slots_statusbar_text_show);
+    
 }
 
 MainWindow::~MainWindow()
@@ -371,9 +383,27 @@ void MainWindow::slots_Change_to_Sphere_mode()
 }
 
 
-void MainWindow::slots_Change_Add_Axis()
+void MainWindow::slots_Change_Add_Axis_2()
 {
-    slots_statusbar_text_show(QString::fromLocal8Bit("怎么使用qopengl绘制坐标系?而不是对模型的读取,暂时还没有想到..."));
+    slots_statusbar_text_show(QString::fromLocal8Bit("使用qopengl直接绘制坐标系..."));
+
+    emit opengl_Draw_coordinate_system_flag(QString("Enable_deep_testing"));
+}
+void MainWindow::slots_Change_Add_Axis_3()
+{
+    slots_statusbar_text_show(QString::fromLocal8Bit("使用qopengl直接绘制坐标系..."));
+
+    emit opengl_Draw_coordinate_system_flag(QString("Prohibit_deep_testing"));
+}
+
+void MainWindow::slots_Change_GridMode_EnableDeepTesting()
+{
+    emit Change_GridMode(QString("EnableDeepTesting"));
+}
+
+void MainWindow::slots_Change_GridMode_ProhibitDeepTesting()
+{
+    emit Change_GridMode(QString("ProhibitDeepTesting"));
 }
 
 void MainWindow::initAlphaSlider()

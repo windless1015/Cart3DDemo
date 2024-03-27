@@ -7,7 +7,7 @@
 #include <QLayout>
 #include "common.h"
 #include <QMessageBox>
-
+#include <string>
 
 
 
@@ -67,12 +67,15 @@ private slots:
 
     void slotsAbout();
 
-    //坐标系
+    //坐标系(直接读取stl模型)
     void slotsCoordinate_System();
     void slots_Change_to_Classic_mode();
     void slots_Change_to_ArcBall_mode();
     void slots_Change_to_Sphere_mode();
-    void slots_Change_Add_Axis();
+    void slots_Change_Add_Axis_2();
+    void slots_Change_Add_Axis_3();
+    void slots_Change_GridMode_EnableDeepTesting();
+    void slots_Change_GridMode_ProhibitDeepTesting();
 private:
     // 初始化滑块
     void initAlphaSlider();
@@ -86,5 +89,9 @@ private:
    bool m_actionShowToothStatus;
    QSlider* m_setAlphaSlider;
    QLabel* m_sliderValue;
+
+signals:
+    void opengl_Draw_coordinate_system_flag(QString text);
+    void Change_GridMode(QString text);
 };
 
