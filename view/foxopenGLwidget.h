@@ -170,7 +170,7 @@ protected:
         return QPointF(centerX, centerY);
     }
 
-
+    QVector3D Arcball_algorithm(float x, float y);
 private:
     //---------test------------
     std::shared_ptr<FoxRenderer> m_renderer;
@@ -239,13 +239,13 @@ private:
     static std::string rotateMode;
 
 private:
-    //弧形球算法
+    //弧形球算法1.0
     Arcball arcball;
     QQuaternion totalRotation;
-    //改进
+    //改进2.1
     QVector3D start, end;
     QQuaternion rotation;
-    //再改进
+    //再改进2.2
     float press_x;
     float press_y;
     float press_z;
@@ -253,6 +253,10 @@ private:
     //opengl直接画坐标系
     static QString opengl_Draw_coordinate_system;
     static QString opengl_Draw_Grid;
+    
+    //arcball算法第三次迭代3.0
+    float start_x;
+    float start_y;
 signals:
     void statusbar_text(QString text);
 public slots:

@@ -782,6 +782,12 @@ void FoxOpenGLWidget::mousePressEvent(QMouseEvent* event)
 		press_y = event->y();
 		translate_point(press_x, press_y);
 	}
+
+	if (event->button() == Qt::LeftButton)
+	{
+		start_x = event->x();
+		start_y = event->y();
+	}
 }
 
 
@@ -964,20 +970,37 @@ void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 		}
 	}
 	else if (FoxOpenGLWidget::getRotateMode() == "ArcBallMode") {
-		emit statusbar_text(QString::fromLocal8Bit("ArcBallMode算法有待完善"));
+		emit statusbar_text(QString::fromLocal8Bit("ArcBallMode算法"));
 		//QMessageBox::information(0,"tips",QString::fromLocal8Bit("ArcBallMode算法有待完善"));
-		//弧形球算法
-		//Arcball.hpp算法改进
-		//QPoint p_ab = event->pos();
-		//translate_point_standard(p_ab);
-		//
-		//end = mapToSphere(p_ab, this->width(), this->height());
-		//QQuaternion rotation = QQuaternion::rotationTo(start, end);// .normalized();
-		//start = mapToSphere(p_ab, this->width(), this->height());
-		//
-		//for (auto& actor : m_renderer->getActors()) {
-		//	actor->setModelRotate(rotation);
-		//}
+		if (m_isPressMouseLeft) {
+			/*
+			//弧形球算法
+			//Arcball.hpp算法改进
+			QPoint p_ab = event->pos();
+			translate_point_standard(p_ab);
+
+			end = mapToSphere(p_ab, this->width(), this->height());
+			QQuaternion rotation = QQuaternion::rotationTo(start, end);// .normalized();
+			start = mapToSphere(p_ab, this->width(), this->height());
+
+			for (auto& actor : m_renderer->getActors()) {
+				actor->setModelRotate(rotation);
+			}
+			*/
+
+			//第三次迭代
+			float x = event->x(), y = event->y();
+			qDebug() << "start_x:" << start_x << ",start_y:" << start_y << ",x:" << x << ",y:" << y;
+			QVector3D a = Arcball_algorithm(start_x, start_y);
+			start_x = x, start_y = y;
+			QVector3D b = Arcball_algorithm(x, y);
+			QQuaternion currQ = QQuaternion::rotationTo(a, b);//fromBetweenVectors(a, b);
+			qDebug() << "a:" << a << ",b:" << b << ",currQ:" << currQ;
+			for (auto& actor : m_renderer->getActors()) {
+				actor->setModelRotate(currQ);
+			}
+		}
+		
 	}
 	else if (FoxOpenGLWidget::getRotateMode() == "SphereMode")
 	{
@@ -1017,7 +1040,7 @@ void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 			};
 			// 单位化四元数
 			q = q.normalized();
-
+			qDebug() << "q:[" << q << "]";
 			for (auto& actor : m_renderer->getActors()) {
 				actor->setModelRotate(q);
 			}
@@ -1160,6 +1183,31 @@ QVector<QVector3D> FoxOpenGLWidget::buildCircle(float radius, int steps)
 		points.push_back(QVector3D(x, y, 0));
 	}
 	return points;
+}
+
+//arcball算法
+QVector3D FoxOpenGLWidget::Arcball_algorithm(float x, float y)
+{
+	float r = 1;
+	float width = this->width();
+	float height = this->height();
+	float res = (width < height ? width:height) - 1;
+	float z = 0.0f;
+
+	// map to -1 to 1
+	x = (2 * x - width - 1) / res;
+	y = -(2 * y - height - 1) / res;
+
+	float d = x * x + y * y;
+
+	if (2 * d <= r * r) {
+		z = sqrt(r * r - d);
+
+	}
+	else
+		z = r * r / 2 / sqrt(d);
+
+	return QVector3D(x,y,z);
 }
 
 void FoxOpenGLWidget::RePaintGL_Grid(QString text)
