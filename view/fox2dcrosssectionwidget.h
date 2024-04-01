@@ -3,6 +3,7 @@
 #include <QWidget>
 #include <QVector>
 #include <QPainterPath>
+
 /**
  * @brief 这是一个2D的坐标窗口, 负责显示横截面曲线
  *  交互: 
@@ -22,7 +23,6 @@ class Fox2DCrossSectionWidget  :  public QWidget
 public:
 	Fox2DCrossSectionWidget(QWidget* parent=nullptr);
 	~Fox2DCrossSectionWidget();
-	
 	// 通过不断的绘制顶点组成曲线
 	void drawCrossSectionLine(const QVector<QPointF>& points);
 
@@ -30,6 +30,10 @@ signals:
 	// 将点击的坐标点传递出去
 	void sendMousePressPoint(const QPoint& point);
 
+
+	/**
+	 * @brief 下面的函数是重写widget的事件.
+	 */
 protected:
 	void paintEvent(QPaintEvent* event);
 	void mousePressEvent(QMouseEvent* event);
@@ -38,7 +42,17 @@ protected:
 	void mouseReleaseEvent(QMouseEvent* event);
 	void resizeEvent(QResizeEvent* event);
 
+
+	/**
+	 * @brief 下面这些函数是与绘制相关的.
+	 */
 private:
+	// 缩放横截面线条
+	QPainterPath scaleCrossSectionLine(QPainterPath& path, int sx, int sy);
+	//自定义坐标系 以窗口中心作为坐标系原点
+	void painterCenterCoordinate(QPainter& painter);
+	// 自定义QRect的坐标系
+	void setRect();
 	// 绘制网格参考线
 	void drawGuides(QPainter& painter);
 	// 绘制测量文本
@@ -47,30 +61,42 @@ private:
 	void drawPointAndLine(QPainter& painter);
 	// 绘制横截面线条
 	void drawCrossSectionLine(QPainter* painter);
+	// 测试数据加载
+	void testLoadData();
 
+	// 下面是关于缩放变换网格的操作
+	double calcPaperWidthOfPerPixel(double scaleValue,
+		int paperWidth,
+		int widgetWidth);
+	void updatePaperWidthOfPerPixel();
 
-private:
-
-	double calcPainterWidthOfPerPixel(double scaleValue, int painterWidth, int widgetWidth);
-	void updatePainterWidthOfPerPixel();
-	int painterWidth2DrawWidth(int painterWidth);
-	int drawWidth2PainterWidth(int drawWidth);
-
+	int paperWidth2DrawWidth(int paperWidth);
+	int drawWidth2PaperWidth(int drawWidth);
 	void onWheelValueChanged(QPoint mousePos, QPoint step);
-	// 计算鼠标位置在画布中的相对位置
-	// 鼠标 (x,y) - 当前画布的位置(x,y) 得到鼠标与画布之间的位置
-	QPoint mousePoint2PaperPoint(QPoint point);
-	// 绘制的矩形居中
-	void centenThePainter();
 
+	QPoint mousePoint2PaperPoint(QPoint point);
+	void centenThePaper();
+
+
+	/**
+	 * @brief 下面的函数是如用于搜索顶点和数据处理.
+	 */
+private:
 	// 移动顶点
 	void moveMeasurePoint(const QPointF& point);
 	// 对比两个点找到一个大约相等的点, 且容差值为tolerance
 	bool pointsApproximatelyEqual(const QPointF& p1, const QPointF& p2, qreal tolerance);
-	// 并且获取这个点
-	QPointF findApproximatelyEqualPoint(const QVector<QPointF>& points, const QPointF& targetPoint, qreal tolerance);
 	// 选中点的索引
 	int indexOfPointInVector(const QVector<QPointF>& points, const QPointF& targetPoint, qreal tolerance);
+	// 查找并找到离给定点pos最近的路径点
+	qreal findClosestPoint(const QPointF& pos);
+	// 用于对顶点进行排序处理
+	static bool comparePoints(const QPointF& point1, const QPointF& point2);
+	// 函数用于过滤一些数据中Y轴差距特别大的点
+	QVector<QPointF> vertexYAxisFilter(const QVector<QPointF>& vertexData,qreal maxYDifference);
+	// 将顶点坐标映射到自定义的坐标系中
+	QPoint posToCoordinatePoint(const QPoint& pos);
+
 
 private:
 	QVector<QPointF> m_measurePoint; // 测量点
@@ -82,27 +108,18 @@ private:
 	QPoint m_lastMousePos; 
 	// 顶点索引
 	int m_selectPoint;
-
-	// 画布的X Y 宽 高
-	int m_painterX;
-	int m_painterY;
-	int m_painterWidth;
-	int m_painterHeight;
-	// 记录其实坐标
-	int m_orginDifX;
-	int m_orginDifY;
-
 	// 鼠标事件
 	bool m_isMouseLeftButton;
 	bool m_isMouseRightButton;
-	// 用于计算像素和画布的比例
-	double m_painterWidthOfPerPixel;
-	// 设置最大和最小比例
-	const double SCALE_VALUE_MAX = 30.0;
+	QRect m_guides;
+	QPoint m_guidesPos = QPoint(0, 0);
+	QSize m_guidesWH = QSize(1000,1000);
+	QPoint m_mouseRightButtonPos;
+	QPoint m_orginPos;
+	double m_guidesWidthOfPerPixel;
+	const double SCALE_VALUE_MAX = 20.0;
 	const double SCALE_VALUE_MIN = 0.5;
-
-	
-
-	QRect m_drawPainterRect;
-
 };
+
+
+

@@ -15,6 +15,8 @@
 #include <QIcon>
 #include <QSpacerItem>
 
+#include <tools/MeshCSG/MeshLoop.h>
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -158,6 +160,57 @@ void MainWindow::slotsShowSphere()
 
 void MainWindow::slotsTest()
 {
+    Cart3D::MeshLoop ml;
+    //std::vector<Cart3D::cvector3d> pts;
+    Cart3D::OpenTriMesh mesh;
+    std::string pathName = ".\\caseData\\100642730142856\\upper.stl";
+    OpenMesh::IO::read_mesh(mesh, pathName);
+
+    // Iterate over all vertices 
+    std::vector<int> tris;
+    std::vector<Cart3D::cvector3d> pts;
+    for(Cart3D::OpenTriMesh::VertexIter v_it = mesh.vertices_begin(); v_it != mesh.vertices_end(); ++v_it)
+    { 
+        auto& point = mesh.point(*v_it);
+        pts.push_back(Cart3D::cvector3d(point.x(),point.y(), point.z()));
+        auto& vh = *v_it;
+        int vertex_index = vh.idx();
+        tris.push_back(vertex_index);
+    }
+
+    std::cout << "tris size:" << tris.size()<<"\n";
+
+    std::cout << "pts[0] point:" << pts[0].x() << " " << pts[0].y() << " " << pts[0].z()<<"\n";
+
+    Cart3D::cvector3d k = Cart3D::cvector3d (-31.2802, 4.07611, -16.4259);
+    
+    //Cart3D::cvector3d k = Cart3D::cvector3d(-20.1376, 4.15704, -16.6773);
+
+    Cart3D::cvector3d plane_pt = pts[0];
+    Cart3D::cvector3d plane_dir = k;
+    plane_dir.normalize();
+    std::cout << "plane_pt point:" << plane_pt.x() << "," << plane_pt.y() << "," << plane_pt.z() << "\n";
+    std::cout << "plane_dir point:" << plane_dir.x() << "," << plane_dir.y() << "," << plane_dir.z() << "\n";
+    std::vector<Cart3D::InterLoop> paths;
+
+    ml.mesh_plane_intersect(pts, tris, plane_pt, plane_dir, paths);
+    std::cout << "pahts size:" << paths.size()<<"\n";
+    std::cout << "pahts pts size:" << paths[0].pts.size() << "\n";
+    std::cout << "pahts segs size:" << paths[0].segs.size() << "\n";
+
+   
+
+    QFile file(".\\caseData\\CrossSectionTestData\\output.txt");
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        QTextStream out(&file);
+        for (const auto& point : paths[0].pts)
+        {
+            out << point.x()<< "," << point.y() << "," << point.z() << Qt::endl;
+        }
+        file.close();
+    }
+
 }
 
 void MainWindow::slotsSetAlpha(int value)
