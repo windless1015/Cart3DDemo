@@ -46,7 +46,7 @@ void Fox2DCrossSectionWidget::paintEvent(QPaintEvent* event)
     //painter.fillRect(0, 0,this->width(),this->height(),Qt::white);
     drawGuides(painter);
     drawCrossSectionLine(&painter);
-    //drawPointAndLine(painter);
+    drawPointAndLine(painter);
 }
 
 void Fox2DCrossSectionWidget::mousePressEvent(QMouseEvent* event)
@@ -54,21 +54,23 @@ void Fox2DCrossSectionWidget::mousePressEvent(QMouseEvent* event)
 
     if (event->button() == Qt::LeftButton) {
         QPoint point = event->localPos().toPoint();
-        QPoint p = posToCoordinatePoint(point);
-        if(m_measurePoint.size()<2){
-            if (!m_enlargedPath.contains(p)) return;
+        if(m_pathPercent.size()<2){
+            if (!m_enlargedPath.contains(point)) return;
             //  获取点击点在路径线上的百分比
-            qreal pathPoint = findClosestPoint(p);
-            // 将原始横截面转化成缩放后的横截面
-            QPainterPath path = scaleCrossSectionLine(m_drawCrossSectionLine, m_scale, m_scale);
+            qreal pathPoint = findClosestPoint(point);
             // 判断百分比对应路径上的那个点
-            QPointF linePoint = path.pointAtPercent(pathPoint);
+            //QPointF linePoint = m_drawCrossSectionLine.pointAtPercent(pathPoint);
             // 保存对应的点
-            m_measurePoint.push_back(linePoint);
+            //m_measurePoint.push_back(linePoint);
+            m_pathPercent.push_back(pathPoint);
         }
         else
         {
-            int index = indexOfPointInVector(m_measurePoint, p, 1);
+            //int index = indexOfPointInVector(m_measurePoint, point, 15);
+            //qDebug() << index;
+            //m_selectPoint = index;
+            int index = indexOfPointInVector(m_pathPercent, point, 15);
+            qDebug() << index;
             m_selectPoint = index;
             m_isMouseLeftButton = true;
         }
@@ -81,14 +83,6 @@ void Fox2DCrossSectionWidget::mousePressEvent(QMouseEvent* event)
 
     update();
 
-    //}
-    //else if(event->button()==Qt::RightButton)
-    //{
-    //    m_lastMousePos = event->pos();
-    //    m_isMouseRightButton = true;
-
-    //}
-
 }
 
 void Fox2DCrossSectionWidget::mouseMoveEvent(QMouseEvent* event)
@@ -96,8 +90,7 @@ void Fox2DCrossSectionWidget::mouseMoveEvent(QMouseEvent* event)
     // 点击左键触发
     if (m_isMouseLeftButton) {
         QPoint point = event->localPos().toPoint();
-        QPoint p = posToCoordinatePoint(point);
-        moveMeasurePoint(p);
+        moveMeasurePoint(point);
     }
     // 点击右键触发
     if (m_isMouseRightButton) {
@@ -230,7 +223,7 @@ void Fox2DCrossSectionWidget::drawGuides(QPainter& painter)
         for (int x = 0; x < 100; x++) {
             int draw_point_x = realityX + qRound(x * step_width);
             int draw_point_y = realityY + qRound(y * step_width);
-            if (y % 5 == 0) {
+            if (y % 10 == 0) {
                 painter.setPen(QPen(Qt::white, 3));
             }
             else {
@@ -245,7 +238,7 @@ void Fox2DCrossSectionWidget::drawGuides(QPainter& painter)
         for (int x = 0; x < 100; x++) {
             int draw_point_x = realityX + qRound(x * step_width);
             int draw_point_y = realityY + qRound(y * step_width);
-            if (x % 5 == 0) {
+            if (x % 10 == 0) {
                 painter.setPen(QPen(Qt::white, 3));
             }
             else {
@@ -301,33 +294,68 @@ void Fox2DCrossSectionWidget::drawText(const QString& text)
 void Fox2DCrossSectionWidget::drawPointAndLine(QPainter& painter)
 {
     // 绘制点
-    painter.setPen(QPen(Qt::red, 1.1, Qt::SolidLine, Qt::RoundCap));
-    if (m_measurePoint.size() == 0) return;
-    painter.drawPoint(m_measurePoint.at(0));
-    if (m_measurePoint.size() == 1) return;
-    painter.drawPoint(m_measurePoint.at(1));
+    //painter.setPen(QPen(Qt::red, 3, Qt::SolidLine, Qt::RoundCap));
 
-    // 将两点绘制成线
-    if (m_measurePoint.size() == 2) {
+    painter.setBrush(Qt::red);
+
+    if (m_pathPercent.size() == 0) return;
+    QPointF point1 = m_drawCrossSectionLine.pointAtPercent(m_pathPercent.at(0));
+    painter.drawEllipse(point1, 5, 5);
+
+    if (m_pathPercent.size() == 1) return;
+    QPointF point2 = m_drawCrossSectionLine.pointAtPercent(m_pathPercent.at(1));
+    painter.drawEllipse(point2, 5, 5);
+
+
+    // 通过百分比将两点绘制成线
+    if (m_pathPercent.size() == 2) {
         painter.setRenderHint(QPainter::Antialiasing);
-        painter.setPen(QPen(Qt::blue, 0.3, Qt::SolidLine));
-        painter.drawLine(m_measurePoint[0], m_measurePoint[1]);
+        painter.setPen(QPen(Qt::blue, 2, Qt::SolidLine));
+        QPointF point1 = m_drawCrossSectionLine.pointAtPercent(m_pathPercent.at(0));
+        QPointF point2 = m_drawCrossSectionLine.pointAtPercent(m_pathPercent.at(1));
+        //painter.drawLine(m_measurePoint[0], m_measurePoint[1]);
+        painter.drawLine(point1, point2);
     }
+
 
 }
 
 void Fox2DCrossSectionWidget::drawCrossSectionLine(QPainter* painter)
 {
-    // 缩放处理
-    QPainterPath path = scaleCrossSectionLine(m_drawCrossSectionLine, m_scale, m_scale);
-    // 添加路径描边起 用于增加线条的判断
-    QPainterPathStroker storker;
-    storker.setWidth(1);
-    m_enlargedPath = storker.createStroke(path);
-    // 设置抗锯齿
-    painter->setRenderHint(QPainter::HighQualityAntialiasing);
-    painter->setPen(QPen(Qt::black, 0.2));
-    painter->drawPath(path);
+
+    int draw_width = paperWidth2DrawWidth(m_guidesWH.width());
+    double step_width = static_cast<double>(draw_width) / 100;
+
+    int start_x = m_guidesPos.x() + qRound(step_width / 2);
+    int start_y = m_guidesPos.y() + qRound(step_width / 2);
+
+    int realityX = start_x + (m_guides.x() - start_x);
+    int realityY = start_y + (m_guides.y() - start_y);
+
+
+    painter->setPen(Qt::black);
+    painter->setBrush(Qt::NoBrush);
+    painter->setRenderHint(QPainter::Antialiasing, true);
+    QVector<QPointF> filteredVertices = vertexYAxisFilter(m_crossSectionLine, 0.2);
+    int x0 = realityX + qRound(filteredVertices[0].x() * step_width);
+    int y0 = realityY + qRound((filteredVertices[0].y() + 40) * step_width);
+
+    m_drawCrossSectionLine.clear();
+
+    m_drawCrossSectionLine.moveTo(x0, y0);
+    for (auto& point : filteredVertices) {
+        //qDebug() << point;
+        int x1 = realityX + qRound(point.x() * step_width);
+        int y1 = realityY + qRound((point.y()+40) * step_width);
+        m_drawCrossSectionLine.lineTo(QPointF(x1, y1));
+        //painter->drawPoint(x1, y1);
+    }
+
+    QPainterPathStroker stroke;
+    stroke.setWidth(5);
+    m_enlargedPath = stroke.createStroke(m_drawCrossSectionLine);
+
+    painter->drawPath(m_drawCrossSectionLine);
 }
 
 void Fox2DCrossSectionWidget::testLoadData()
@@ -338,8 +366,8 @@ void Fox2DCrossSectionWidget::testLoadData()
     //  测试 主要是直接读取生成txt文件内的定带你数据
     // 变换矩阵
     qreal transformMatrix[3][3] = {
-    {-1, 0, 0},
-    {0, -1, 0},
+    {1.65, 0, 0},
+    {0, -1.65, 0},
     {0, 0, 0}
     };
     // 定义文件路径
@@ -378,16 +406,35 @@ void Fox2DCrossSectionWidget::testLoadData()
     
 
    // 处理顶点
-    QVector<QPointF> filteredVertices = vertexYAxisFilter(m_crossSectionLine, 0.2);
+    //QVector<QPointF> filteredVertices = vertexYAxisFilter(m_crossSectionLine, 0.2);
 
-    for (auto& point : filteredVertices) {
-        qDebug() << "point " << point;
-    }
+    //int draw_width = paperWidth2DrawWidth(m_guidesWH.width());
+    //double step_width = static_cast<double>(draw_width) / 100;
+    //int start_x = m_guidesPos.x() + qRound(step_width / 2);
+    //int start_y = m_guidesPos.y() + qRound(step_width / 2);
 
-    m_drawCrossSectionLine.moveTo(filteredVertices[0]); // 起始位置
-    for (int i = 0; i < filteredVertices.size(); i++) {
-        m_drawCrossSectionLine.lineTo(filteredVertices[i]);
-    }
+    //int realityX = start_x + (m_guides.x() - start_x);
+    //int realityY = start_y + (m_guides.y() - start_y);
+    //// 以中心原点为起始点
+    //double orginX = (50 / filteredVertices[0].x()) + 50;
+    //double orginY = (50 / filteredVertices[0].y()) + 50;
+    //int draw_point_x_orginX = realityX + qRound(orginX * step_width);
+    //int draw_point_y_orginY = realityY + qRound(orginY * step_width);
+
+
+    //m_drawCrossSectionLine.moveTo(QPointF(draw_point_x_orginX, draw_point_y_orginY)); // 起始位置
+    //for (int i = 0; i < filteredVertices.size(); i++) {
+    //    double pointX = (50 / filteredVertices[i].x()) + 50;
+    //    double pointY = (50 / filteredVertices[i].y()) + 50;
+    //    int draw_point_x= realityX + qRound(pointX * step_width);
+    //    int draw_point_y= realityY + qRound(pointY * step_width);
+        //qDebug() << "x:" << draw_point_x << "y:" << draw_point_y;
+        //m_drawCrossSectionLine.lineTo(filteredVertices[i]);
+        //m_drawCrossSectionLine.lineTo(QPointF(draw_point_x, draw_point_y));
+    //}
+
+
+
 }
 
 double Fox2DCrossSectionWidget::calcPaperWidthOfPerPixel(double scaleValue, int paperWidth, int widgetWidth)
@@ -491,7 +538,7 @@ QPoint Fox2DCrossSectionWidget::mousePoint2PaperPoint(QPoint point)
 
 void Fox2DCrossSectionWidget::centenThePaper()
 {
-    m_scale = 20;
+    m_scale = 7;
     updatePaperWidthOfPerPixel();
     int adjust_distance_x = (this->width() - paperWidth2DrawWidth(m_guidesWH.width())) / 2;
     int adjust_distance_y = (this->height() - paperWidth2DrawWidth(m_guidesWH.height())) / 2;
@@ -501,16 +548,17 @@ void Fox2DCrossSectionWidget::centenThePaper()
     update();
 }
 
-QPainterPath Fox2DCrossSectionWidget::scaleCrossSectionLine(QPainterPath& path, int sx, int sy)
-{
-    QPointF center = m_drawCrossSectionLine.boundingRect().center();
-    QTransform transform;
-    transform.translate(center.x(), center.y());
-    transform.scale(sx, sy);
-    transform.translate(-center.x()+m_scale, -center.y());
-    return transform.map(m_drawCrossSectionLine);
-
-}
+//QPainterPath Fox2DCrossSectionWidget::scaleCrossSectionLine(QPainterPath& path, int sx, int sy)
+//{
+//    QPointF center = m_drawCrossSectionLine.boundingRect().center();
+//    QTransform transform;
+//    transform.translate(center.x(), center.y());
+//    transform.scale(sx, sy);
+//    //transform.translate(-center.x()+m_guides.center().x(), -center.y()+m_guides.center().y());
+//    transform.translate(-center.x() , -center.y());
+//    return transform.map(m_drawCrossSectionLine);
+//
+//}
 
 /// <summary>
 ///  移动点
@@ -522,11 +570,8 @@ void Fox2DCrossSectionWidget::moveMeasurePoint(const QPointF& point)
     // 移动顶点时 判断点是否在m_drawCrossSectionLine上
     if (m_selectPoint == -1) return;
     qreal closestPercent = findClosestPoint(point);
-    QPainterPath path = scaleCrossSectionLine(m_drawCrossSectionLine,m_scale,m_scale);
-    // 在将这个距离转化成路径上的坐标点
-    QPointF closestPoint = path.pointAtPercent(closestPercent);
-    m_measurePoint[m_selectPoint] = closestPoint;
-
+    // 修改对应的百分百
+    m_pathPercent[m_selectPoint] = closestPercent;
 }
 
 bool Fox2DCrossSectionWidget::pointsApproximatelyEqual(const QPointF& p1, const QPointF& p2, qreal tolerance)
@@ -560,10 +605,9 @@ qreal Fox2DCrossSectionWidget::findClosestPoint(const QPointF& pos)
 {
     qreal minDistance = std::numeric_limits<qreal>::max();
     qreal closestPercent = 0.0;
-    QPainterPath path = scaleCrossSectionLine(m_drawCrossSectionLine,m_scale,m_scale);
     // 遍历路径上的所有点
     for (qreal percent = 0.0; percent <= 1.0; percent += 0.001) {
-        QPointF pathPoint = path.pointAtPercent(percent);
+        QPointF pathPoint = m_drawCrossSectionLine.pointAtPercent(percent);
         // 计算两点点之间的距离
         qreal distance = QLineF(pathPoint, pos).length();
         if (distance < minDistance) {
@@ -613,4 +657,19 @@ QVector<QPointF> Fox2DCrossSectionWidget::vertexYAxisFilter(const QVector<QPoint
 QPoint Fox2DCrossSectionWidget::posToCoordinatePoint(const QPoint& pos)
 {
     return QPoint(pos.x() - (this->width() / 2), (this->height() / 2) - pos.y()) / m_scale;
+}
+
+int Fox2DCrossSectionWidget::indexOfPointInVector(const QVector<qreal>& pathpercent, const QPoint& pos, qreal tolerance)
+{
+    // 查找到了返回对应所以没找到返回-1
+    for (int i = 0; i < pathpercent.size(); ++i)
+    {
+        // 将百分比转化为点坐标
+        QPointF point = m_drawCrossSectionLine.pointAtPercent(pathpercent[i]);
+        if (pointsApproximatelyEqual(point, pos, tolerance))
+        {
+            return i;
+        }
+    }
+    return -1;
 }

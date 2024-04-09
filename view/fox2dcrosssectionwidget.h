@@ -48,7 +48,7 @@ protected:
 	 */
 private:
 	// 缩放横截面线条
-	QPainterPath scaleCrossSectionLine(QPainterPath& path, int sx, int sy);
+	//QPainterPath scaleCrossSectionLine(QPainterPath& path, int sx, int sy);
 	//自定义坐标系 以窗口中心作为坐标系原点
 	void painterCenterCoordinate(QPainter& painter);
 	// 自定义QRect的坐标系
@@ -96,11 +96,13 @@ private:
 	QVector<QPointF> vertexYAxisFilter(const QVector<QPointF>& vertexData,qreal maxYDifference);
 	// 将顶点坐标映射到自定义的坐标系中
 	QPoint posToCoordinatePoint(const QPoint& pos);
-
+	// 查找对应的点
+	int indexOfPointInVector(const QVector<qreal>& pathpercent,const QPoint& pos, qreal tolerance);
 
 private:
 	QVector<QPointF> m_measurePoint; // 测量点
 	QVector<QPointF> m_crossSectionLine; // 横截面线条
+	QVector<qreal> m_pathPercent; // 路径的百分百, 用于绘制测量点
 	QPainterPath m_drawCrossSectionLine; // 绘制横截线
 	QPainterPath m_enlargedPath;
 	double  m_scale;
