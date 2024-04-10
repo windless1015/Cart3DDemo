@@ -56,7 +56,7 @@ private:
 	// 绘制网格参考线
 	void drawGuides(QPainter& painter);
 	// 绘制测量文本
-	void drawText(const QString& text);
+	void drawText(QPainter& painter);
 	// 绘制测量点和测量线
 	void drawPointAndLine(QPainter& painter);
 	// 绘制横截面线条

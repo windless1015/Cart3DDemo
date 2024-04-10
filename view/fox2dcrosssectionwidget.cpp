@@ -47,6 +47,7 @@ void Fox2DCrossSectionWidget::paintEvent(QPaintEvent* event)
     drawGuides(painter);
     drawCrossSectionLine(&painter);
     drawPointAndLine(painter);
+    drawText(painter);
 }
 
 void Fox2DCrossSectionWidget::mousePressEvent(QMouseEvent* event)
@@ -114,7 +115,6 @@ void Fox2DCrossSectionWidget::wheelEvent(QWheelEvent* event)
     //    qDebug() << "numSteps" << numSteps;
     //    if (m_scale < 0.1) m_scale = 0.1;
     //    m_scale += (numSteps.y() * 0.1);
-    //    
     //}
     //event->accept();
     QPoint numPixels = event->pixelDelta();
@@ -284,11 +284,33 @@ void Fox2DCrossSectionWidget::drawGuides(QPainter& painter)
     //}
 }
 
-void Fox2DCrossSectionWidget::drawText(const QString& text)
+void Fox2DCrossSectionWidget::drawText(QPainter& painter)
 {
+    if (m_pathPercent.size() == 2) {
+        QPointF p1 = m_drawCrossSectionLine.pointAtPercent(m_pathPercent.at(0));
+        QPointF p2 = m_drawCrossSectionLine.pointAtPercent(m_pathPercent.at(1));
 
-
-
+        QFont font("宋体", m_scale+2,QFont::Bold);
+        painter.setFont(font);
+        qreal distance = QLineF(p1, p2).length();
+        // 计算文字的角度
+        qreal angle = qRadiansToDegrees(qAtan2(p2.y() - p1.y(), p2.x() - p1.x()));
+        // 保存当前坐标系状态
+        painter.save();
+        // 平移坐标系到文字起始点
+        painter.translate((p1 + p2) / 2);
+        // 放置文字颠倒的问题
+        if (p2.x() < p1.x()) {
+            angle += 180;
+        }
+        // 旋转坐标系使文字与直线平行
+        painter.rotate(angle);
+        // 绘制文字
+        painter.drawText(QPointF(- distance / 6, -5), "Hello");
+        // 恢复坐标系状态
+        painter.restore();
+    }
+    
 }
 
 void Fox2DCrossSectionWidget::drawPointAndLine(QPainter& painter)
